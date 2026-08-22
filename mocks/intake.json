@@ -1,0 +1,25 @@
+{
+  "profile": {
+    "memberId": "m1",
+    "memberName": "김하늘",
+    "axes": [
+      { "axis": "activity_level", "value": 0.3, "confidence": 0.9 },
+      { "axis": "crowd_tolerance", "value": 0.2, "confidence": 0.85 },
+      { "axis": "nature_vs_urban", "value": 0.7, "confidence": 0.4 },
+      { "axis": "food_priority", "value": 0.8, "confidence": 0.9 },
+      { "axis": "pace", "value": 0.25, "confidence": 0.6 }
+    ],
+    "rawText": "바다 보이는 조용한 카페 좋아하고 사람 많은 데는 별로예요. 맛집은 꼭 가고 싶어요.",
+    "updatedAt": "2026-08-23T10:00:00Z"
+  },
+  "followUps": [
+    {
+      "questionId": "q1",
+      "axis": "nature_vs_urban",
+      "prompt": "바다는 좋아한다고 하셨는데, 도심 쪽 명소는 어떠세요?",
+      "kind": "slider",
+      "choices": null
+    }
+  ],
+  "assistantMessage": "조용한 바다뷰 카페와 맛집 위주로 이해했어요. 하나만 더 여쭤볼게요."
+}

@@ -1,0 +1,77 @@
+{
+  "planId": "plan_demo_001",
+  "city": "부산",
+  "members": [
+    { "memberId": "m1", "memberName": "김하늘" },
+    { "memberId": "m2", "memberName": "이준호" },
+    { "memberId": "m3", "memberName": "박서연" }
+  ],
+  "minMemberSatisfaction": 0.72,
+  "briefing": "조용한 바다뷰를 원하는 하늘님과 활동적인 코스를 원하는 준호님 사이에서, 오전은 해안 산책, 오후는 시장 탐방으로 나눴습니다. 세 분 모두 최소 72% 이상 만족하는 구성입니다.",
+  "days": [
+    {
+      "dayNumber": 1,
+      "stops": [
+        {
+          "order": 1,
+          "poi": {
+            "poiId": "poi_001",
+            "name": "예시 해변 산책로",
+            "category": "자연",
+            "lat": 35.1587,
+            "lng": 129.1604,
+            "address": "부산광역시 해운대구"
+          },
+          "score": {
+            "poiId": "poi_001",
+            "fitScore": 0.86,
+            "failureProbability": 0.12,
+            "reasons": ["도보 접근성 양호", "체류 시간 유연", "우천 시 대체 경로 존재"],
+            "perMemberFit": [
+              { "memberId": "m1", "fit": 0.93 },
+              { "memberId": "m2", "fit": 0.74 },
+              { "memberId": "m3", "fit": 0.88 }
+            ]
+          },
+          "arriveAt": "10:00",
+          "stayMin": 90
+        }
+      ],
+      "segments": [
+        {
+          "fromPoiId": "poi_001",
+          "toPoiId": "poi_002",
+          "preference": "scenic",
+          "totalDurationMin": 34,
+          "totalFare": 1550,
+          "legs": [
+            {
+              "mode": "walk",
+              "lineName": null,
+              "fromName": "예시 해변 산책로",
+              "toName": "예시 정류장",
+              "durationMin": 8,
+              "description": "해안선을 따라 걷는 구간. 최단 경로보다 4분 길지만 바다가 계속 보입니다."
+            },
+            {
+              "mode": "bus",
+              "lineName": "예시 100번",
+              "fromName": "예시 정류장",
+              "toName": "도착 정류장",
+              "durationMin": 21,
+              "description": "해안도로 경유 노선"
+            },
+            {
+              "mode": "walk",
+              "lineName": null,
+              "fromName": "도착 정류장",
+              "toName": "다음 장소",
+              "durationMin": 5,
+              "description": "평지 도보"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

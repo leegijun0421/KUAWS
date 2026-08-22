@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "소유권 경계 점검",
+  "description": "공용 계약 파일이 수정되면 경고한다. 머지 충돌의 최대 원인이다.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["shared/types/**", ".kiro/steering/**"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "이 파일은 PM 단독 소유이며 팀 전체에 영향을 준다. 변경 내용을 되돌리지는 말고, 무엇이 어떻게 바뀌었는지 3줄 이내로 요약한 뒤 'PM 승인 후 별도 커밋으로 분리하세요'라고 안내해줘."
+  }
+}

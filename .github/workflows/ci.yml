@@ -1,0 +1,39 @@
+# 최소한의 CI. 무거우면 아무도 안 고치므로 일부러 가볍게 유지한다.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+
+      - name: 린트
+        run: ruff check backend/ shared/
+
+      - name: 테스트
+        run: pytest -q
+        continue-on-error: true  # 초기에는 테스트가 적으므로 경고만. 3주차에 제거할 것.
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: .env 커밋 여부 확인
+        run: |
+          if git ls-files | grep -qx ".env"; then
+            echo "::error::.env 파일이 커밋되어 있습니다. 즉시 제거하고 키를 재발급하세요."
+            exit 1
+          fi

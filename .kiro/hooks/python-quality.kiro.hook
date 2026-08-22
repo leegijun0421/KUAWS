@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Python 품질 점검",
+  "description": "백엔드 파일 저장 시 컨벤션 위반과 누락된 타입 힌트를 점검한다.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["backend/**/*.py"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "방금 수정된 파일을 .kiro/steering/conventions.md 기준으로 점검해줘. 확인 항목: (1) public 함수의 타입 힌트와 docstring, (2) print() 사용 여부, (3) 빈 except 블록, (4) 40줄 넘는 함수, (5) dict 대신 Pydantic 모델을 써야 하는 곳. 위반이 있으면 해당 파일만 수정하고, 없으면 '이상 없음'만 출력해. 다른 파일은 절대 건드리지 마."
+  }
+}

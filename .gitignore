@@ -1,0 +1,32 @@
+# 비밀 정보
+.env
+.env.local
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# 데이터 (용량 큼 — 커밋하지 말 것)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Kiro — 설정은 커밋하고, 로컬 캐시만 제외한다
+.kiro/cache/
