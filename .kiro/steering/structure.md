@@ -12,7 +12,7 @@ backend/
   planner/    일정 배치 및 제약 해결
   routing/    경로 탐색 (최단 / 경치 우회 등 유형 분기)
   share/      결과 공유 링크
-  common/     설정, Bedrock 클라이언트, 프롬프트, 로깅
+  common/     설정, Claude 클라이언트, 프롬프트, 로깅
 frontend/     React UI
 shared/types/ API 계약 (백엔드·프론트 공통)
 data/         수집 스크립트 및 전처리 산출물

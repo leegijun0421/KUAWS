@@ -9,7 +9,7 @@
 참가자 N명
    │ 자유 텍스트 + 정량 보강
    ▼
-[intake]  Bedrock → 취향 축별 값 + 신뢰도
+[intake]  Claude API → 취향 축별 값 + 신뢰도
    │  PreferenceProfile × N
    ▼
 [scoring] POI 후보 × 그룹 프로필 → 적합도 + 실패 확률 + 멤버별 만족도
@@ -18,7 +18,8 @@
 [planner] 제약(시간·이동·식사) 하에서 배치, 최저 만족도를 최대화
    │  ItineraryDay[]
    ▼
-[routing] 구간별 실제 대중교통 경로. 경로 유형(최단/환승최소/경치) 분기
+[routing] 구간별 실제 대중교통 경로 (국내 ODsay / 해외 Google Maps 자동 분기)
+          경로 유형(최단/환승최소/경치) 분기
    │  RouteSegment[]
    ▼
 [share]   링크 생성 → 플랫폼 무관 공유

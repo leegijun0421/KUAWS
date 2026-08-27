@@ -9,7 +9,7 @@ inclusion: always
 |------|------|------|
 | 백엔드 | Python 3.11 + FastAPI | 타입 힌트 필수 |
 | 데이터 검증 | Pydantic v2 | 모든 API 입출력은 Pydantic 모델 |
-| LLM | AWS Bedrock (boto3) | 대회 제공 크레딧 사용 |
+| LLM | Anthropic Claude API (`anthropic` SDK) | 모델: `claude-sonnet-5` · 키는 .env 로만 주입 |
 | 프론트엔드 | React 18 + TypeScript + Vite | |
 | 스타일 | Tailwind CSS | 커스텀 CSS 파일 만들지 말 것 |
 | 패키지 관리 | uv (Python) / npm (Node) | lock 파일 커밋 |
@@ -25,11 +25,28 @@ inclusion: always
 
 ## 외부 API
 
-- **AWS Bedrock**: LLM 추론. 프롬프트는 `backend/common/prompts/` 에 파일로 분리한다.
+- **Anthropic Claude API**: LLM 추론. 프롬프트는 `backend/common/prompts/` 에 파일로 분리한다.
   코드 안에 프롬프트 문자열을 하드코딩하지 말 것.
-- **대중교통 경로 API**: 호출 결과는 **반드시 캐싱**한다 (`data/processed/cache/`).
-  무료 호출 한도가 있으므로 동일 파라미터 재호출 금지.
-  좌표 기반 사전 필터링(Haversine)으로 후보를 줄인 뒤 호출한다.
+  - **사용 모델**: `claude-sonnet-5` (2026-08-27 확정, 첫 호출 검증 완료)
+    - 선정 이유: 속도·성능 균형이 좋아 예선 PoC의 반복 개발에 적합. 컨텍스트 1M 토큰.
+    - 단가: 입력 $2 / 출력 $10 per MTok
+  - 모델 ID는 코드에 하드코딩하지 않는다. `backend/common/config.py` 의
+    `DEFAULT_ANTHROPIC_MODEL` 을 기본값으로 쓰고, 필요 시 `.env` 의 `ANTHROPIC_MODEL` 로 덮어쓴다.
+  - 모델 변경은 스택 변경에 해당하므로 PM 승인 + `docs/DECISIONS.md` 기록이 필요하다.
+- **대중교통 경로 API**: `backend/routing/provider.py` 의 `RouteProvider` 인터페이스를
+  경유한다. 구체 API 를 모듈 밖에서 직접 부르지 말 것.
+  - **국내**: ODsay (`ODSAY_API_KEY`) — 도보·환승·요금 상세가 정확하다.
+  - **해외**: Google Maps Directions (`GOOGLE_MAPS_API_KEY`) — 글로벌 커버리지.
+  - 분기 기준: 출발·도착이 모두 한국 경계 상자 안이면 ODsay, 아니면 Google.
+  - ⚠️ Google 은 **대한민국에서 도보·자동차·자전거 경로를 공식 미지원**이다
+    (고정밀 지도 반출 제한). 국내 구간에 Google 을 쓰지 말 것.
+  - **캐싱 정책은 프로바이더마다 다르다.** `RouteProvider.cacheable` 로 강제한다.
+    - **Google = 캐싱 금지.** 약관이 응답의 사전 페칭·저장·캐싱을 금지한다
+      (Place ID·위경도만 예외적으로 영구 저장 가능). 응답 JSON 을 리포에 커밋하지 말 것.
+    - **ODsay = 로컬 캐싱 허용** (`data/processed/cache/routes/`).
+      Basic 무료 30회/일이라 캐시 없이는 개발 중 한도를 넘긴다. 캐시 파일은 커밋 금지.
+  - 호출 수 절감의 1차 수단은 캐시가 아니라 **좌표 기반 사전 필터링(Haversine)** 이다.
+    후보를 줄인 뒤 호출한다.
 - **POI 데이터**: 공공 관광 API + 지도 서비스 API 사용.
   포털 사이트 스크래핑은 법적·기술적 리스크로 **금지**.
 

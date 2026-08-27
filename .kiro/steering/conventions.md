@@ -51,4 +51,4 @@ scope: intake | scoring | planner | routing | share | frontend | data | kiro
 # 테스트
 
 - 새 비즈니스 로직에는 최소 1개의 테스트를 함께 작성한다.
-- 외부 API(Bedrock, 경로 API) 호출은 테스트에서 반드시 목으로 대체한다.
+- 외부 API(Claude API, 경로 API) 호출은 테스트에서 반드시 목으로 대체한다.
