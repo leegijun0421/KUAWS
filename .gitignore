@@ -3,6 +3,12 @@
 .env.local
 *.pem
 
+# 외부 API 원본 응답 — 약관상 결과 데이터의 복제·저장·배포가 제한된다
+# (ODsay 이용약관 4.5.10 / Google Maps Platform 약관).
+# 로컬에서 참고용으로 두되 절대 커밋하지 말 것. 필드 구조는 docs/*_field_check.md 로 남긴다.
+docs/*_sample_response.json
+docs/**/api_response*.json
+
 # Python
 __pycache__/
 *.py[cod]
