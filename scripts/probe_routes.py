@@ -24,6 +24,7 @@ import json
 import os
 import sys
 from datetime import datetime, time, timedelta
+from time import perf_counter
 from zoneinfo import ZoneInfo
 
 import httpx  # requirements.txt 에 이미 있음 (requests 는 없음)
@@ -393,6 +394,104 @@ def diagnose(seg: dict, departure: str, region: str, api_key: str) -> None:
     print("-" * 70)
 
 
+#: 채점표를 채울 대표 구간 (도시당 1개). 9/6 확정 화이트리스트 기준.
+SCORE_TARGETS: list[tuple[str, str]] = [
+    ("paris", "chatelet_montmartre"),
+    ("taipei", "taipeimain_101"),
+]
+
+
+def score(api_key: str) -> None:
+    """노션 스모크 테스트 페이지의 품질 채점표를 그대로 채울 수 있는 표를 출력한다.
+
+    출력은 마크다운 표라서 노션에 그대로 붙여넣으면 된다.
+    """
+    results: dict[str, dict] = {}
+    for city, seg_key in SCORE_TARGETS:
+        cfg = CITIES[city]
+        seg = cfg["segments"][seg_key]
+        departure = default_departure(cfg["tz"])
+        body = build_body(seg, departure, language_code="ko", region_code=cfg["region"])
+
+        started = perf_counter()
+        try:
+            data = call_routes(body, api_key, PROBE_FIELD_MASK)
+        except Exception as exc:  # noqa: BLE001 — 한 도시가 실패해도 나머지는 채운다
+            results[city] = {"error": str(exc)[:120]}
+            continue
+        elapsed = perf_counter() - started
+
+        routes = data.get("routes", [])
+        route = routes[0] if routes else {}
+        step = first_transit_step(route) if route else None
+        detail = (step or {}).get("transitDetails", {})
+        stop = detail.get("stopDetails", {})
+        line = detail.get("transitLine", {})
+        agencies = line.get("agencies", [{}]) or [{}]
+        transit_steps = [
+            st
+            for lg in route.get("legs", [])
+            for st in lg.get("steps", [])
+            if st.get("travelMode") == "TRANSIT"
+        ]
+        results[city] = {
+            "routes": len(routes),
+            "depart": stop.get("departureTime"),
+            "arrive": stop.get("arrivalTime"),
+            "line": line.get("nameShort") or line.get("name"),
+            "agency": agencies[0].get("name"),
+            "agency_uri": agencies[0].get("uri"),
+            "fare": (route.get("travelAdvisory", {}).get("transitFare")
+                     or route.get("localizedValues", {}).get("transitFare")),
+            "transfers": max(len(transit_steps) - 1, 0),
+            "stops_named": bool(stop.get("departureStop", {}).get("name")),
+            "elapsed": round(elapsed, 1),
+            "segment": seg["label"],
+        }
+
+    def cell(city: str, key: str) -> str:
+        r = results.get(city, {})
+        if "error" in r:
+            return f"✗ {r['error']}"
+        value = r.get(key)
+        if key == "elapsed":
+            return f"{value}초"
+        if key == "routes":
+            return f"⬤ ({value}개)" if value else "✗"
+        if key == "depart":
+            return f"⬤ {value}" if value and r.get("arrive") else "✗ 안 옴"
+        if key == "line":
+            return f"⬤ {value}" if value else "✗"
+        if key == "agency":
+            uri = r.get("agency_uri")
+            return f"⬤ {value} / {uri}" if value and uri else (f"△ {value} (URL 없음)"
+                                                              if value else "✗")
+        if key == "fare":
+            return f"⬤ {value}" if value else "✗ 안 옴"
+        if key == "transfers":
+            return (f"⬤ 환승 {value}회, 정류장명 있음" if r.get("stops_named")
+                    else f"△ 환승 {value}회, 정류장명 없음")
+        return str(value)
+
+    print("\n노션 채점표에 붙여넣을 표\n")
+    print("| 항목 | 파리 | 타이베이 |")
+    print("| --- | --- | --- |")
+    rows = [
+        ("경로가 반환되는가", "routes"),
+        ("**실제 편성 출발·도착 시각**이 오는가", "depart"),
+        ("노선 이름이 사람이 읽을 수 있는가", "line"),
+        ("운영기관 이름·URL이 오는가", "agency"),
+        ("요금이 오는가", "fare"),
+        ("환승 정보가 구체적인가", "transfers"),
+        ("응답 시간 (초)", "elapsed"),
+    ]
+    for label, key in rows:
+        print(f"| {label} | {cell('paris', key)} | {cell('taipei', key)} |")
+    print("\n측정 구간: "
+          + " / ".join(f"{c}={results.get(c, {}).get('segment', '?')}" for c, _ in SCORE_TARGETS))
+    print("⚠️ 이 출력을 파일로 저장하거나 리포에 커밋하지 말 것 (Google 약관).")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Routes API TRANSIT 응답 필드 프로브")
     parser.add_argument("city", nargs="?", default="paris",
@@ -403,6 +502,8 @@ def main() -> None:
     parser.add_argument("--list", action="store_true", help="구간 목록만 출력")
     parser.add_argument("--diagnose", action="store_true",
                         help="빈 응답 원인을 단계적으로 좁힌다")
+    parser.add_argument("--score", action="store_true",
+                        help="파리·타이베이 품질 채점표를 마크다운 표로 출력")
     args = parser.parse_args()
 
     if args.list:
@@ -424,6 +525,10 @@ def main() -> None:
     print(f"■ {args.city}/{args.segment} — {seg['label']}")
     print(f"■ departureTime: {departure} (UTC)")
     print(f"■ request body:\n{json.dumps(body, ensure_ascii=False, indent=2)}")
+
+    if args.score:
+        score(api_key)
+        return
 
     if args.diagnose:
         diagnose(seg, departure, city_cfg["region"], api_key)
