@@ -14,9 +14,10 @@ class Settings(BaseModel):
 
     anthropic_api_key: str = ""
     anthropic_model: str = DEFAULT_ANTHROPIC_MODEL
-    odsay_api_key: str = ""       # 국내 대중교통 경로 (ODsay)
-    google_maps_api_key: str = ""  # 해외 대중교통 경로 + POI/지오코딩 (Google Maps)
-    places_api_key: str = ""
+    odsay_api_key: str = ""              # 국내 대중교통 경로 (ODsay)
+    #: 키 A — Places + Routes 겸용. IP 제한, 절대 노출 금지.
+    #: 프론트용 Maps JS 키(B)는 백엔드가 쓰지 않으므로 여기에 두지 않는다.
+    google_backend_api_key: str = ""     # 해외 대중교통 경로 + POI (Google)
     cache_dir: str = "data/processed/cache"
 
 
@@ -27,7 +28,6 @@ def get_settings() -> Settings:
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY", ""),
         anthropic_model=os.getenv("ANTHROPIC_MODEL") or DEFAULT_ANTHROPIC_MODEL,
         odsay_api_key=os.getenv("ODSAY_API_KEY", ""),
-        google_maps_api_key=os.getenv("GOOGLE_MAPS_API_KEY", ""),
-        places_api_key=os.getenv("PLACES_API_KEY", ""),
+        google_backend_api_key=os.getenv("GOOGLE_BACKEND_API_KEY", ""),
         cache_dir=os.getenv("CACHE_DIR", "data/processed/cache"),
     )
