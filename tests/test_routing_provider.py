@@ -88,6 +88,7 @@ def test_odsay_normalizes_to_common_model():
     )
     assert segment.total_duration_min == 40
     assert segment.total_fare == 2100
+    assert segment.fare_currency == "KRW"
     # 길이 0인 마지막 도보는 버려지므로 2개만 남는다.
     assert [leg.mode for leg in segment.legs] == ["walk", "subway"]
     assert segment.legs[1].line_name == "수도권 1호선"
@@ -108,7 +109,8 @@ GOOGLE_PAYLOAD = {
     "routes": [
         {
             "duration": "1500s",
-            "travelAdvisory": {"transitFare": {"currencyCode": "JPY", "units": "200"}},
+            "travelAdvisory": {"transitFare": {"currencyCode": "EUR", "units": "2",
+                                              "nanos": 550000000}},
             "legs": [
                 {
                     "steps": [
@@ -145,7 +147,9 @@ def test_google_normalizes_to_common_model():
         GOOGLE_PAYLOAD, TOKYO_STATION, SHIBUYA, "fastest"
     )
     assert segment.total_duration_min == 25  # "1500s" → 25분
-    assert segment.total_fare == 200
+    # 2.55 EUR — units 만 읽으면 2 로 깎인다. nanos 를 더해야 맞다.
+    assert segment.total_fare == 2.55
+    assert segment.fare_currency == "EUR"
     assert [leg.mode for leg in segment.legs] == ["walk", "subway"]
     assert segment.legs[1].from_name == "도쿄역"
 

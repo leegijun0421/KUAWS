@@ -176,19 +176,23 @@ class GoogleRouteProvider(RouteProvider):
             if (normalized := self._to_leg(step)) is not None
         ]
 
-        # 요금은 통화가 지역마다 다르다. units 는 주 단위(엔·유로 등)의 문자열.
+        # 요금은 통화가 지역마다 다르다. Routes API 는 {units, nanos} 로 쪼개 주는데
+        # units 는 주 단위 문자열, nanos 는 10억분의 1 단위다.
+        # 파리 2.55 EUR = {"units": "2", "nanos": 550000000} → units 만 읽으면 2 로 깎인다.
         fare = route.get("travelAdvisory", {}).get("transitFare", {})
         try:
-            total_fare = int(fare.get("units", 0) or 0)
+            total_fare = int(fare.get("units", 0) or 0) + int(fare.get("nanos", 0) or 0) / 1e9
         except (TypeError, ValueError):
-            total_fare = 0
+            logger.warning("요금 형식을 해석하지 못했습니다: %r", fare)
+            total_fare = 0.0
 
         return RouteSegment(
             from_poi_id=origin.poi_id,
             to_poi_id=destination.poi_id,
             preference=preference,
             total_duration_min=round(_seconds(route.get("duration")) / 60),
-            total_fare=total_fare,
+            total_fare=round(total_fare, 2),
+            fare_currency=fare.get("currencyCode"),
             legs=steps,
         )
 

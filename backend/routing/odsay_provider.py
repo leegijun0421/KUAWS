@@ -95,7 +95,8 @@ class OdsayRouteProvider(RouteProvider):
             to_poi_id=destination.poi_id,
             preference=preference,
             total_duration_min=int(info.get("totalTime", 0)),
-            total_fare=int(info.get("payment", 0)),
+            total_fare=float(info.get("payment", 0)),
+            fare_currency="KRW",  # ODsay 는 국내 전용이라 통화가 고정이다
             legs=legs,
         )
 

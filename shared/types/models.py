@@ -102,7 +102,10 @@ class RouteSegment(BaseModel):
     to_poi_id: str
     preference: RoutePreference
     total_duration_min: int
-    total_fare: int
+    #: 요금은 주 단위(엔·유로 등) 실수다. 유로처럼 소수점이 있는 통화가 있으므로
+    #: int 로 두면 2.55 EUR 이 2 로 깎인다. 통화는 fare_currency 에 따로 담는다.
+    total_fare: float
+    fare_currency: str | None = None
     legs: list[RouteLeg]
 
 
