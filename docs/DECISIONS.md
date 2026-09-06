@@ -14,6 +14,32 @@
 
 ---
 
+## 2026-09-06 — 도쿄는 화이트리스트에서 제외한다 (Routes API 가 일본 대중교통 경로를 주지 않음)
+
+결정: 도쿄를 지원 도시 후보에서 뺀다. 상한 측정 도시를 도쿄에서 다른 도시로 옮긴다.
+이유: `scripts/probe_routes.py --diagnose` 로 단계별 확인한 결과, 도쿄는 요청 형식과
+무관하게 TRANSIT 경로가 비어 온다.
+
+| 단계 | 도쿄 |
+| --- | --- |
+| DRIVE (좌표·키 확인) | HTTP 200 · routes 1개 |
+| TRANSIT 최소 | HTTP 200 · **routes 0개** |
+| + departureTime / computeAlternativeRoutes / language·region·units / 전체 fieldMask | 모두 0개 |
+
+같은 스크립트로 파리·방콕은 TRANSIT 이 정상 반환됐다. 즉 키·좌표·요청 본문 문제가 아니라
+**Google 이 이 지역의 대중교통 경로를 API 로 제공하지 않는 것**이다. Google 지도 앱에서
+환승 검색이 되는 것과 Platform API 커버리지는 별개이며, 공식 커버리지 표에는 대중교통 항목이
+아예 없다("public transit routes ... doesn't appear in this list"). 문서로 사전 확인이
+불가능하고 호출로만 판정된다.
+대안과 기각 사유:
+- 도쿄를 남기고 도보 경로로 대체 — 환승·요금·편성 시각이 전부 죽어 서비스의 핵심이 사라진다.
+- 일본용 별도 라우팅 제공자(NAVITIME 등) 추가 — 예선 기간에 어댑터 하나를 더 검증할 여력이 없다.
+  RouteProvider 추상화가 있으므로 본선 이후 확장 항목으로 남긴다.
+비고: 이 결과 자체가 화이트리스트 게이트의 산출물이다. 발표에서는 "검증해서 뺐다"로 설명한다
+— 데모 당일 도쿄가 안 나오는 것보다 낫다. 상한 후보로 런던·싱가포르·타이베이 구간을
+프로브에 추가했고, 일본 전역 문제인지 확인하려고 오사카 구간도 넣었다.
+⚠️ 이 결정은 이재용(9/1 POI 수집 대상)·허용준(기능 명세서 지원 지역 문구)에게 전달해야 한다.
+
 ## 2026-09-06 — 해외 경로는 Routes API v2 로, Google 키 이름은 `GOOGLE_BACKEND_API_KEY` 로 통일
 
 결정: `GoogleRouteProvider` 가 구버전 Directions API 대신 Routes API v2

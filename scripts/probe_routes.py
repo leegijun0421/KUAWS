@@ -42,6 +42,9 @@ API_KEY_ENV = "GOOGLE_BACKEND_API_KEY"  # 백엔드용 키(A). Maps JS 키(B)와
 # 테스트 구간 — Google 은 (latitude, longitude) 순서. ODsay 와 반대다.
 # ---------------------------------------------------------------------------
 CITIES: dict[str, dict] = {
+    # ⚠️ 2026-09-06 확인: 도쿄는 Routes API 가 TRANSIT 경로를 반환하지 않는다
+    #    (DRIVE 는 정상 / 파리·방콕은 TRANSIT 정상). docs/DECISIONS.md 참조.
+    #    구간 정의는 재검증용으로 남겨둔다.
     "tokyo": {
         "tz": "Asia/Tokyo",
         "region": "JP",
@@ -62,6 +65,72 @@ CITIES: dict[str, dict] = {
                 "label": "우에노역 → 아키하바라역 (짧은 구간 / 도보 비교용)",
                 "origin": (35.7141, 139.7774),
                 "destination": (35.6984, 139.7731),
+            },
+        },
+    },
+    # 2026-09-06 스모크 테스트: 도쿄 TRANSIT 이 빈 응답. 일본 전역인지 확인용.
+    "osaka": {
+        "tz": "Asia/Tokyo",
+        "region": "JP",
+        "segments": {
+            "umeda_namba": {
+                "label": "오사카역(우메다) → 난바",
+                "origin": (34.7025, 135.4959),
+                "destination": (34.6659, 135.5011),
+            },
+            "osaka_usj": {
+                "label": "오사카역 → 유니버설시티 (환승 발생)",
+                "origin": (34.7025, 135.4959),
+                "destination": (34.6667, 135.4322),
+            },
+        },
+    },
+    # 도쿄를 잃은 자리를 메울 상한 후보 도시들
+    "london": {
+        "tz": "Europe/London",
+        "region": "GB",
+        "segments": {
+            "kingscross_towerbridge": {
+                "label": "킹스크로스 → 타워브리지",
+                "origin": (51.5308, -0.1238),
+                "destination": (51.5055, -0.0754),
+            },
+            "heathrow_piccadilly": {
+                "label": "히드로공항 → 피카딜리서커스 (도심-외곽)",
+                "origin": (51.4700, -0.4543),
+                "destination": (51.5100, -0.1340),
+            },
+        },
+    },
+    "singapore": {
+        "tz": "Asia/Singapore",
+        "region": "SG",
+        "segments": {
+            "orchard_marinabay": {
+                "label": "오차드 → 마리나베이샌즈",
+                "origin": (1.3048, 103.8318),
+                "destination": (1.2834, 103.8607),
+            },
+            "changi_chinatown": {
+                "label": "창이공항 → 차이나타운 (도심-외곽)",
+                "origin": (1.3644, 103.9915),
+                "destination": (1.2847, 103.8440),
+            },
+        },
+    },
+    "taipei": {
+        "tz": "Asia/Taipei",
+        "region": "TW",
+        "segments": {
+            "taipeimain_101": {
+                "label": "타이베이역 → 타이베이101",
+                "origin": (25.0478, 121.5170),
+                "destination": (25.0339, 121.5645),
+            },
+            "ximen_shilin": {
+                "label": "시먼딩 → 스린야시장 (환승 발생)",
+                "origin": (25.0421, 121.5075),
+                "destination": (25.0880, 121.5240),
             },
         },
     },
@@ -326,8 +395,9 @@ def diagnose(seg: dict, departure: str, region: str, api_key: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Routes API TRANSIT 응답 필드 프로브")
-    parser.add_argument("city", nargs="?", default="tokyo", help="tokyo | paris | bangkok")
-    parser.add_argument("segment", nargs="?", default="shinjuku_maihama")
+    parser.add_argument("city", nargs="?", default="paris",
+                        help="--list 로 전체 목록 확인")
+    parser.add_argument("segment", nargs="?", default="chatelet_montmartre")
     parser.add_argument("--departure", help="RFC3339 UTC (예: 2026-09-08T01:00:00Z)")
     parser.add_argument("--raw", action="store_true", help="원본 JSON 출력 (파일로 저장 금지)")
     parser.add_argument("--list", action="store_true", help="구간 목록만 출력")
