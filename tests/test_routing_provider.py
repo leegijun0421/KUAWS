@@ -102,25 +102,34 @@ def test_odsay_raises_when_no_path():
 
 # ---------- Google 정규화 ----------
 
+# Routes API v2 (computeRoutes) 응답 형태.
+# ⚠️ 실제 응답을 복사한 것이 아니라 구조만 흉내 낸 목이다 (Google 약관: 응답 저장 금지).
 GOOGLE_PAYLOAD = {
-    "status": "OK",
     "routes": [
         {
-            "fare": {"value": 200},
+            "duration": "1500s",
+            "travelAdvisory": {"transitFare": {"currencyCode": "JPY", "units": "200"}},
             "legs": [
                 {
-                    "duration": {"value": 1500},
                     "steps": [
-                        {"travel_mode": "WALKING", "duration": {"value": 240},
-                         "distance": {"text": "300 m"},
-                         "html_instructions": "도쿄역까지 도보"},
-                        {"travel_mode": "TRANSIT", "duration": {"value": 1260},
-                         "transit_details": {
-                             "num_stops": 5,
-                             "departure_stop": {"name": "도쿄역"},
-                             "arrival_stop": {"name": "시부야역"},
-                             "line": {"short_name": "JY", "name": "야마노테선",
-                                      "vehicle": {"type": "HEAVY_RAIL"}},
+                        {"travelMode": "WALK", "staticDuration": "240s",
+                         "distanceMeters": 300,
+                         "navigationInstruction": {"instructions": "도쿄역까지 도보"}},
+                        {"travelMode": "TRANSIT", "staticDuration": "1260s",
+                         "transitDetails": {
+                             "stopCount": 5,
+                             "stopDetails": {
+                                 "departureStop": {"name": "도쿄역"},
+                                 "arrivalStop": {"name": "시부야역"},
+                                 "departureTime": "2026-09-08T01:05:00Z",
+                                 "arrivalTime": "2026-09-08T01:26:00Z",
+                             },
+                             "transitLine": {
+                                 "nameShort": "JY", "name": "야마노테선",
+                                 "vehicle": {"type": "HEAVY_RAIL"},
+                                 "agencies": [{"name": "JR East",
+                                               "uri": "https://www.jreast.co.jp/"}],
+                             },
                          }},
                     ],
                 }
@@ -131,14 +140,34 @@ GOOGLE_PAYLOAD = {
 
 
 def test_google_normalizes_to_common_model():
-    """Google 응답을 공통 RouteSegment 로 정규화한다."""
+    """Routes API v2 응답을 공통 RouteSegment 로 정규화한다."""
     segment = GoogleRouteProvider()._to_segment(
         GOOGLE_PAYLOAD, TOKYO_STATION, SHIBUYA, "fastest"
     )
-    assert segment.total_duration_min == 25  # 1500초 → 25분
+    assert segment.total_duration_min == 25  # "1500s" → 25분
     assert segment.total_fare == 200
     assert [leg.mode for leg in segment.legs] == ["walk", "subway"]
     assert segment.legs[1].from_name == "도쿄역"
+
+
+def test_google_keeps_scheduled_times():
+    """편성 출발·도착 시각을 버리지 않는다 — C1 막차 경고와 W3 위험도의 입력이다."""
+    segment = GoogleRouteProvider()._to_segment(
+        GOOGLE_PAYLOAD, TOKYO_STATION, SHIBUYA, "fastest"
+    )
+    transit = segment.legs[1]
+    assert transit.depart_at == "2026-09-08T01:05:00Z"
+    assert transit.arrive_at == "2026-09-08T01:26:00Z"
+    # 도보 구간에는 편성 시각이 없다.
+    assert segment.legs[0].depart_at is None
+
+
+def test_odsay_has_no_scheduled_times():
+    """ODsay 는 배차간격만 주므로 편성 시각이 비어 있어야 한다 (추정을 넣지 말 것)."""
+    segment = OdsayRouteProvider()._to_segment(
+        ODSAY_PAYLOAD, BUSAN_STATION, HAEUNDAE, "fastest"
+    )
+    assert all(leg.depart_at is None for leg in segment.legs)
 
 
 def test_both_providers_share_schema():

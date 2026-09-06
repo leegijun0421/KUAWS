@@ -36,7 +36,9 @@ inclusion: always
 - **대중교통 경로 API**: `backend/routing/provider.py` 의 `RouteProvider` 인터페이스를
   경유한다. 구체 API 를 모듈 밖에서 직접 부르지 말 것.
   - **국내**: ODsay (`ODSAY_API_KEY`) — 도보·환승·요금 상세가 정확하다.
-  - **해외**: Google Maps Directions (`GOOGLE_MAPS_API_KEY`) — 글로벌 커버리지.
+  - **해외**: Google **Routes API v2** (`GOOGLE_BACKEND_API_KEY`) — 글로벌 커버리지.
+    구버전 Directions API 를 쓰지 말 것. v2 만 실제 편성 출발·도착 시각을 준다.
+    요청에 `X-Goog-FieldMask` 헤더가 **필수**다(누락 시 빈 응답). `*` 는 비용 때문에 금지.
   - 분기 기준: 출발·도착이 모두 한국 경계 상자 안이면 ODsay, 아니면 Google.
   - ⚠️ Google 은 **대한민국에서 도보·자동차·자전거 경로를 공식 미지원**이다
     (고정밀 지도 반출 제한). 국내 구간에 Google 을 쓰지 말 것.

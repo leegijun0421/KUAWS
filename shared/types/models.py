@@ -89,6 +89,11 @@ class RouteLeg(BaseModel):
     from_name: str
     to_name: str
     duration_min: int
+    #: 실제 편성의 출발·도착 시각(RFC3339). 제공자가 주는 경우에만 채워진다.
+    #: Google Routes v2 = 있음 / ODsay = 없음(배차간격만 제공) / 도보 구간 = 없음.
+    #: C1 막차 경고와 W3 위험도가 이 값을 쓴다. None 이면 추정으로 대체할 것.
+    depart_at: str | None = None
+    arrive_at: str | None = None
     description: str
 
 

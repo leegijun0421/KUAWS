@@ -14,6 +14,27 @@
 
 ---
 
+## 2026-09-06 — 해외 경로는 Routes API v2 로, Google 키 이름은 `GOOGLE_BACKEND_API_KEY` 로 통일
+
+결정: `GoogleRouteProvider` 가 구버전 Directions API 대신 Routes API v2
+(`directions/v2:computeRoutes`)를 호출한다. 환경변수 이름은 `GOOGLE_MAPS_API_KEY` /
+`PLACES_API_KEY` 를 버리고 키 발급 규약대로 `GOOGLE_BACKEND_API_KEY` 하나로 합친다
+(키 A 가 Places + Routes 겸용이므로 키가 두 개일 이유가 없다).
+이유: Routes API v2 만 `transitDetails.stopDetails` 로 **실제 편성의 출발·도착 시각**을 준다.
+이 값이 C1 막차 경고와 W3 실패 위험도의 입력이다. 구버전으로는 배차간격 기반 추정밖에 못 해서
+"근거 있는 계산"이라는 차별점이 성립하지 않는다. 또 v2 는 `X-Goog-FieldMask` 로 필요한 필드만
+받아 비용과 지연이 줄어든다.
+그리고 키 이름이 코드(`GOOGLE_MAPS_API_KEY`)와 실제 `.env`(`GOOGLE_BACKEND_API_KEY`)에서
+서로 달라, 백엔드가 Google 을 호출하면 무조건 "키 없음"으로 죽는 상태였다.
+대안과 기각 사유:
+- Directions 유지 — 편성 시각이 얕아 W2·W3 를 추정으로 되돌려야 한다.
+- `.env` 를 코드에 맞춰 `GOOGLE_MAPS_API_KEY` 로 개명 — 노션 키 발급 태스크의 규약과
+  어긋나고, 프론트 키(`GOOGLE_MAPS_JS_API_KEY`)와 이름이 헷갈린다.
+비고: `RouteLeg` 에 `depart_at` / `arrive_at`(RFC3339, 선택)을 추가했다. ODsay 는 배차간격만
+주므로 항상 `None` 이다 — **없는 값을 추정으로 채우지 말 것.** 미래 출발 시각(`departureTime`)을
+지정하는 건 W2 스케줄러가 일정을 확정한 뒤이며, 그때 `RouteProvider` 인터페이스에 시각 인자를
+추가한다. 필드 경로 확인용 프로브는 `scripts/probe_routes.py`.
+
 ## 2026-08-27 — Google 경로 응답은 저장·캐싱하지 않는다
 
 결정: `RouteProvider.cacheable` 로 프로바이더별 캐싱 정책을 나눈다.
