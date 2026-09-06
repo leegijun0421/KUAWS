@@ -277,6 +277,53 @@ def report(data: dict) -> None:
     print(f"  localizedValues : {json.dumps(route.get('localizedValues', {}), ensure_ascii=False)}")
 
 
+def diagnose(seg: dict, departure: str, region: str, api_key: str) -> None:
+    """빈 응답(routes 없음)의 원인을 단계적으로 좁힌다.
+
+    요청을 최소 형태부터 하나씩 키워가며 어느 항목에서 결과가 사라지는지 본다.
+    0번(DRIVE)이 되고 1번(TRANSIT)이 안 되면 좌표·키가 아니라 대중교통 쪽 문제다.
+    """
+    o_lat, o_lng = seg["origin"]
+    d_lat, d_lng = seg["destination"]
+    base = {
+        "origin": {"location": {"latLng": {"latitude": o_lat, "longitude": o_lng}}},
+        "destination": {"location": {"latLng": {"latitude": d_lat, "longitude": d_lng}}},
+    }
+    transit = {**base, "travelMode": "TRANSIT"}
+    with_time = {**transit, "departureTime": departure}
+    with_alt = {**with_time, "computeAlternativeRoutes": True}
+    with_local = {**with_alt, "languageCode": "ko", "regionCode": region, "units": "METRIC"}
+
+    cases: list[tuple[str, dict, str]] = [
+        ("0. DRIVE (좌표·키 확인)", {**base, "travelMode": "DRIVE"}, "routes.duration"),
+        ("1. TRANSIT 최소", transit, "routes.duration"),
+        ("2. + departureTime", with_time, "routes.duration"),
+        ("3. + computeAlternativeRoutes", with_alt, "routes.duration"),
+        ("4. + language/region/units", with_local, "routes.duration"),
+        ("5. + 전체 fieldMask", with_local, PROBE_FIELD_MASK),
+    ]
+
+    print("\n단계별 진단 — 처음으로 0개가 되는 줄이 원인이다\n" + "-" * 70)
+    for label, body, mask in cases:
+        headers = {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": api_key,
+            "X-Goog-FieldMask": mask,
+        }
+        try:
+            resp = httpx.post(ENDPOINT, json=body, headers=headers, timeout=20.0)
+        except httpx.HTTPError as exc:
+            print(f"{label:<30} 네트워크 오류: {exc}")
+            continue
+        if resp.status_code != 200:
+            print(f"{label:<30} HTTP {resp.status_code} · {resp.text[:160]}")
+            continue
+        routes = resp.json().get("routes", [])
+        flag = "" if routes else "   ← 여기서 결과가 사라진다"
+        print(f"{label:<30} HTTP 200 · routes {len(routes)}개{flag}")
+    print("-" * 70)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Routes API TRANSIT 응답 필드 프로브")
     parser.add_argument("city", nargs="?", default="tokyo", help="tokyo | paris | bangkok")
@@ -284,6 +331,8 @@ def main() -> None:
     parser.add_argument("--departure", help="RFC3339 UTC (예: 2026-09-08T01:00:00Z)")
     parser.add_argument("--raw", action="store_true", help="원본 JSON 출력 (파일로 저장 금지)")
     parser.add_argument("--list", action="store_true", help="구간 목록만 출력")
+    parser.add_argument("--diagnose", action="store_true",
+                        help="빈 응답 원인을 단계적으로 좁힌다")
     args = parser.parse_args()
 
     if args.list:
@@ -306,10 +355,15 @@ def main() -> None:
     print(f"■ departureTime: {departure} (UTC)")
     print(f"■ request body:\n{json.dumps(body, ensure_ascii=False, indent=2)}")
 
+    if args.diagnose:
+        diagnose(seg, departure, city_cfg["region"], api_key)
+        return
+
     data = call_routes(body, api_key, PROBE_FIELD_MASK)
 
-    if args.raw:
-        print(json.dumps(data, ensure_ascii=False, indent=2))
+    # 결과가 비면 원문을 무조건 보여준다 — 원인을 짐작하지 않기 위해서다.
+    if args.raw or not data.get("routes"):
+        print(f"■ 응답 원문:\n{json.dumps(data, ensure_ascii=False, indent=2)}")
     report(data)
     print("\n⚠️ 이 출력을 파일로 저장하거나 리포에 커밋하지 말 것 (Google 약관).")
 
