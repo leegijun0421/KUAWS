@@ -72,7 +72,7 @@ docs/           아키텍처, 의사결정 기록, 회의록
 
 ## 기술 스택
 
-Python 3.11 · FastAPI · Pydantic v2 · AWS Bedrock ·
+Python 3.11 · FastAPI · Pydantic v2 · Anthropic Claude API ·
 React 18 · TypeScript · Vite · Tailwind CSS
 
 ---

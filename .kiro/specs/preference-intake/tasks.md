@@ -4,10 +4,10 @@
 > 태스크 2~3개마다 커밋하고, 브랜치는 2일 안에 머지한다.
 
 - [ ] 1. `schema.py` 에 Pydantic 모델 정의 (`shared/types` 와 일치 확인)
-- [ ] 2. Bedrock 클라이언트 래퍼를 `backend/common/bedrock.py` 에 작성
+- [ ] 2. Claude 클라이언트 래퍼를 `backend/common/llm.py` 에 작성
 - [ ] 3. 추출 프롬프트를 `backend/common/prompts/extract_profile.md` 로 작성
 - [ ] 4. `extractor.py` — 자유 텍스트 → 축별 값·신뢰도 (JSON 파싱 실패 재시도 포함)
-- [ ] 5. `extractor.py` 단위 테스트 (Bedrock 호출은 목 처리)
+- [ ] 5. `extractor.py` 단위 테스트 (Claude API 호출은 목 처리)
 - [ ] 6. `followup.py` — 신뢰도 낮은 축에 대한 정량 질문 생성
 - [ ] 7. `profile.py` — 응답 병합 및 3회 제한 로직
 - [ ] 8. `profile.py` — 그룹 단위 집계 함수
