@@ -24,7 +24,13 @@ import httpx
 
 from backend.common.config import get_settings
 from backend.common.logging import get_logger
-from backend.routing.provider import GeoPoint, RouteProvider, RouteProviderError
+from backend.routing.provider import (
+    GeoPoint,
+    NoRouteError,
+    Operator,
+    RouteProvider,
+    RouteProviderError,
+)
 from shared.types.models import RouteLeg, RoutePreference, RouteSegment
 
 logger = get_logger(__name__)
@@ -99,13 +105,17 @@ class GoogleRouteProvider(RouteProvider):
     cacheable = False
 
     def _request(
-        self, origin: GeoPoint, destination: GeoPoint, preference: RoutePreference
+        self,
+        origin: GeoPoint,
+        destination: GeoPoint,
+        preference: RoutePreference,
+        depart_at: str | None = None,
     ) -> dict:
         """Routes API v2 computeRoutes 에 실제로 요청한다.
 
-        `departureTime` 은 넣지 않는다 — 생략하면 요청 시각 기준으로 시간표가
-        적용된다. 미래 출발 시각을 지정하는 건 W2 스케줄러가 여행 일정을
-        확정한 뒤의 일이고, 그때 이 인터페이스에 시각 인자를 추가한다.
+        `depart_at`(RFC3339)을 넘기면 `departureTime` 으로 실어 보낸다. 생략하면
+        요청 시각 기준 시간표가 적용된다 — 일정표를 만들 때는 반드시 넘길 것.
+        허용 범위는 과거 7일 ~ 미래 100일이며, 벗어나면 INVALID_ARGUMENT 가 온다.
         """
         api_key = get_settings().google_backend_api_key
         if not api_key:
@@ -127,6 +137,8 @@ class GoogleRouteProvider(RouteProvider):
             "languageCode": "ko",
             "units": "METRIC",
         }
+        if depart_at:
+            body["departureTime"] = depart_at
         headers = {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": api_key,
@@ -149,7 +161,7 @@ class GoogleRouteProvider(RouteProvider):
         if not payload.get("routes"):
             # 경로가 없으면 v2 는 200 + 빈 객체를 준다. 대중교통 데이터가 없는
             # 지역이거나 좌표가 잘못됐을 때다. (Google 은 latitude 가 먼저다)
-            raise RouteProviderError(
+            raise NoRouteError(
                 "Google Routes 가 경로를 반환하지 않았습니다 "
                 "(대중교통 미지원 지역이거나 좌표 오류)."
             )
@@ -165,7 +177,7 @@ class GoogleRouteProvider(RouteProvider):
         """Routes API v2 응답을 공통 RouteSegment 로 정규화한다."""
         routes = payload.get("routes", [])
         if not routes:
-            raise RouteProviderError("Google 이 경로를 반환하지 않았습니다.")
+            raise NoRouteError("Google 이 경로를 반환하지 않았습니다.")
 
         route = routes[0]
         # TRANSIT 은 경유지를 지정할 수 없으므로 leg 는 항상 1개다.
@@ -195,6 +207,26 @@ class GoogleRouteProvider(RouteProvider):
             fare_currency=fare.get("currencyCode"),
             legs=steps,
         )
+
+    def _extract_operators(self, payload: dict) -> list[Operator]:
+        """응답에서 운영기관(이름·URL)을 중복 없이 모은다.
+
+        Google Maps 약관은 경로를 화면에 표시할 때 운영기관 표기를 요구한다.
+        URL 은 하드코딩하지 말고 응답이 준 값을 그대로 렌더링해야 한다.
+        `agencies` 는 배열이다 — 한 노선에 공동 운영기관이 여럿일 수 있다.
+        """
+        seen: dict[tuple[str, str | None], Operator] = {}
+        route = (payload.get("routes") or [{}])[0]
+        for leg in route.get("legs", []):
+            for step in leg.get("steps", []):
+                line = step.get("transitDetails", {}).get("transitLine", {})
+                for agency in line.get("agencies", []):
+                    name = agency.get("name")
+                    if not name:
+                        continue
+                    uri = agency.get("uri")
+                    seen.setdefault((name, uri), Operator(name=name, url=uri))
+        return list(seen.values())
 
     def _to_leg(self, step: dict) -> RouteLeg | None:
         """step 하나를 RouteLeg 로 바꾼다. 길이 0인 도보는 버린다."""
