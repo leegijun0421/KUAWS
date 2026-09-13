@@ -12,6 +12,7 @@ from backend.common.config import get_settings
 from backend.common.logging import get_logger
 from backend.routing.provider import (
     GeoPoint,
+    NoRouteError,
     RouteProvider,
     RouteProviderError,
 )
@@ -44,9 +45,17 @@ class OdsayRouteProvider(RouteProvider):
     cacheable = True
 
     def _request(
-        self, origin: GeoPoint, destination: GeoPoint, preference: RoutePreference
+        self,
+        origin: GeoPoint,
+        destination: GeoPoint,
+        preference: RoutePreference,
+        depart_at: str | None = None,
     ) -> dict:
-        """ODsay 에 실제로 요청한다. 캐시가 없을 때만 호출된다."""
+        """ODsay 에 실제로 요청한다. 캐시가 없을 때만 호출된다.
+
+        `depart_at` 은 무시한다 — ODsay `searchPubTransPathT` 는 출발 시각 인자가 없고
+        배차간격 기반 평균만 준다. 없는 값을 추정으로 채우지 않기 위해 그대로 버린다.
+        """
         api_key = get_settings().odsay_api_key
         if not api_key:
             raise RouteProviderError("ODSAY_API_KEY 가 설정되지 않았습니다.")
@@ -81,7 +90,7 @@ class OdsayRouteProvider(RouteProvider):
         """ODsay 응답을 공통 RouteSegment 로 정규화한다."""
         paths = payload.get("result", {}).get("path", [])
         if not paths:
-            raise RouteProviderError("ODsay 가 경로를 반환하지 않았습니다.")
+            raise NoRouteError("ODsay 가 경로를 반환하지 않았습니다.")
 
         best = paths[0]
         info = best.get("info", {})
