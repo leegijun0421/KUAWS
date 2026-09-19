@@ -14,6 +14,24 @@
 
 ---
 
+## 2026-09-09 — POI 태깅: 입력·태그 키·출력 경로 확정
+
+결정:
+- 태깅 입력은 POI 메타데이터(name/category/address/avg_duration_min/open_hours)만 쓴다.
+  Google 리뷰 텍스트는 입력·저장하지 않는다.
+- POI 태그 축은 멤버 성향 5축과 동일 key·순서를 쓴다
+  (activity_level, crowd_tolerance, nature_vs_urban, food_priority, pace).
+  별도 Poi.tags dict를 만들지 않고 PoiVector.axis_features(길이 5)에 매핑한다.
+- 배치 스크립트는 data/scripts/, 결과는 data/processed/pois/<city>/tagged.json.
+  결과는 .gitignore 대상이라 커밋하지 않고 스크립트 재실행으로 재현한다.
+이유: 5축은 절단 3에서 동결됐고, axis_features 매핑은 스키마 변경이 없어 태깅
+전량 재실행을 유발하지 않는다. 리뷰 텍스트 배제는 "실시간 데이터 제외" 및 스크래핑
+금지 원칙과 정합.
+대안과 기각 사유: Poi에 tags/open_hours 필드 신설 → shared/types 계약 변경 + 동결
+경고상 태깅 전량 재실행 트리거라 기각. 리뷰 텍스트 입력 → 약관·개인정보 리스크로 기각.
+비고: 배치 LLM은 Anthropic API 직접 사용(2026-08-27 결정과 동일 경로), LLMProvider
+어댑터 뒤로 격리한다. 지원 도시는 파리·타이베이(2026-09-06 결정)이므로 <city>는 이 둘이다.
+
 ## 2026-09-06 — 요금은 `float` + 통화 코드로 담는다 (int 는 유로에서 값이 깎인다)
 
 결정: `RouteSegment.total_fare` 를 `int` → `float`(주 단위)로 바꾸고 `fare_currency` 를 추가한다.
