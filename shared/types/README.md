@@ -12,8 +12,13 @@
 4. Kiro 에이전트는 이 폴더를 수정하지 않고 변경 제안만 출력한다
    (`.kiro/steering/structure.md` 규칙 3).
 
-## TBD — 1주차 회의에서 확정할 것
+## 확정 사항
 
-- [ ] 취향 축(axis) 개수와 이름
+- [x] 취향 축(axis) 개수와 이름 — **5축으로 확정·동결 (절단 3, 2026-09-04)**
+  `activity_level`, `crowd_tolerance`, `nature_vs_urban`, `food_priority`, `pace`.
+  이후 변경 금지. 스키마 변경 시 태깅 전량 재실행이므로 배치 전에 반드시 확정.
+
+## TBD — 확정 필요
+
 - [ ] 실패 확률 산정에 쓸 객관 지표 목록
 - [ ] 경로 유형(route preference) 값 목록

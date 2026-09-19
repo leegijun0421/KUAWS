@@ -6,7 +6,10 @@
 
 // ---------- 공통 ----------
 
-/** 취향 축. 1주차에 최종 확정할 것 (권장 5~7개). */
+/**
+ * 취향 축: 5개로 확정·동결 (절단 3, 2026-09-04). 이후 변경 금지.
+ * 스키마 변경 시 태깅 전량 재실행이 발생하므로 배치 전에 반드시 확정한다.
+ */
 export type PreferenceAxis =
   | "activity_level"   // 정적 ↔ 활동적
   | "crowd_tolerance"  // 한적함 ↔ 북적임 선호
@@ -135,4 +138,71 @@ export interface ApiError {
   code: string;
   message: string;
   retryable: boolean;
+}
+
+
+// ======================================================================
+// 확장: 특성 벡터 + Provider 인터페이스 (models.py 와 동일 구조 유지)
+// 구현 없이 타입/인터페이스만 정의한다.
+// ======================================================================
+
+// ---------- 스코어링 입력 벡터 ----------
+
+export interface PoiVector {
+  poiId: string;
+  /** 취향 축과 정렬된 특성값 0.0~1.0 (PreferenceAxis 순서) */
+  axisFeatures: number[];
+  // --- provider별 편차. 없으면 생략(graceful degradation) ---
+  popularity?: number;      // 0.0~1.0
+  avgStayMin?: number;
+  priceLevel?: number;      // 0~4
+  embedding?: number[];     // 의미 임베딩(있는 provider만)
+  source?: string;
+}
+
+/** PoiScore 와 동일 개념. 이름만 다르게 노출. */
+export type MatchResult = PoiScore;
+
+/** ItineraryStop 과 동일 개념. */
+export type ScheduledStop = ItineraryStop;
+
+/** 기존 라우팅 타입 별칭 */
+export type Route = RouteSegment;
+export type TransitLeg = RouteLeg;
+
+// ---------- LLM 응답 표준형 ----------
+
+/** LLM 응답 표준형. provider별 부가 정보는 Optional. */
+export interface LLMCompletion {
+  text: string;
+  modelId?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  finishReason?: string;
+}
+
+// ---------- Provider 인터페이스 ----------
+
+/** 도시별 라우팅 백엔드 교체용 계약. */
+export interface RoutingProvider {
+  city: string;
+  route(
+    fromPoi: Poi,
+    toPoi: Poi,
+    preference: RoutePreference,
+  ): Route | Promise<Route>;
+  supports(city: string): boolean;
+}
+
+/** 모델 호출을 인터페이스 뒤로 격리. Bedrock/기타 구현체 교체 가능. */
+export interface LLMProvider {
+  name: string; // "bedrock" | "anthropic" | "mock" ...
+  complete(
+    prompt: string,
+    opts?: {
+      system?: string;
+      maxTokens?: number;
+      temperature?: number;
+    },
+  ): LLMCompletion | Promise<LLMCompletion>;
 }

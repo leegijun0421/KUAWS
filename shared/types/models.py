@@ -6,18 +6,20 @@ shared/types/api.ts 와 항상 동일한 구조를 유지한다. 수정은 PM만
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
 
 # ---------- 공통 ----------
 
+# 취향 축: 5개로 확정·동결 (절단 3, 2026-09-04). 이후 변경 금지.
+# 스키마 변경 시 태깅 전량 재실행이 발생하므로 배치 전에 반드시 확정한다.
 PreferenceAxis = Literal[
-    "activity_level",
-    "crowd_tolerance",
-    "nature_vs_urban",
-    "food_priority",
-    "pace",
+    "activity_level",   # 정적 ↔ 활동적
+    "crowd_tolerance",  # 한적함 ↔ 북적임 선호
+    "nature_vs_urban",  # 자연 ↔ 도심
+    "food_priority",    # 식사 비중 낮음 ↔ 높음
+    "pace",             # 여유 ↔ 빡빡
 ]
 
 RoutePreference = Literal["fastest", "fewest_transfers", "scenic"]
@@ -153,3 +155,96 @@ class ApiError(BaseModel):
     code: str
     message: str
     retryable: bool
+
+
+# ======================================================================
+# 확장: 특성 벡터 + Provider 프로토콜 (홍성민, 문서화 보조 허용준)
+# api.ts 와 동일 구조를 유지한다. 구현 없이 타입/인터페이스만 정의한다.
+# ======================================================================
+
+# ---------- 스코어링 입력 벡터 ----------
+
+class PoiVector(BaseModel):
+    """스코어링 엔진 입력. Poi(메타)·PoiScore(결과)와 별개 계층.
+
+    provider마다 채울 수 있는 특성이 다르므로 상세 필드는 Optional.
+    없으면 스코어링이 해당 축을 건너뛴다(graceful degradation).
+    """
+
+    poi_id: str
+    # 취향 축과 정렬된 특성값 0.0~1.0 (axis 순서는 PreferenceAxis 정의 순서)
+    axis_features: list[float]
+    # --- 아래는 provider별 편차. 없으면 None ---
+    popularity: float | None = Field(default=None, ge=0.0, le=1.0)
+    avg_stay_min: int | None = None
+    price_level: int | None = Field(default=None, ge=0, le=4)
+    embedding: list[float] | None = None  # 의미 임베딩(있는 provider만)
+    source: str | None = None             # 데이터 출처 표기용
+
+
+# MatchResult 는 PoiScore 와 동일 개념 — 새 타입을 만들지 않고 별칭으로 노출한다.
+MatchResult = PoiScore
+
+# ScheduledStop 은 ItineraryStop 과 동일 개념 — 별칭으로 노출한다.
+ScheduledStop = ItineraryStop
+
+
+# ---------- 라우팅 결과 (기존 타입 재사용) ----------
+# Route      = RouteSegment  (한 구간 = from_poi -> to_poi)
+# TransitLeg = RouteLeg      (구간 내 개별 이동 다리)
+Route = RouteSegment
+TransitLeg = RouteLeg
+
+
+# ---------- LLM 응답 표준형 ----------
+
+class LLMCompletion(BaseModel):
+    """LLM 응답 표준형. provider별 부가 정보는 Optional."""
+
+    text: str
+    model_id: str | None = None
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    finish_reason: str | None = None
+
+
+# ---------- Provider 프로토콜 ----------
+
+@runtime_checkable
+class RoutingProvider(Protocol):
+    """도시별 라우팅 백엔드 교체 가능하게 하는 계약.
+
+    구현체(ODsay, Google, mock 등)는 이 프로토콜만 만족하면 갈아끼울 수 있다.
+    반환 Route(=RouteSegment)의 세부 필드는 provider별로 비어 있을 수 있다.
+    """
+
+    city: str
+
+    def route(
+        self,
+        from_poi: Poi,
+        to_poi: Poi,
+        preference: RoutePreference,
+    ) -> Route: ...
+
+    def supports(self, city: str) -> bool: ...
+
+
+@runtime_checkable
+class LLMProvider(Protocol):
+    """모델 호출을 인터페이스 뒤로 격리한다.
+
+    Bedrock 확보 여부와 무관하게 구현체만 교체하면 되도록 한다.
+    (발표에서 확장성 근거로 사용)
+    """
+
+    name: str  # "bedrock" | "anthropic" | "mock" 등
+
+    def complete(
+        self,
+        prompt: str,
+        *,
+        system: str | None = None,
+        max_tokens: int = 1024,
+        temperature: float = 0.7,
+    ) -> LLMCompletion: ...
