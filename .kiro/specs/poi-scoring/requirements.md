@@ -51,9 +51,21 @@
 - 태깅 결과는 `data/processed/pois/<city>/tagged.json` 에 저장한다.
   - `data/processed/*` 는 `.gitignore` 대상이므로 **결과 파일은 커밋되지 않는다.**
     재현은 스크립트 재실행으로 한다(원본·산출물 미커밋 원칙).
-- 결과 레코드 형식: 기존 Poi 6필드(`poi_id, name, category, lat, lng, address`)를
-  유지하고, 태깅 결과는 `axis_features`(길이 5)로 덧붙인다. 사람 검수를 위해
-  각 축 값 옆에 한 줄 근거(`reasons`, 선택)를 함께 출력할 수 있다.
+- 결과 레코드 형식(결정 (a) — 계약 유지): 계약상 `Poi`는 6필드
+  (`poi_id, name, category, lat, lng, address`)이고 여기에 필드를 추가하지 않는다.
+  태깅 결과는 `Poi.tags` 같은 새 필드가 아니라 별도 `axis_features`(길이 5,
+  PreferenceAxis 순서, 각 0.0~1.0)로 덧붙인다. 사람 검수를 위해 각 축 값 옆에
+  한 줄 근거(`reasons`, 선택)를 함께 출력할 수 있다.
+- **수집 데이터(8필드)와의 간극 처리**: W1 정규화 산출물은
+  `poi_id, name, lat, lng, tags, category, avg_duration_min, open_hours`의 8필드다.
+  이는 로컬 데이터 스키마일 뿐 `shared/types.Poi` 계약과 다르다. 조정 원칙:
+  - `tags`(현재 `{}`)는 계약에 없는 필드다. 태깅 값을 `tags` dict에 채우지 말고
+    `axis_features`(길이 5)로 출력한다. `tags`는 로컬 파일에 남겨도 되지만
+    계약·파이프라인 입력으로는 쓰지 않는다.
+  - `avg_duration_min` → 스코어링 입력이 필요하면 `PoiVector.avg_stay_min`에 매핑.
+    `open_hours`는 계약에 없으므로 태깅 입력(메타데이터)으로만 쓰고 결과 계약엔 넣지 않는다.
+  - 즉 계약(`Poi` 6필드 + `PoiVector.axis_features`)은 그대로 두고, 8필드 데이터는
+    태깅 스크립트 내부 입력으로만 소비한다. `shared/types` 변경 없음 → 태깅 재실행 트리거 없음.
 
 ## 기능 요구사항
 
