@@ -189,11 +189,9 @@ MatchResult = PoiScore
 ScheduledStop = ItineraryStop
 
 
-# ---------- 라우팅 결과 (기존 타입 재사용) ----------
-# Route      = RouteSegment  (한 구간 = from_poi -> to_poi)
-# TransitLeg = RouteLeg      (구간 내 개별 이동 다리)
-Route = RouteSegment
-TransitLeg = RouteLeg
+# 라우팅 provider 계약은 backend/routing/provider.py 의 RouteProvider(ABC)가
+# 이미 실체다. shared/types 에 별도 RoutingProvider Protocol/Route 별칭을 두지 않는다
+# (중복·불일치 방지). RouteSegment/RouteLeg 는 위에 정의된 것을 그대로 쓴다.
 
 
 # ---------- LLM 응답 표준형 ----------
@@ -208,27 +206,7 @@ class LLMCompletion(BaseModel):
     finish_reason: str | None = None
 
 
-# ---------- Provider 프로토콜 ----------
-
-@runtime_checkable
-class RoutingProvider(Protocol):
-    """도시별 라우팅 백엔드 교체 가능하게 하는 계약.
-
-    구현체(ODsay, Google, mock 등)는 이 프로토콜만 만족하면 갈아끼울 수 있다.
-    반환 Route(=RouteSegment)의 세부 필드는 provider별로 비어 있을 수 있다.
-    """
-
-    city: str
-
-    def route(
-        self,
-        from_poi: Poi,
-        to_poi: Poi,
-        preference: RoutePreference,
-    ) -> Route: ...
-
-    def supports(self, city: str) -> bool: ...
-
+# ---------- LLM Provider 프로토콜 ----------
 
 @runtime_checkable
 class LLMProvider(Protocol):

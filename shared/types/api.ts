@@ -166,9 +166,8 @@ export type MatchResult = PoiScore;
 /** ItineraryStop 과 동일 개념. */
 export type ScheduledStop = ItineraryStop;
 
-/** 기존 라우팅 타입 별칭 */
-export type Route = RouteSegment;
-export type TransitLeg = RouteLeg;
+// 라우팅 provider 계약은 backend(RouteProvider)가 실체다. shared/types 에
+// 별도 RoutingProvider/Route 별칭을 두지 않는다 (중복·불일치 방지).
 
 // ---------- LLM 응답 표준형 ----------
 
@@ -181,18 +180,7 @@ export interface LLMCompletion {
   finishReason?: string;
 }
 
-// ---------- Provider 인터페이스 ----------
-
-/** 도시별 라우팅 백엔드 교체용 계약. */
-export interface RoutingProvider {
-  city: string;
-  route(
-    fromPoi: Poi,
-    toPoi: Poi,
-    preference: RoutePreference,
-  ): Route | Promise<Route>;
-  supports(city: string): boolean;
-}
+// ---------- LLM Provider 인터페이스 ----------
 
 /** 모델 호출을 인터페이스 뒤로 격리. Bedrock/기타 구현체 교체 가능. */
 export interface LLMProvider {
