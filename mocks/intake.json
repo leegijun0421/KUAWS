@@ -1,51 +1,99 @@
 {
   "profile": {
-    "memberId": "m1",
-    "memberName": "김하늘",
+    "memberId": "m-9dcfe521",
+    "memberName": "민지",
     "axes": [
       {
         "axis": "activity_level",
-        "value": 0.3,
-        "confidence": 0.9
+        "value": 0.5,
+        "confidence": 0.2,
+        "evidence": null
       },
       {
         "axis": "crowd_tolerance",
-        "value": 0.2,
-        "confidence": 0.85
+        "value": 0.5,
+        "confidence": 0.2,
+        "evidence": null
       },
       {
         "axis": "nature_vs_urban",
-        "value": 0.7,
-        "confidence": 0.4
+        "value": 0.62,
+        "confidence": 0.5,
+        "evidence": null
       },
       {
         "axis": "food_priority",
-        "value": 0.8,
-        "confidence": 0.9
+        "value": 0.5,
+        "confidence": 0.2,
+        "evidence": null
       },
       {
         "axis": "pace",
-        "value": 0.25,
-        "confidence": 0.6
+        "value": 0.15,
+        "confidence": 0.5,
+        "evidence": null
       }
     ],
-    "rawText": "바다 보이는 조용한 카페 좋아하고 사람 많은 데는 별로예요. 맛집은 꼭 가고 싶어요.",
-    "updatedAt": "2026-08-23T10:00:00Z"
+    "rawText": "드디어 파리 확정이다ㅠㅠ 10월 15일부터 2박3일!!\n루브르 박물관은 무조건 가자 이건 양보 못해\n나는 미술관 위주로 천천히 보고 싶어. 오르세도 가고 싶고\n하루에 너무 많이 돌면 기억도 안 남더라\n도윤이는 자연파구나ㅋㅋ\n좋아좋아",
+    "updatedAt": "2026-09-27T08:07:34+00:00"
   },
   "followUps": [
     {
-      "questionId": "q1",
+      "questionId": "m-9dcfe521:activity_level",
+      "axis": "activity_level",
+      "prompt": "하루에 얼마나 움직이고 싶으세요? (왼쪽: 푹 쉬면서 · 오른쪽: 많이 걷고 활동적으로)",
+      "kind": "slider",
+      "choices": null
+    },
+    {
+      "questionId": "m-9dcfe521:crowd_tolerance",
+      "axis": "crowd_tolerance",
+      "prompt": "사람 많은 곳은 어떠세요? (왼쪽: 한적한 곳이 좋아요 · 오른쪽: 북적여도 괜찮아요)",
+      "kind": "slider",
+      "choices": null
+    },
+    {
+      "questionId": "m-9dcfe521:food_priority",
+      "axis": "food_priority",
+      "prompt": "이번 여행에서 식사는 얼마나 중요하세요?",
+      "kind": "choice",
+      "choices": [
+        {
+          "label": "간단히 때워도 OK",
+          "value": 0.15
+        },
+        {
+          "label": "적당히",
+          "value": 0.5
+        },
+        {
+          "label": "맛집이 핵심",
+          "value": 0.9
+        }
+      ]
+    },
+    {
+      "questionId": "m-9dcfe521:nature_vs_urban",
       "axis": "nature_vs_urban",
-      "prompt": "바다는 좋아한다고 하셨는데, 도심 쪽 명소는 어떠세요?",
+      "prompt": "어떤 풍경이 더 끌리세요? (왼쪽: 공원·자연 · 오른쪽: 도심·미술관·쇼핑)",
+      "kind": "slider",
+      "choices": null
+    },
+    {
+      "questionId": "m-9dcfe521:pace",
+      "axis": "pace",
+      "prompt": "일정 속도는 어느 쪽이 좋으세요? (왼쪽: 한 곳에 오래 여유롭게 · 오른쪽: 많이 빠르게 둘러보기)",
       "kind": "slider",
       "choices": null
     }
   ],
-  "assistantMessage": "조용한 바다뷰 카페와 맛집 위주로 이해했어요. 하나만 더 여쭤볼게요.",
+  "assistantMessage": "",
   "constraints": {
     "excludeCategories": [],
     "avoidKeywords": [],
-    "notes": []
+    "notes": [],
+    "earliestStart": null,
+    "latestEnd": null
   },
   "mustVisit": []
 }
