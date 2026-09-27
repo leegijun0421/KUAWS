@@ -171,3 +171,11 @@ def test_mock_chats_parse_expected_speakers():
     for path in sorted(Path("mocks/chats").glob("*.txt")):
         speakers = parse_chat(path.read_text(encoding="utf-8"))
         assert len(speakers) == expected[path.name[:2]], path.name
+
+
+def test_rules_detect_type_refusal_without_false_positive():
+    from backend.intake.rules import extract_by_rules
+
+    assert extract_by_rules("박물관이나 미술관은 절대 안 갈래")[1].exclude_categories == ["culture"]
+    assert extract_by_rules("공원 좋아, 사람 많은 곳은 싫어")[1].exclude_categories == []
+    assert "peanut" in extract_by_rules("땅콩 알레르기 있어요")[1].avoid_keywords
