@@ -7,6 +7,8 @@ LLM 키가 없거나(오프라인 데모·CI) 응답이 두 번 연속 깨졌을
 
 from __future__ import annotations
 
+import re
+
 from shared.types.models import AxisValue, HardConstraints, PreferenceAxis
 
 AXES: tuple[PreferenceAxis, ...] = (
@@ -48,6 +50,7 @@ _ALLERGY_KEYWORDS: dict[str, list[str]] = {
     ],
     "해산물": ["seafood", "fruits de mer", "poisson", "oyster", "huître", "海鮮", "魚", "해산물"],
     "견과": ["nut", "noix", "peanut", "花生", "堅果", "견과"],
+    "땅콩": ["peanut", "cacahuète", "花生", "땅콩"],
     "돼지": ["pork", "porc", "豬", "돼지"],
 }
 
@@ -66,13 +69,35 @@ def _axis_from_keywords(axis: PreferenceAxis, text: str) -> AxisValue:
     return AxisValue(axis=axis, value=round(sum(hits) / len(hits), 2), confidence=0.5)
 
 
+#: "박물관은 절대 안 가" 처럼 유형 자체를 거부하는 표현 → 제외 category.
+_REFUSALS: dict[str, tuple[str, ...]] = {
+    "culture": ("박물관", "미술관"),
+    "nature": ("등산", "공원"),
+}
+_REFUSAL_WORDS = ("절대 안", "안 갈", "싫어", "빼자", "빼줘")
+
+
+def _refusal_pattern(words: tuple[str, ...]) -> str:
+    """유형어 + 같은 절 안의 거부 표현."""
+    return f"({'|'.join(words)})[^.,!?\n]{{0,15}}({'|'.join(_REFUSAL_WORDS)})"
+
+
 def _constraints_from_keywords(text: str) -> HardConstraints:
-    """알레르기 언급이 있으면 음식점 이름 필터 키워드를 만든다."""
+    """알레르기·유형 거부 표현을 하드 제약으로 바꾼다."""
     keywords: list[str] = []
     notes: list[str] = []
+    categories = [
+        category
+        for category, words in _REFUSALS.items()
+        # 유형어 뒤 같은 절(쉼표 전) 15자 안에 거부 표현이 올 때만 — "공원 좋아, …싫어" 오탐 방지
+        if re.search(_refusal_pattern(words), text)
+    ]
+    notes.extend(f"'{category}' 유형 거부 표현(규칙 추출)" for category in categories)
     if "알레르기" in text or "못 먹" in text:
         for trigger, words in _ALLERGY_KEYWORDS.items():
             if trigger in text:
                 keywords.extend(words)
                 notes.append(f"{trigger} 관련 음식점 제외(규칙 추출)")
-    return HardConstraints(avoid_keywords=sorted(set(keywords)), notes=notes)
+    return HardConstraints(
+        exclude_categories=categories, avoid_keywords=sorted(set(keywords)), notes=notes
+    )
