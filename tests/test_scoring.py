@@ -89,3 +89,12 @@ def test_parse_weekly_hours_handles_google_formats():
     assert weekly[3] == [("00:00", "24:00")]
     assert weekly[4] == [("11:00", "14:00")]
     assert parse_weekly_hours(None) is None
+
+
+def test_must_visit_picks_single_best_match_in_real_like_data():
+    """실데이터처럼 '루브르'가 여러 곳이면 가장 비슷한 1곳만 고른다."""
+    pois = [poi("pyramid", [0.5] * 5, name="Louvre Pyramid"),
+            poi("caves", [0.5] * 5, name="Les Caves du Louvre"),
+            poi("museum", [0.5] * 5, name="Louvre Museum"),
+            poi("tour", [0.5] * 5, name="Tourism France Louvre")]
+    assert match_must_visit(["Musée du Louvre"], pois) == {"museum"}

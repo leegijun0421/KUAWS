@@ -33,6 +33,10 @@ MIN_VISIT_MIN = 30
 MEAL_BONUS = 1.0
 #: 식사 시간대 시작 전 이 시간(분) 안에 도착하면 시작까지 기다렸다가 식사한다.
 MAX_MEAL_WAIT_MIN = 45
+#: 관광 스톱이 이미 가득 찬 날에는 저녁까지 이만큼(분) 자유 시간을 두고 기다린다.
+MAX_FREE_TIME_MIN = 180
+#: 하루 카페 상한. 실데이터에서 카페 4곳이 연달아 배치되는 문제가 있었다(9/27).
+MAX_CAFES_PER_DAY = 2
 
 
 class DayState(BaseModel):
@@ -46,6 +50,9 @@ class DayState(BaseModel):
     segments: list[SegmentRoute] = []
     #: 이미 채운 식사 시간대 라벨.
     meals_done: list[str] = []
+    #: 그날 넣은 카페 수와 직전 스톱 유형(카페 연속 방지).
+    cafes: int = 0
+    last_category: str | None = None
 
 
 class StopVeto(BaseModel):
@@ -63,8 +70,11 @@ def veto_stop(
     constraints: ScheduleConstraints,
 ) -> StopVeto | None:
     """이 POI 를 `arrive_at` 에 넣어도 되는지 검사한다. 문제가 없으면 None."""
-    if not poi.is_meal and sight_count(state) >= constraints.max_stops_per_day:
+    is_sight = not poi.is_meal and poi.category != "cafe"
+    if is_sight and sight_count(state) >= constraints.max_stops_per_day:
         return StopVeto(code="day_full", message=f"{state.day}일차 관광 스톱이 가득 찼습니다")
+    if poi.category == "cafe" and not _cafe_allowed(state):
+        return StopVeto(code="cafe_limit", message="카페는 하루 2곳, 연달아 넣지 않습니다")
     if not is_open(poi, arrive_at, min(MIN_VISIT_MIN, poi.avg_duration_min)):
         message = f"{poi.name}: {arrive_at:%a %H:%M} 도착이면 영업시간 밖입니다"
         return StopVeto(code="closed", message=message)
@@ -112,9 +122,11 @@ def adjust_arrival(
     if not poi.is_meal:
         return arrive_at
     minutes = arrive_at.hour * 60 + arrive_at.minute
+    day_full = sight_count(state) >= constraints.max_stops_per_day
+    limit = MAX_FREE_TIME_MIN if day_full else MAX_MEAL_WAIT_MIN
     for window in constraints.meal_windows:
         start = to_minutes(window.start_at)
-        if window.label not in state.meals_done and 0 < start - minutes <= MAX_MEAL_WAIT_MIN:
+        if window.label not in state.meals_done and 0 < start - minutes <= limit:
             return arrive_at + timedelta(minutes=start - minutes)
     return arrive_at
 
@@ -125,6 +137,9 @@ def record_stop(
     """확정된 스톱이 식사 시간대를 채웠는지 기록한다."""
     if poi.is_meal and (window := _window_at(arrive_at, constraints.meal_windows)):
         state.meals_done.append(window.label)
+    if poi.category == "cafe":
+        state.cafes += 1
+    state.last_category = poi.category
 
 
 def day_warnings(state: DayState, constraints: ScheduleConstraints) -> list[str]:
@@ -145,8 +160,13 @@ def day_warnings(state: DayState, constraints: ScheduleConstraints) -> list[str]
 
 
 def sight_count(state: DayState) -> int:
-    """그날 배치된 관광(비식사) 스톱 수. 식사는 하루 상한에 세지 않는다."""
-    return len(state.stops) - len(state.meals_done)
+    """그날 배치된 관광 스톱 수. 식사·카페(쉬어 가는 곳)는 하루 상한에 세지 않는다."""
+    return len(state.stops) - len(state.meals_done) - state.cafes
+
+
+def _cafe_allowed(state: DayState) -> bool:
+    """카페는 하루 최대 `MAX_CAFES_PER_DAY` 곳, 직전 스톱이 카페면 또 넣지 않는다."""
+    return state.cafes < MAX_CAFES_PER_DAY and state.last_category != "cafe"
 
 
 def is_open(poi: POIVector, moment: datetime, stay_min: int = 0) -> bool:
