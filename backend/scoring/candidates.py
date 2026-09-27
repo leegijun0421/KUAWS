@@ -20,6 +20,17 @@ CAFES_PER_DAY = 2
 #: must_visit 로 지정된 장소에 주는 점수 — 1일차 첫 스톱 후보로 올린다.
 MUST_VISIT_SCORE = 1.0
 
+#: 장소 유형을 나타내는 단어 묶음. 원하는 이름에 유형어가 있으면 후보 이름에도 같은 유형어가
+#: 있어야 한다("Shilin Night Market" 이 "Shilin Residence Park" 로 잘못 매칭되는 것을 막는다).
+_TYPE_WORDS = {
+    "museum": {"musee", "museum", "museo", "gallery"},
+    "park": {"parc", "park", "jardin", "garden", "gardens"},
+    "market": {"market", "marche", "night"},
+    "temple": {"temple", "shrine"},
+    "church": {"church", "cathedrale", "cathedral", "basilique", "basilica", "eglise"},
+    "tower": {"tower", "tour", "observatory"},
+}
+
 #: 장소 이름 매칭에서 무시하는 일반 명사(이것만 겹쳐서는 같은 장소가 아니다).
 _GENERIC = frozenset(
     {"musee", "museum", "national", "parc", "park", "jardin", "garden", "place", "temple",
@@ -104,13 +115,19 @@ def _best_match(wanted: str, pois: list[TaggedPoi]) -> str | None:
         if target and (target in name or name in target):
             # "Taipei 101" ⊂ "Taipei 101 Observatory" — 글자 길이 비율로 점수
             score = min(len(target), len(name)) / max(len(target), len(name))
-        elif tokens and tokens <= poi_tokens:
+        elif tokens and tokens <= poi_tokens and _types(target) <= _types(name):
             score = len(tokens) / len(tokens | poi_tokens)
         else:
             continue
         if score > best_score:
             best_id, best_score = poi.poi_id, score
     return best_id
+
+
+def _types(normalized: str) -> set[str]:
+    """이름에 들어 있는 장소 유형 묶음."""
+    words = set(normalized.split())
+    return {group for group, members in _TYPE_WORDS.items() if words & members}
 
 
 def _key_tokens(normalized: str) -> set[str]:

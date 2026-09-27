@@ -179,7 +179,11 @@ def _group_axis_mean(request: PlanRequest, axis: str) -> float:
 
 
 def _must_visit_notes(request: PlanRequest, must_ids: list[str]) -> list[str]:
-    """꼭 가고 싶은 곳을 데이터에서 못 찾았으면 알려준다."""
-    if request.must_visit and not must_ids:
-        return [f"'{', '.join(request.must_visit)}' 을(를) 지원 장소 목록에서 찾지 못했어요"]
-    return []
+    """꼭 가고 싶은 곳 중 데이터에서 못 찾은 이름을 알려준다."""
+    if len(must_ids) >= len(request.must_visit):
+        return []
+    found = len(must_ids)
+    return [
+        f"꼭 가고 싶은 곳 {len(request.must_visit)}곳 중 {len(request.must_visit) - found}곳"
+        f"({', '.join(request.must_visit)} 중)은 지원 장소 목록에서 찾지 못했어요"
+    ]
