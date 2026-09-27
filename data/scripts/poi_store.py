@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import asdict, dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from logging import Logger
 from pathlib import Path
 
@@ -53,7 +53,7 @@ class Stats:
 
 def new_checkpoint(city: CityConfig, language_code: str) -> dict:
     """빈 체크포인트를 만든다."""
-    now = datetime.now(UTC).isoformat()
+    now = datetime.now(timezone.utc).isoformat()
     return {
         "version": CHECKPOINT_VERSION,
         "city": city.key,
@@ -95,7 +95,7 @@ def load_checkpoint(
 def warn_if_stale(payload: dict, logger: Logger) -> None:
     """수집 시점이 30일을 넘었으면 좌표 폐기 기한을 경고한다."""
     created = datetime.fromisoformat(str(payload.get("created_at")))
-    age = datetime.now(UTC) - created
+    age = datetime.now(timezone.utc) - created
     if age > timedelta(days=COORD_RETENTION_DAYS):
         logger.warning(
             "체크포인트가 %d일 경과 — Google 약관상 위경도 보관 한도(%d일)를 넘었다. "
@@ -107,7 +107,7 @@ def warn_if_stale(payload: dict, logger: Logger) -> None:
 
 def save_checkpoint(out_dir: Path, checkpoint: dict) -> None:
     """체크포인트를 원자적으로 저장한다."""
-    checkpoint["updated_at"] = datetime.now(UTC).isoformat()
+    checkpoint["updated_at"] = datetime.now(timezone.utc).isoformat()
     write_json(out_dir / "checkpoint.json", checkpoint)
 
 
@@ -122,7 +122,7 @@ def write_outputs(
     limit: int,
 ) -> None:
     """최종 POI, Place ID 목록, 메타데이터를 저장한다."""
-    collected_at = datetime.now(UTC)
+    collected_at = datetime.now(timezone.utc)
     expires_at = collected_at + timedelta(days=COORD_RETENTION_DAYS)
     write_json(out_dir / f"pois_{city.key}.json", selected)
     write_json(out_dir / f"place_ids_{city.key}.json", [item["poi_id"] for item in selected])
