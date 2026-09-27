@@ -79,7 +79,10 @@ def _load_city_cached(city: str, _mtime: float) -> CityData:
     collected = data_path(f"data/processed/pois/{city}/tagged.json")
     if collected.exists():
         items = json.loads(collected.read_text(encoding="utf-8"))
-        return CityData(city=city, pois=[TaggedPoi(**item) for item in items], source="collected")
+        if items:
+            pois = [TaggedPoi(**item) for item in items]
+            return CityData(city=city, pois=pois, source="collected")
+        logger.warning("%s: tagged.json 이 비어 있습니다 — 태깅을 다시 실행하세요", city)
 
     seed = data_path(f"mocks/poi_seed/{city}.json")
     if not seed.exists():
