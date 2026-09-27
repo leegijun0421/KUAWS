@@ -22,23 +22,28 @@
 방향만 보는 코사인의 약점(0.55 와 0.95 를 같은 방향으로 봄)은 거리 항으로 보정한다.
 
     fit = 0.6 × (1 + cos) / 2  +  0.4 × (1 − 가중 평균 절대오차)
+
+그룹 점수
+---------
+`fit_score` = 멤버 적합도의 **최솟값 그 자체**(순수 maximin). 평균은 점수에 섞지 않고,
+최솟값이 같은 장소끼리 순위를 가를 때만 쓴다.
 """
 
 from __future__ import annotations
 
 from math import sqrt
+from typing import get_args
 
 from backend.common.poi_data import TaggedPoi
-from shared.types.models import MemberFit, PoiScore, PreferenceProfile
+from shared.types.models import MemberFit, PoiScore, PreferenceAxis, PreferenceProfile
 
 #: 적합도 식의 코사인 항 비중. 나머지는 거리 항.
 COSINE_WEIGHT = 0.6
-#: 그룹 점수 = 최저 적합도 × (1 − TIE_WEIGHT) + 평균 × TIE_WEIGHT. 평균은 동점 해소용.
-TIE_WEIGHT = 0.15
 #: 멤버 1명의 (축 값, 신뢰도 가중치).
 Vector = tuple[list[float], list[float]]
 
-AXIS_ORDER = ("activity_level", "crowd_tolerance", "nature_vs_urban", "food_priority", "pace")
+#: 축 목록·순서는 공용 계약(`PreferenceAxis`, docs/vector_schema.md)에서 읽는다 — 하드코딩 금지.
+AXIS_ORDER: tuple[str, ...] = get_args(PreferenceAxis)
 #: 이 값 이하 신뢰도는 가중치 하한으로 올린다 — 모르는 축도 완전히 무시하지는 않는다.
 _MIN_WEIGHT = 0.2
 _AXIS_LABELS = {
@@ -61,8 +66,14 @@ def score_pois(pois: list[TaggedPoi], members: list[PreferenceProfile]) -> list[
         max((fits[i] for fits in raw.values()), default=1.0) or 1.0 for i in range(len(members))
     ]
     scores = [_score_one(poi, raw[poi.poi_id], best, vectors) for poi in pois]
-    scores.sort(key=lambda score: score.fit_score, reverse=True)
+    # 1순위 최솟값(maximin), 2순위 평균(동점 해소)
+    scores.sort(key=lambda s: (s.fit_score, _mean(s.per_member_fit)), reverse=True)
     return scores
+
+
+def average_rank(scores: list[PoiScore]) -> list[PoiScore]:
+    """비교용 — 멤버 평균으로 줄 세운 순위(우리가 쓰지 않는 방식)."""
+    return sorted(scores, key=lambda s: _mean(s.per_member_fit), reverse=True)
 
 
 def member_fit(member_values: list[float], weights: list[float], poi: list[float]) -> float:
@@ -81,11 +92,16 @@ def member_fit(member_values: list[float], weights: list[float], poi: list[float
 
 
 def group_score(fits: list[float]) -> float:
-    """maximin 그룹 점수(평균은 동점 해소용 가중치로만)."""
-    if not fits:
-        return 0.0
-    worst, mean = min(fits), sum(fits) / len(fits)
-    return round(worst * (1 - TIE_WEIGHT) + mean * TIE_WEIGHT, 3)
+    """maximin: 가장 불만족한 멤버의 적합도가 곧 그룹 점수다.
+
+    평균으로 바꾸면 한 사람이 크게 손해 보는 장소가 다른 사람의 높은 점수에 가려 위로 올라온다.
+    """
+    return round(min(fits), 3) if fits else 0.0
+
+
+def _mean(fits: list[MemberFit]) -> float:
+    """멤버 적합도 평균."""
+    return sum(item.fit for item in fits) / len(fits) if fits else 0.0
 
 
 def _score_one(

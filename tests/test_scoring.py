@@ -106,3 +106,10 @@ def test_must_visit_requires_same_place_type():
     assert match_must_visit(["Shilin Night Market"], pois) == set()
     assert match_must_visit(["Raohe Street Night Market"], pois) == {"market"}  # street 는 일반 명사
     assert match_must_visit(["Raohe Night Market"], pois) == {"market"}
+
+
+def test_group_score_is_exactly_min_of_member_fits():
+    data = load_city("paris")
+    members = [profile("a", [0.9, 0.9, 0.9, 0.1, 0.9]), profile("b", [0.1, 0.1, 0.1, 0.9, 0.1])]
+    for score in score_pois(data.pois, members):
+        assert score.fit_score == round(min(f.fit for f in score.per_member_fit), 3)
