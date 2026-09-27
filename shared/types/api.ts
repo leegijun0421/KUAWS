@@ -179,15 +179,22 @@ export interface ItineraryDay {
   segments: RouteSegment[];
 }
 
+export interface Member {
+  memberId: string;
+  memberName: string;
+}
+
 export interface Itinerary {
   planId: string;
   city: string;
   days: ItineraryDay[];
-  members: { memberId: string; memberName: string }[];
+  members: Member[];
   /** 그룹 최저 만족도 — 아무도 소외되지 않았는지 보여주는 지표 */
   minMemberSatisfaction: number;
   /** 일정 요약 브리핑 (예선: 규칙 기반 템플릿 — 런타임 LLM 호출 없음) */
   briefing: string;
+  /** 멤버별 만족도(혼자 갔을 때의 최적 일정 대비). 최저값 = minMemberSatisfaction */
+  memberSatisfaction: { memberId: string; fit: number }[];
   warnings: string[];
   excludedNotes: string[];
   /** "collected" = Google Places 수집·태깅본, "seed" = 내장 예시 */
