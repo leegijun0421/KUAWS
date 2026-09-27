@@ -61,20 +61,20 @@ def get_llm_provider() -> LLMProvider:
     return _anthropic_provider(settings.anthropic_api_key, settings.anthropic_model)
 
 
-def render_prompt(name: str, **values: object) -> tuple[str, str]:
+def render_prompt(prompt_name: str, /, **values: object) -> tuple[str, str]:
     """`prompts/<name>.md` 를 읽어 (system, user) 로 나누고 `{{변수}}` 를 채운다.
 
     파일은 `# System` / `# User` 두 절로 이뤄진다. HTML 주석(작성자 메모)은 제거한다.
     채우지 않은 변수가 남으면 프롬프트 버그이므로 즉시 알린다.
     """
-    raw = _COMMENT.sub("", (PROMPT_DIR / f"{name}.md").read_text(encoding="utf-8"))
+    raw = _COMMENT.sub("", (PROMPT_DIR / f"{prompt_name}.md").read_text(encoding="utf-8"))
     system_part, _, user_part = raw.partition("# User")
     system = system_part.replace("# System", "", 1).strip()
 
     def fill(match: re.Match[str]) -> str:
         key = match.group(1)
         if key not in values:
-            raise KeyError(f"프롬프트 {name}.md 의 변수 {{{{{key}}}}} 값이 없습니다")
+            raise KeyError(f"프롬프트 {prompt_name}.md 의 변수 {{{{{key}}}}} 값이 없습니다")
         return str(values[key])
 
     return system, _PLACEHOLDER.sub(fill, user_part).strip()
