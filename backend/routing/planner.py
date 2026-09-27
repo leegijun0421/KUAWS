@@ -21,7 +21,6 @@ W0 의 `RouteProvider` 어댑터 **위에** 올라가는 얇은 층이다. 여�
 from __future__ import annotations
 
 from math import asin, cos, radians, sin, sqrt
-from typing import Literal
 
 from pydantic import BaseModel
 
@@ -33,7 +32,7 @@ from backend.routing.provider import (
     RouteProvider,
     select_provider,
 )
-from shared.types.models import RouteLeg, RoutePreference, RouteSegment
+from shared.types.models import RouteAdvisory, RouteLeg, RoutePreference, RouteSegment
 
 logger = get_logger(__name__)
 
@@ -53,13 +52,6 @@ _WALK_DETOUR_FACTOR = 1.3
 
 #: 환승 횟수를 셀 때 "탈것"으로 보는 mode. 도보와 ODsay 의 transfer 는 제외한다.
 _TRANSIT_MODES = frozenset({"subway", "bus"})
-
-
-class RouteAdvisory(BaseModel):
-    """구간에 붙는 경고 배지 하나. 이유 없는 경고는 설득력이 없어 문구를 함께 준다."""
-
-    code: Literal["long_duration", "many_transfers"]
-    message: str
 
 
 class SegmentRoute(BaseModel):
