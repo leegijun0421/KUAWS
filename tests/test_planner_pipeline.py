@@ -264,3 +264,13 @@ def test_placement_probes_past_vetoed_top_candidates(monkeypatch):
     outcome = placement.place_days(matches, pois, None, 1,
                                    ScheduleConstraints(max_travel_min_per_day=120))
     assert [stop.poi_id for stop in outcome.stops][:2] == ["start", "near"]
+
+
+def test_meal_allowed_slightly_past_travel_cap():
+    """이동 상한을 다 써도 가까운 저녁 식사는 넣는다 — 끼니를 거르지 않게."""
+    constraints = ScheduleConstraints(meal_windows=MEALS, max_travel_min_per_day=120)
+    state = DayState(day=1, travel_min=115)
+    dinner = WED.replace(hour=18, minute=30)
+    assert veto_stop(vec(meal=True), dinner, 15, state, constraints) is None
+    assert veto_stop(vec(), dinner, 15, state, constraints).code == "travel_cap"
+    assert veto_stop(vec(meal=True), dinner, 30, state, constraints).code == "travel_cap"

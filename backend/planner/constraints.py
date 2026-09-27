@@ -35,6 +35,9 @@ MEAL_BONUS = 1.0
 MAX_MEAL_WAIT_MIN = 45
 #: 관광 스톱이 이미 가득 찬 날에는 저녁까지 이만큼(분) 자유 시간을 두고 기다린다.
 MAX_FREE_TIME_MIN = 180
+#: 이동 상한을 다 쓴 뒤에도 식사 장소만은 이만큼(분) 더 가서 넣는다. 끼니를 거르는 것보다
+#: 조금 더 걷는 편이 낫다 — 9/27 실측에서 상한 도달 후 저녁이 통째로 빠지는 일이 있었다.
+MEAL_TRAVEL_GRACE_MIN = 20
 #: 하루 카페 상한. 실데이터에서 카페 4곳이 연달아 배치되는 문제가 있었다(9/27).
 MAX_CAFES_PER_DAY = 2
 
@@ -82,6 +85,8 @@ def veto_stop(
         return StopVeto(code="closed", message=message)
 
     cap = constraints.max_travel_min_per_day
+    if cap is not None and poi.is_meal:
+        cap += MEAL_TRAVEL_GRACE_MIN
     if cap is not None and state.travel_min + travel_min > cap:
         message = f"{state.day}일차 이동시간이 상한({cap}분)을 넘습니다"
         return StopVeto(code="travel_cap", message=message)
