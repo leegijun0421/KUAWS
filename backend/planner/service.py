@@ -83,10 +83,13 @@ def build_constraints(request: PlanRequest, city: CityProfile) -> ScheduleConstr
     """그룹 성향으로 배치 제약을 정한다(pace → 하루 스톱 수, 최저 활동량 → 이동 상한)."""
     pace = _mean_axis(request.members, "pace")
     weakest = _min_axis(request.members, "activity_level")
+    # 대화에서 나온 시간 제약("오전 11시 이전 불가")은 하루 시작·종료 시각을 조인다.
+    day_start = max(DAY_START, request.constraints.earliest_start or DAY_START)
+    day_end = min(DAY_END, request.constraints.latest_end or DAY_END)
     return ScheduleConstraints(
-        start_at=local_start(request.start_date, city.timezone),
-        day_start=DAY_START,
-        day_end=DAY_END,
+        start_at=local_start(request.start_date, city.timezone, day_start),
+        day_start=day_start,
+        day_end=day_end,
         max_stops_per_day=6 if pace >= 0.6 else 5 if pace >= 0.35 else 4,
         min_stops_per_day=3,
         meal_windows=MEAL_WINDOWS,
@@ -96,10 +99,10 @@ def build_constraints(request: PlanRequest, city: CityProfile) -> ScheduleConstr
     )
 
 
-def local_start(start_date: str, timezone_name: str) -> str:
+def local_start(start_date: str, timezone_name: str, day_start: str = DAY_START) -> str:
     """"YYYY-MM-DD" + 도시 시간대 → 첫날 시작 시각 RFC3339(현지 오프셋 포함)."""
     day = date.fromisoformat(start_date)
-    hour, minute = (int(part) for part in DAY_START.split(":"))
+    hour, minute = (int(part) for part in day_start.split(":"))
     moment = datetime(day.year, day.month, day.day, hour, minute, tzinfo=ZoneInfo(timezone_name))
     return moment.isoformat(timespec="seconds")
 

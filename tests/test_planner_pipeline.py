@@ -18,7 +18,7 @@ from backend.planner.schemas import (
 )
 from backend.routing.planner import SegmentRoute
 from backend.routing.provider import AlternativeRoute
-from backend.routing.scenic import ScenicPoi, pick_scenic
+from backend.routing.scenic import ScenicPoi, recommend_route
 from shared.types.models import RouteLeg, RouteSegment
 
 MEALS = [MealWindow(label="점심", start_at="11:30", end_at="13:30"),
@@ -95,18 +95,33 @@ def test_risk_uses_real_timetable_connection_slack():
     assert calm == 0.03 and calm_reasons == []
 
 
-def test_scenic_alternative_is_chosen_only_when_clearly_better():
-    park = ScenicPoi(name="강변 공원", lat=1.0, lng=1.0, category="nature", nature_vs_urban=0.0)
+def _pois_around(lat: float, nature: float, category: str) -> list[ScenicPoi]:
+    return [ScenicPoi(name=f"{category}{i}", lat=lat + i * 0.0005, lng=lat, category=category,
+                      features=[0.5, 0.5, nature, 0.2, 0.5]) for i in range(3)]
+
+
+def _two_routes(primary_min: int = 20, alt_min: int = 26) -> SegmentRoute:
     alt_segment = RouteSegment(from_poi_id="a", to_poi_id="b", preference="fastest",
-                               total_duration_min=18, total_fare=0, legs=[])
+                               total_duration_min=alt_min, total_fare=0, legs=[])
     alt = AlternativeRoute(segment=alt_segment, path=[(1.0, 1.0)])
-    route = segment(12, path=[(5.0, 5.0)], alts=[alt])
-    option = pick_scenic(route, [park])
-    assert option is not None and option.extra_min == 6 and option.highlights == ["강변 공원"]
+    return segment(primary_min, path=[(5.0, 5.0)], alts=[alt])
+
+
+def test_scenic_route_recommended_for_nature_loving_group():
+    pois = _pois_around(1.0, 0.05, "nature") + _pois_around(5.0, 0.95, "attraction")
+    option, recommended = recommend_route(_two_routes(), pois, [0.5, 0.5, 0.1, 0.5, 0.5])
+    assert option is not None and option.extra_min == 6
+    assert recommended == "scenic" and "6분 더 걸리지만" in option.reason
     assert option.segment.preference == "scenic"
-    far = AlternativeRoute(segment=alt_segment.model_copy(update={"total_duration_min": 60}),
-                           path=[(1.0, 1.0)])
-    assert pick_scenic(segment(12, path=[(5.0, 5.0)], alts=[far]), [park]) is None
+    _, urban_pick = recommend_route(_two_routes(), pois, [0.5, 0.5, 0.95, 0.5, 0.5])
+    assert urban_pick == "fastest"  # 도심 선호 그룹에는 최단을 권한다(대안은 계속 병기)
+
+
+def test_scenic_skipped_for_short_segments_and_sparse_areas():
+    pois = _pois_around(1.0, 0.05, "nature") + _pois_around(5.0, 0.95, "attraction")
+    assert recommend_route(_two_routes(primary_min=10), pois, [0.5] * 5) == (None, "fastest")
+    assert recommend_route(_two_routes(), pois[:2] + pois[3:], [0.5] * 5) == (None, "fastest")
+    assert recommend_route(_two_routes(alt_min=60), pois, [0.5] * 5) == (None, "fastest")
 
 
 def test_briefing_is_3_to_4_template_sentences():
@@ -193,3 +208,38 @@ def test_free_time_before_dinner_when_day_is_full():
     not_full = DayState(day=1)
     same = adjust_arrival(vec(meal=True), WED.replace(hour=16, minute=10), not_full, constraints)
     assert same.hour == 16
+
+
+def test_segment_risk_flags_use_real_timetable_sentences():
+    from zoneinfo import ZoneInfo
+
+    from backend.planner.risk import risk_summary, segment_flags
+
+    legs = [
+        RouteLeg(mode="subway", line_name="M1", from_name="a", to_name="b", duration_min=10,
+                 depart_at="2026-10-14T08:00:00Z", arrive_at="2026-10-14T08:10:00Z", description=""),
+        RouteLeg(mode="walk", from_name="", to_name="", duration_min=2, description=""),
+        RouteLeg(mode="subway", line_name="RER A", from_name="c", to_name="d", duration_min=10,
+                 depart_at="2026-10-14T08:16:00Z", arrive_at="2026-10-14T08:26:00Z", description=""),
+    ]
+    flags = segment_flags(segment(26, legs), ZoneInfo("Europe/Paris"))
+    assert len(flags) == 1 and flags[0].level == "high"
+    assert flags[0].reason == "M1 → RER A 환승 여유 4분 (10:10 도착 · 10:16 출발)"
+    assert risk_summary([flags, []]) == "2일 일정 중 주의 구간 0곳, 위험 구간 1곳"
+    assert "모든 환승 여유" in risk_summary([[]])
+
+
+def test_time_constraint_narrows_day_window(monkeypatch):
+    client = _mock_client(monkeypatch)
+    late = {**PLAN, "constraints": {**PLAN["constraints"], "earliestStart": "11:00"}}
+    body = client.post("/api/planner/plan", json=late).json()
+    assert body["days"][0]["stops"][0]["arriveAt"] >= "11:00"
+
+
+def test_empty_candidates_return_reason_not_crash(monkeypatch):
+    client = _mock_client(monkeypatch)
+    everything = ["cafe", "restaurant", "culture", "nature", "attraction"]
+    blocked = {**PLAN, "constraints": {**PLAN["constraints"], "excludeCategories": everything}}
+    res = client.post("/api/planner/plan", json=blocked)
+    assert res.status_code == 200
+    assert res.json()["days"][0]["stops"] == [] and res.json()["warnings"]
