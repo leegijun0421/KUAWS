@@ -274,3 +274,24 @@ def test_meal_allowed_slightly_past_travel_cap():
     assert veto_stop(vec(meal=True), dinner, 15, state, constraints) is None
     assert veto_stop(vec(), dinner, 15, state, constraints).code == "travel_cap"
     assert veto_stop(vec(meal=True), dinner, 30, state, constraints).code == "travel_cap"
+
+
+def test_sights_leave_travel_budget_for_remaining_dinner():
+    """저녁이 남아 있으면 관광 이동은 상한에서 20분을 남기고 멈춘다."""
+    constraints = ScheduleConstraints(meal_windows=MEALS, max_travel_min_per_day=120)
+    afternoon = WED.replace(hour=15)
+    before_dinner = DayState(day=1, travel_min=90, meals_done=["점심"])
+    assert veto_stop(vec(), afternoon, 15, before_dinner, constraints).code == "travel_cap"
+    after_dinner = DayState(day=1, travel_min=90, meals_done=["점심", "저녁"])
+    assert veto_stop(vec(), afternoon, 15, after_dinner, constraints) is None
+
+
+def test_long_sight_covering_pending_lunch_is_penalized():
+    from backend.planner.constraints import score_bonus
+
+    constraints = ScheduleConstraints(meal_windows=MEALS)
+    late_morning = WED.replace(hour=11, minute=40)
+    assert score_bonus(vec(stay=120), late_morning, constraints, DayState(day=1)) < 0
+    assert score_bonus(vec(stay=30), late_morning, constraints, DayState(day=1)) == 0
+    lunched = DayState(day=1, meals_done=["점심"])
+    assert score_bonus(vec(stay=120), late_morning, constraints, lunched) == 0
