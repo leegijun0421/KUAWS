@@ -26,9 +26,11 @@ from pydantic import BaseModel
 
 from backend.common.logging import get_logger
 from backend.routing.provider import (
+    AlternativeRoute,
     GeoPoint,
     NoRouteError,
     Operator,
+    PathPoint,
     RouteProvider,
     select_provider,
 )
@@ -67,6 +69,10 @@ class SegmentRoute(BaseModel):
     advisories: list[RouteAdvisory] = []
     #: ⚠️ 9/4 절단 2 — 택시 대안은 예선 범위 밖이다. 본선 재투입 전까지 항상 None.
     alternative: None = None
+    #: 대표 경로 좌표열(경치 점수 계산용). 도보 전용 구간은 출발·도착 두 점.
+    path: list[PathPoint] = []
+    #: 같은 호출에서 받은 대중교통 대안 경로들(W3 성향별 경로 추천의 입력).
+    transit_alternatives: list[AlternativeRoute] = []
 
 
 def plan_segment(
@@ -101,11 +107,21 @@ def plan_segment(
 
     legs = merge_walk_legs(detail.segment.legs)
     transfer_count = count_transfers(legs)
+    alternatives = [
+        alt.model_copy(
+            update={"segment": alt.segment.model_copy(
+                update={"legs": merge_walk_legs(alt.segment.legs)}
+            )}
+        )
+        for alt in detail.alternatives
+    ]
     return SegmentRoute(
         primary=detail.segment.model_copy(update={"legs": legs}),
         transfer_count=transfer_count,
         operators=detail.operators,
         advisories=build_advisories(detail.segment.total_duration_min, transfer_count),
+        path=detail.path,
+        transit_alternatives=alternatives,
     )
 
 
@@ -201,4 +217,5 @@ def _walk_only(
         fare_currency=None,
         legs=[leg],
     )
-    return SegmentRoute(primary=segment, transfer_count=0)
+    path = [(origin.lat, origin.lng), (destination.lat, destination.lng)]
+    return SegmentRoute(primary=segment, transfer_count=0, path=path)
