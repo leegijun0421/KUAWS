@@ -147,11 +147,15 @@ class AnthropicProvider:
         max_tokens: int = 1024,
         temperature: float = 0.7,
     ) -> LLMCompletion:
-        """프롬프트 1건을 보내고 텍스트 응답을 표준형으로 돌려준다."""
+        """프롬프트 1건을 보내고 텍스트 응답을 표준형으로 돌려준다.
+
+        `temperature` 는 프로토콜 호환을 위해 받기만 하고 보내지 않는다. 현재 SDK(1.x)와
+        모델이 샘플링 파라미터를 받지 않는다(9/27 실호출에서 TypeError 확인).
+        """
+        del temperature  # 의도적으로 사용하지 않음 — 위 docstring 참조
         kwargs: dict = {
             "model": self.model,
             "max_tokens": max_tokens,
-            "temperature": temperature,
             "messages": [{"role": "user", "content": prompt}],
         }
         if system:
