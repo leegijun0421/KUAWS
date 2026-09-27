@@ -38,6 +38,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="end-to-end 통합 검증")
     parser.add_argument("--only", help="대화 파일 앞 두 자리(01~05)")
     parser.add_argument("--days", type=int, default=2)
+    parser.add_argument("--repeat", type=int, default=1, help="대화마다 반복 횟수(편차 확인)")
     args = parser.parse_args()
     start = (date.today() + timedelta(days=18)).isoformat()
     rows = []
@@ -46,7 +47,10 @@ def main() -> None:
         for path in sorted(CHATS.glob("*.txt")):
             if args.only and not path.name.startswith(args.only):
                 continue
-            rows.append(run_one(client, path, args.days, start))
+            for attempt in range(args.repeat):
+                row = run_one(client, path, args.days, start)
+                row["chat"] += f" #{attempt + 1}" if args.repeat > 1 else ""
+                rows.append(row)
     report = render(rows, start)
     REPORT.parent.mkdir(parents=True, exist_ok=True)
     REPORT.write_text(report, encoding="utf-8")
@@ -76,6 +80,7 @@ def run_one(client: httpx.Client, path: Path, days: int, start: str) -> dict:
         row["plan_s"] = time.perf_counter() - tick
         summarize(plan, row)
         orders = [[s["poi"]["poiId"] for s in d["stops"]] for d in plan["days"]]
+        row["stop_ids"] = {poi for day in orders for poi in day}
         link = post(client, "/api/share", {"request": request, "dayOrders": orders})
         tick = time.perf_counter()
         shared = client.get(f"/api/share/{link['planId']}").json()
@@ -145,7 +150,23 @@ def render(rows: list[dict], start: str) -> str:
         )
     notes = [f"- {r['chat']}: must_visit={r.get('must', '-')} · 제외={r.get('excluded', '-')} "
              f"· 데이터={r.get('source', '-')}" for r in rows if "error" not in r]
-    return head + "\n".join(lines) + "\n\n" + "\n".join(notes) + "\n"
+    return head + "\n".join(lines) + "\n\n" + "\n".join(notes) + "\n" + _variance(rows)
+
+
+def _variance(rows: list[dict]) -> str:
+    """같은 대화를 여러 번 돌렸을 때 스톱 구성이 얼마나 같은지(리허설 편차)."""
+    groups: dict[str, list[set]] = {}
+    for row in rows:
+        if "stop_ids" in row:
+            groups.setdefault(row["chat"].split(" #")[0], []).append(row["stop_ids"])
+    lines = []
+    for chat, runs in groups.items():
+        if len(runs) < 2:
+            continue
+        common = set.intersection(*runs)
+        union = set.union(*runs)
+        lines.append(f"- {chat}: {len(runs)}회 실행, 스톱 구성 일치 {len(common)}/{len(union)}")
+    return ("\n## 반복 실행 편차\n\n" + "\n".join(lines) + "\n") if lines else ""
 
 
 if __name__ == "__main__":

@@ -1,0 +1,513 @@
+{
+  "note": "[W1] 태깅 스파이크 20건 — 파리 5유형×4. 확정 프롬프트 backend/common/prompts/tag_poi.md(리뷰 미사용·5축). 장소 이름·좌표는 Google 콘텐츠라 제외하고 Place ID(영구 저장 허용)와 우리 태그만 남긴다.",
+  "model": "claude-sonnet-5",
+  "axes": [
+    "activity_level",
+    "crowd_tolerance",
+    "nature_vs_urban",
+    "food_priority",
+    "pace"
+  ],
+  "records": [
+    {
+      "place_id": "ChIJq537gddx5kcR_3PhRd2muxg",
+      "category": "cafe",
+      "axis_features": [
+        0.1,
+        0.6,
+        0.9,
+        0.7,
+        0.5
+      ],
+      "confidence": [
+        0.6,
+        0.4,
+        0.6,
+        0.7,
+        0.5
+      ],
+      "reasons": [
+        "activity_level: 카페는 좌식 위주 정적 활동으로 낮게 책정",
+        "crowd_tolerance: 유명 카페 특성상 붐빌 가능성 있으나 정보 부족으로 중간값에 가깝게 설정, confidence 낮음",
+        "nature_vs_urban: cafe 카테고리는 실내 도심형 공간으로 판단",
+        "food_priority: 카페는 음료/디저트가 주요 목적이므로 food_priority 비교적 높게 설정",
+        "pace: 평균 체류시간 40분은 짧지도 길지도 않아 중립값으로 설정, confidence 낮음"
+      ]
+    },
+    {
+      "place_id": "ChIJ3eCHM_1x5kcRRfrf5-yoThc",
+      "category": "cafe",
+      "axis_features": [
+        0.1,
+        0.5,
+        0.8,
+        0.7,
+        0.4
+      ],
+      "confidence": [
+        0.7,
+        0.3,
+        0.6,
+        0.8,
+        0.5
+      ],
+      "reasons": [
+        "activity_level: 카페는 앉아서 음료를 즐기는 정적인 활동이므로 낮게 평가",
+        "crowd_tolerance: 혼잡도 관련 정보 없어 중립값 적용",
+        "nature_vs_urban: 파리 시내 카페로 실내·도심형 공간으로 판단",
+        "food_priority: 카페는 음료·디저트 소비가 주 목적이므로 비교적 높게 평가",
+        "pace: 평균 체류시간 40분은 짧지도 길지도 않은 중간 수준으로 추정"
+      ]
+    },
+    {
+      "place_id": "ChIJ0XNMICVu5kcRguvWTOnysX0",
+      "category": "cafe",
+      "axis_features": [
+        0.1,
+        0.5,
+        0.8,
+        0.8,
+        0.5
+      ],
+      "confidence": [
+        0.6,
+        0.3,
+        0.5,
+        0.8,
+        0.5
+      ],
+      "reasons": [
+        "activity_level: 카페는 좌식 휴식 공간으로 정적인 활동이 중심",
+        "crowd_tolerance: 혼잡도 관련 정보 없어 중립값 사용",
+        "nature_vs_urban: 이름과 카테고리로 보아 실내 도심형 매장으로 추정",
+        "food_priority: 카페는 음료·간단한 식사가 핵심 목적이므로 높은 값",
+        "pace: 평균 체류시간 40분은 중간 정도로 여유와 속도가 균형"
+      ]
+    },
+    {
+      "place_id": "ChIJGR3TdqJv5kcRCtgkoouI29U",
+      "category": "cafe",
+      "axis_features": [
+        0.1,
+        0.5,
+        0.7,
+        0.75,
+        0.55
+      ],
+      "confidence": [
+        0.7,
+        0.3,
+        0.5,
+        0.8,
+        0.5
+      ],
+      "reasons": [
+        "activity_level: 카페는 앉아서 쉬는 정적인 장소로 낮게 평가",
+        "crowd_tolerance: 혼잡도 관련 정보 없어 중립값 사용",
+        "nature_vs_urban: 카페는 일반적으로 실내 도시형 공간으로 다소 높게 평가",
+        "food_priority: 카페는 음료·간단한 식사가 핵심 목적이므로 높게 평가",
+        "pace: 평균 체류시간 40분은 중간 정도로 보통 속도로 판단"
+      ]
+    },
+    {
+      "place_id": "ChIJWe6kaiRu5kcRH_SM6yU7UYo",
+      "category": "restaurant",
+      "axis_features": [
+        0.1,
+        0.5,
+        0.8,
+        0.9,
+        0.5
+      ],
+      "confidence": [
+        0.6,
+        0.3,
+        0.6,
+        0.9,
+        0.5
+      ],
+      "reasons": [
+        "restaurant/cafe 유형으로 activity_level은 낮게 설정",
+        "crowd_tolerance는 정보 부족으로 중립값에 낮은 확신도",
+        "카페/레스토랑은 대체로 실내 도심형 공간으로 nature_vs_urban을 도시 쪽으로 판단",
+        "category가 restaurant이므로 food_priority는 핵심 목적으로 높게 설정",
+        "avg_duration_min 60분은 짧지도 길지도 않아 pace는 중립값으로 설정"
+      ]
+    },
+    {
+      "place_id": "ChIJaYIUUk9u5kcRfAhRNL_ZJgw",
+      "category": "restaurant",
+      "axis_features": [
+        0.1,
+        0.7,
+        0.9,
+        0.95,
+        0.5
+      ],
+      "confidence": [
+        0.5,
+        0.5,
+        0.7,
+        0.9,
+        0.5
+      ],
+      "reasons": [
+        "activity_level: 레스토랑 식사는 정적인 활동으로 낮게 책정, 근거 약해 중립에 가까움",
+        "crowd_tolerance: 유명 레스토랑으로 추정되어 혼잡도 다소 높게 책정했으나 확실한 근거 부족",
+        "nature_vs_urban: 식당은 일반적으로 도심 실내 공간이므로 도시형에 가깝게 책정",
+        "food_priority: category가 restaurant이므로 식음료가 핵심 목적으로 매우 높게 책정",
+        "pace: avg_duration_min 60분은 일반적인 식사 시간으로 중립값 유지"
+      ]
+    },
+    {
+      "place_id": "ChIJHwzjqZJv5kcRCir2RjPAaKE",
+      "category": "restaurant",
+      "axis_features": [
+        0.2,
+        0.5,
+        0.9,
+        0.9,
+        0.5
+      ],
+      "confidence": [
+        0.4,
+        0.3,
+        0.6,
+        0.9,
+        0.5
+      ],
+      "reasons": [
+        "restaurant 카테고리는 좌식 위주 활동으로 activity_level 낮게 설정",
+        "혼잡도 관련 정보 없어 crowd_tolerance는 중립값 0.5",
+        "레스토랑은 실내 도시형 시설로 nature_vs_urban 높게 설정",
+        "category가 restaurant이므로 food_priority를 매우 높게 설정",
+        "avg_duration_min 60분은 평균적 식사 시간으로 pace 중립값 설정"
+      ]
+    },
+    {
+      "place_id": "ChIJR4kFR0xv5kcR-x6duNRh3uE",
+      "category": "restaurant",
+      "axis_features": [
+        0.1,
+        0.5,
+        0.9,
+        0.95,
+        0.4
+      ],
+      "confidence": [
+        0.6,
+        0.3,
+        0.7,
+        0.9,
+        0.5
+      ],
+      "reasons": [
+        "restaurant 카테고리는 착석 식사 위주로 activity_level 낮게 설정",
+        "혼잡도 관련 정보 없어 crowd_tolerance는 중립값 0.5로 설정",
+        "레스토랑은 실내 도심형 시설로 nature_vs_urban 높게 설정",
+        "category가 restaurant이며 식사가 핵심 목적이므로 food_priority 매우 높게 설정",
+        "avg_duration_min 60분은 일반적인 식사 시간으로 pace는 다소 여유로운 중간값으로 설정"
+      ]
+    },
+    {
+      "place_id": "ChIJG5Qwtitu5kcR2CNEsYy9cdA",
+      "category": "culture",
+      "axis_features": [
+        0.1,
+        0.7,
+        0.9,
+        0.1,
+        0.35
+      ],
+      "confidence": [
+        0.8,
+        0.5,
+        0.9,
+        0.8,
+        0.6
+      ],
+      "reasons": [
+        "category가 culture(미술관)로 정적인 관람 활동이라 activity_level 낮음",
+        "파리 대표 유명 미술관으로 관광객이 많이 몰릴 가능성이 높아 crowd_tolerance를 다소 높게 추정(직접 근거는 약함)",
+        "미술관은 실내 도심형 시설이라 nature_vs_urban을 도시 쪽으로 높게 설정",
+        "category와 정보에 식음료 관련 요소가 없어 food_priority 낮음",
+        "avg_duration_min=120으로 비교적 오래 머무는 편이라 pace를 중간보다 약간 낮게 설정"
+      ]
+    },
+    {
+      "place_id": "ChIJo6qq6i5u5kcRCpYBp4rQP9w",
+      "category": "culture",
+      "axis_features": [
+        0.1,
+        0.6,
+        0.9,
+        0.05,
+        0.35
+      ],
+      "confidence": [
+        0.7,
+        0.4,
+        0.8,
+        0.9,
+        0.6
+      ],
+      "reasons": [
+        "미술관이라 activity_level은 낮게 평가",
+        "파리 유명 관광지 특성상 crowd_tolerance는 다소 높게 추정하나 확신도 낮음",
+        "실내 미술관이므로 nature_vs_urban은 도심형에 가깝게 설정",
+        "식음료 관련 정보 없음, category상 food_priority는 매우 낮음",
+        "avg_duration_min=120분으로 비교적 여유롭게 관람하는 편이라 pace는 중간보다 낮게 설정"
+      ]
+    },
+    {
+      "place_id": "ChIJD3uTd9hx5kcR1IQvGfr8dbk",
+      "category": "culture",
+      "axis_features": [
+        0.2,
+        0.85,
+        0.9,
+        0.05,
+        0.35
+      ],
+      "confidence": [
+        0.6,
+        0.7,
+        0.85,
+        0.8,
+        0.6
+      ],
+      "reasons": [
+        "activity_level: 미술관 관람은 주로 걷고 서서 감상하는 정적 활동에 가까움",
+        "crowd_tolerance: 루브르는 세계적 대형 박물관으로 관광객이 매우 붐비는 곳으로 알려짐",
+        "nature_vs_urban: category가 culture이며 실내 도심형 박물관이므로 urban에 가까움",
+        "food_priority: 박물관은 식사가 핵심 목적이 아니므로 food_priority 매우 낮음",
+        "pace: 평균 체류시간 120분은 비교적 길어 여유 있게 둘러보는 편에 가까움"
+      ]
+    },
+    {
+      "place_id": "ChIJSUOPztFv5kcRnEbSPYG-9fM",
+      "category": "culture",
+      "axis_features": [
+        0.15,
+        0.5,
+        0.9,
+        0.05,
+        0.3
+      ],
+      "confidence": [
+        0.7,
+        0.4,
+        0.8,
+        0.8,
+        0.6
+      ],
+      "reasons": [
+        "category가 culture(미술관)이며 실내 관람 중심이라 activity_level 낮음",
+        "혼잡도는 메타데이터에서 직접 알 수 없어 중립값에 낮은 confidence 부여",
+        "미술관은 실내 도심형 시설이라 nature_vs_urban 높게 설정",
+        "식음료 관련 정보 없고 문화시설 특성상 food_priority 매우 낮음",
+        "avg_duration_min이 120분으로 비교적 길어 pace를 다소 여유롭게 설정"
+      ]
+    },
+    {
+      "place_id": "ChIJwxT3mL5v5kcRAsTd3v0lJOY",
+      "category": "nature",
+      "axis_features": [
+        0.3,
+        0.5,
+        0.1,
+        0.0,
+        0.5
+      ],
+      "confidence": [
+        0.5,
+        0.4,
+        0.9,
+        0.9,
+        0.5
+      ],
+      "reasons": [
+        "category가 nature(공원)로 산책 위주라 activity_level은 낮은 편으로 추정",
+        "공원은 관광지 특성상 혼잡도 정보 부재로 중립값 사용, confidence 낮음",
+        "category가 nature이고 공원이므로 nature_vs_urban은 자연 쪽으로 강하게 판단",
+        "공원 자체는 식음료 목적지가 아니므로 food_priority는 매우 낮게 설정",
+        "avg_duration_min이 60분으로 중간 정도라 pace는 중립값으로 판단"
+      ]
+    },
+    {
+      "place_id": "ChIJh9M-FMZt5kcRkZSVdmDta_I",
+      "category": "nature",
+      "axis_features": [
+        0.55,
+        0.5,
+        0.05,
+        0.05,
+        0.45
+      ],
+      "confidence": [
+        0.5,
+        0.4,
+        0.9,
+        0.7,
+        0.5
+      ],
+      "reasons": [
+        "category가 nature(공원)이며 산책·조깅 등 가벼운 신체활동이 가능해 activity_level은 중간 수준으로 판단",
+        "공원의 인기도나 혼잡 정보가 없어 crowd_tolerance는 중립값으로 설정",
+        "공원이라는 category 특성상 nature_vs_urban은 자연 쪽으로 명확히 판단",
+        "식음료 관련 정보가 없고 공원은 식사 목적이 아니므로 food_priority는 낮게 설정",
+        "avg_duration_min이 60분으로 중간 정도이며 공원 특성상 여유롭게 걷는 경우가 많아 pace는 중립~약간 낮게 설정"
+      ]
+    },
+    {
+      "place_id": "ChIJe2jeNttx5kcRi_mJsGHdkQc",
+      "category": "nature",
+      "axis_features": [
+        0.3,
+        0.6,
+        0.1,
+        0.05,
+        0.4
+      ],
+      "confidence": [
+        0.5,
+        0.4,
+        0.9,
+        0.8,
+        0.5
+      ],
+      "reasons": [
+        "공원 산책 위주로 activity_level은 낮은 편이나 걷기 활동이 있어 완전 정적은 아님",
+        "파리 유명 공원으로 관광객 방문이 많아 crowd_tolerance는 중간 이상으로 추정, 근거는 약함",
+        "category가 nature이고 정원/공원 특성상 nature_vs_urban은 매우 낮음",
+        "식음료 관련 정보 없음, 공원 특성상 food_priority는 매우 낮음",
+        "avg_duration_min 60분은 중간 정도 체류로 pace는 중립에 가까움"
+      ]
+    },
+    {
+      "place_id": "ChIJAQAAMCxu5kcRx--_4QnbGcI",
+      "category": "nature",
+      "axis_features": [
+        0.3,
+        0.6,
+        0.1,
+        0.05,
+        0.5
+      ],
+      "confidence": [
+        0.5,
+        0.4,
+        0.9,
+        0.8,
+        0.5
+      ],
+      "reasons": [
+        "activity_level: 공원 산책 위주로 가벼운 신체활동, 정적이지도 격렬하지도 않음",
+        "crowd_tolerance: 파리 중심 관광지 인근 정원으로 어느 정도 붐빌 가능성 있으나 정보 부족으로 중립",
+        "nature_vs_urban: category가 'nature'이며 정원(야외 녹지) 공간이므로 자연 쪽에 가까움",
+        "food_priority: 정원 자체는 식음료 목적지가 아님",
+        "pace: avg_duration_min 60분은 짧은 산책 수준으로 중간 정도의 속도감"
+      ]
+    },
+    {
+      "place_id": "ChIJLU7jZClu5kcR4PcOOO6p3I0",
+      "category": "attraction",
+      "axis_features": [
+        0.4,
+        0.85,
+        0.6,
+        0.1,
+        0.5
+      ],
+      "confidence": [
+        0.4,
+        0.7,
+        0.6,
+        0.6,
+        0.55
+      ],
+      "reasons": [
+        "activity_level: 유명 랜드마크로 걷거나 계단/엘리베이터 이용이 있어 완전 정적은 아니나 관광 위주로 중간값",
+        "crowd_tolerance: 세계적 명소로 상시 혼잡도가 높을 것으로 추정",
+        "nature_vs_urban: 야외 구조물이지만 도심 한복판에 위치해 도시형 성격이 강함",
+        "food_priority: category가 attraction으로 식사가 핵심 목적이 아님",
+        "pace: avg_duration_min 90분은 중간 정도 체류로 여유와 빠른 관람의 중간값"
+      ]
+    },
+    {
+      "place_id": "ChIJATr1n-Fx5kcRjQb6q6cdQDY",
+      "category": "attraction",
+      "axis_features": [
+        0.2,
+        0.85,
+        0.85,
+        0.05,
+        0.5
+      ],
+      "confidence": [
+        0.5,
+        0.7,
+        0.8,
+        0.8,
+        0.5
+      ],
+      "reasons": [
+        "attraction 카테고리로 관람 위주 활동이라 activity_level은 낮게 평가",
+        "파리 대표 랜드마크로 관광객이 많이 몰려 crowd_tolerance는 높게 평가",
+        "대성당 건축물이자 도심 실내 공간이라 nature_vs_urban은 도시형에 가깝게 평가",
+        "식음료 관련 정보가 없어 food_priority는 매우 낮게 평가",
+        "avg_duration_min 90분은 중간 정도 체류로 pace는 중립값에 가깝게 평가"
+      ]
+    },
+    {
+      "place_id": "ChIJc8mX0udx5kcRWKcjTwDr5QA",
+      "category": "attraction",
+      "axis_features": [
+        0.4,
+        0.6,
+        0.85,
+        0.05,
+        0.45
+      ],
+      "confidence": [
+        0.4,
+        0.4,
+        0.7,
+        0.7,
+        0.6
+      ],
+      "reasons": [
+        "attraction 카테고리이며 내부 관람과 계단(돔) 이동이 있어 activity_level은 중간 정도로 추정",
+        "유명 관광명소로 방문객이 많을 가능성이 있으나 실시간 혼잡도 정보 없어 중간값 부여",
+        "역사적 기념물이자 실내 건축물로 nature_vs_urban은 도심/실내 쪽에 가까움",
+        "식음료 관련 기능이 없는 관광지이므로 food_priority는 낮게 설정",
+        "평균 체류시간 90분은 중간 정도로 여유롭지도 급하지도 않은 pace로 판단"
+      ]
+    },
+    {
+      "place_id": "ChIJGxZyXh5u5kcRLmPA07LoheA",
+      "category": "attraction",
+      "axis_features": [
+        0.4,
+        0.5,
+        0.9,
+        0.0,
+        0.5
+      ],
+      "confidence": [
+        0.4,
+        0.3,
+        0.7,
+        0.8,
+        0.5
+      ],
+      "reasons": [
+        "attraction 카테고리이며 탑/전망대류로 계단 이용 등 약간의 체력 소모가 있어 activity_level 중간값 부여",
+        "혼잡도에 대한 직접 정보 없어 crowd_tolerance는 중립값으로 설정",
+        "이름(이 장소)과 파리 도심 관광지 특성상 nature_vs_urban은 도심형으로 높게 평가",
+        "식음료 관련 정보 없고 명칭상 식사 목적이 아니므로 food_priority는 0에 가깝게 설정",
+        "avg_duration_min=90은 관광지 평균 수준으로 특별히 빠르거나 느리지 않아 pace 중립값 부여"
+      ]
+    }
+  ]
+}

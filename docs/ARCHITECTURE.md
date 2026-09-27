@@ -7,63 +7,58 @@
 
 ```mermaid
 flowchart LR
-    subgraph OFFLINE["① 사전 배치 (오프라인 · 1회성)"]
+    subgraph OFFLINE["사전 배치 (오프라인 · 1회성)"]
         direction TB
         PLACES["Google Places API<br/>POI 수집·정규화<br/>data/scripts/collect_pois.py"]
         TAG["LLM 5축 태깅<br/>data/scripts/tag_pois.py"]
-        STORE[("data/processed/pois/&lt;city&gt;/tagged.json<br/>(커밋 금지 · 30일 갱신)")]
-        PLACES --> TAG --> STORE
+        STORE[("tagged.json<br/>(커밋 금지 · 30일 갱신)")]
+        PLACES -->|"A"| TAG -->|"B"| STORE
     end
 
-    subgraph RUNTIME["② 런타임 (요청 경로)"]
+    subgraph FRONT["프론트엔드 (브라우저)"]
+        UI["입력 · 취향 확인 · 결과 · 상세<br/>React + Vite · Maps JS(키 B)"]
+    end
+
+    subgraph BACK["백엔드 (FastAPI) — 키 A·Anthropic 키는 여기에만"]
         direction TB
-        UI["프론트엔드<br/>React + Vite"]
-        INTAKE["intake<br/>대화 → 5축 선호 벡터<br/>+ 하드 제약"]
-        SCORE["scoring<br/>하드 제약 필터 → 정규화 maximin 매칭"]
-        PLAN["planner<br/>제약 스케줄러(탐욕 + 재시도)<br/>식사·이동 상한·막차 / 실패 위험도 / 브리핑"]
+        INTAKE["intake<br/>대화 → 5축 선호·제약·확정 사항"]
+        SCORE["scoring<br/>하드 제약 필터 → maximin 매칭"]
+        PLAN["planner<br/>제약 스케줄러 · 위험도 · 브리핑"]
         ROUTE["routing<br/>2지점 실경로 · 경치 대안"]
         SHARE["share<br/>입력 + Place ID 순서만 저장"]
-        UI -->|"/api/intake"| INTAKE
-        UI -->|"/api/planner/plan"| SCORE --> PLAN --> ROUTE
-        UI -->|"/api/share"| SHARE --> PLAN
     end
 
-    subgraph ADAPTERS["③ 어댑터 계층 — 구현체만 갈아 끼운다"]
+    subgraph ADAPT["어댑터 계층"]
         direction TB
-        LLMP{{"LLMProvider (Protocol)"}}
-        ANTH["AnthropicProvider<br/>(현재 구현체)"]
-        BED["BedrockProvider<br/>(승인 시 교체 — 대체안)"]
-        RP{{"RouteProvider (ABC)<br/>좌표로 자동 선택"}}
-        GOOG["GoogleRouteProvider<br/>Routes API v2 · 해외"]
-        ODSAY["OdsayRouteProvider<br/>국내 (참조 구현)"]
-        MOCK["MockRouteProvider<br/>ROUTING_MOCK=1 전용"]
-        LLMP --- ANTH
-        LLMP -.- BED
-        RP --- GOOG
-        RP -.- ODSAY
-        RP -.- MOCK
+        LLMP{{"LLMProvider"}}
+        ANTH["AnthropicProvider<br/>현재 구현체"]
+        BED["BedrockProvider<br/>승인 시 교체(대체안)"]:::idle
+        RP{{"RouteProvider<br/>좌표로 자동 선택"}}
+        GOOG["GoogleRouteProvider<br/>Routes API v2 · 파리·타이베이"]
+        ODSAY["OdsayRouteProvider<br/>예선 미사용 · 국내 확장 슬롯"]:::idle
     end
 
-    STORE --> SCORE
+    UI -->|"① 대화 붙여넣기"| INTAKE
+    INTAKE -->|"② 1회 호출"| LLMP --> ANTH
+    INTAKE -->|"③ 프로필·제약 (슬라이더로 확인)"| UI
+    UI -->|"④ 일정 요청"| SCORE
+    STORE -->|"⑤ 벡터 조회 (LLM 호출 없음)"| SCORE
+    SCORE --> PLAN -->|"⑥ 구간 조회"| ROUTE --> RP --> GOOG
+    PLAN -->|"⑦ 일정 응답"| UI
+    UI -->|"⑧ 링크 공유"| SHARE -->|"열람 시 재계산"| PLAN
     TAG --> LLMP
-    INTAKE --> LLMP
-    ROUTE --> RP
 
-    subgraph KEYS["④ API 키 격리"]
-        direction TB
-        KA["키 A — Places + Routes<br/>백엔드 .env 전용 · IP 제한"]
-        KB["키 B — Maps JavaScript<br/>브라우저 노출 · HTTP 리퍼러 제한"]
-        KC["ANTHROPIC_API_KEY<br/>백엔드 .env 전용 · 지출 한도"]
-    end
-    KA -.-> GOOG
-    KA -.-> PLACES
-    KB -.-> UI
-    KC -.-> ANTH
+    classDef idle fill:#eeeeee,stroke:#aaaaaa,color:#777777,stroke-dasharray: 4 3
 ```
+
+번호 = 요청이 흐르는 순서. ①~⑦ 이 한 번의 일정 생성이고 ⑧ 은 공유다. A·B 는 요청과 무관한 사전 배치.
+회색 점선 박스(Bedrock·ODsay)는 **코드는 있지만 예선에서 호출하지 않는** 확장 슬롯이라 연결선을 긋지 않았다.
+예선에서 실제로 부르는 외부 API 는 Google Routes v2 · Google Places(사전 배치) · Anthropic 세 가지뿐이다.
+원본(편집 가능): 이 코드 블록 = `docs/architecture.mmd`, 이미지 = `docs/images/architecture.png`.
 
 ## 2. 설계 포인트 4가지
 
-### ① 사전 배치 태깅 vs 런타임 호출 분리 — 런타임 LLM 호출 최소화
+### ① 사전 배치 태깅 vs 런타임 호출 분리 (A·B vs ①~⑦) — 런타임 LLM 호출 최소화
 
 | 단계 | LLM 호출 | 이유 |
 |------|---------|------|
@@ -93,6 +88,7 @@ flowchart LR
 ### ④ API 키 백엔드 격리
 
 - 키 A(Routes·Places)는 백엔드 `.env` 에만 있고 IP 제한이 걸려 있다. 프론트는 `/api` 만 부른다.
+- 그림에서 "백엔드" 경계 안에만 키 A·Anthropic 키가 있다.
 - 키 B(Maps JS)는 브라우저에 노출되는 대신 HTTP 리퍼러 제한 + Maps JavaScript API 전용.
   하나로 합치면 노출된 키로 누구나 우리 결제 계정의 Routes 를 무제한 호출할 수 있다.
 - CI 가 `.env`/`.env.local` 커밋을 막는다(`.github/workflows/ci.yml`).

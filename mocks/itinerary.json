@@ -1,13 +1,6 @@
 {
-  "planId": "plan_demo_001",
-  "city": "부산",
-  "members": [
-    { "memberId": "m1", "memberName": "김하늘" },
-    { "memberId": "m2", "memberName": "이준호" },
-    { "memberId": "m3", "memberName": "박서연" }
-  ],
-  "minMemberSatisfaction": 0.72,
-  "briefing": "조용한 바다뷰를 원하는 하늘님과 활동적인 코스를 원하는 준호님 사이에서, 오전은 해안 산책, 오후는 시장 탐방으로 나눴습니다. 세 분 모두 최소 72% 이상 만족하는 구성입니다.",
+  "planId": "paris-2026-10-15",
+  "city": "paris",
   "days": [
     {
       "dayNumber": 1,
@@ -15,63 +8,510 @@
         {
           "order": 1,
           "poi": {
-            "poiId": "poi_001",
-            "name": "예시 해변 산책로",
-            "category": "자연",
-            "lat": 35.1587,
-            "lng": 129.1604,
-            "address": "부산광역시 해운대구"
+            "poiId": "seed-fr-louvre",
+            "name": "Musée du Louvre",
+            "category": "culture",
+            "lat": 48.8606,
+            "lng": 2.3376,
+            "address": ""
           },
           "score": {
-            "poiId": "poi_001",
-            "fitScore": 0.86,
-            "failureProbability": 0.12,
-            "reasons": ["도보 접근성 양호", "체류 시간 유연", "우천 시 대체 경로 존재"],
+            "poiId": "seed-fr-louvre",
+            "fitScore": 0.344,
+            "failureProbability": 0.09,
+            "reasons": [
+              "가장 잘 맞는 사람: 민지 (91%)",
+              "가장 아쉬운 사람: 서연 (34%)",
+              "그룹과 잘 맞는 축: 활동량",
+              "위험 요인: 취향이 덜 맞는 멤버 있음(최저 34%)"
+            ],
             "perMemberFit": [
-              { "memberId": "m1", "fit": 0.93 },
-              { "memberId": "m2", "fit": 0.74 },
-              { "memberId": "m3", "fit": 0.88 }
+              {
+                "memberId": "m-9dcfe521",
+                "fit": 0.911
+              },
+              {
+                "memberId": "m-55668f78",
+                "fit": 0.344
+              },
+              {
+                "memberId": "m-4080028f",
+                "fit": 0.376
+              }
             ]
           },
-          "arriveAt": "10:00",
-          "stayMin": 90
+          "arriveAt": "09:30",
+          "stayMin": 120,
+          "departAt": "11:30"
+        },
+        {
+          "order": 2,
+          "poi": {
+            "poiId": "seed-fr-montmartre-bistro",
+            "name": "La Maison Rose",
+            "category": "restaurant",
+            "lat": 48.8871,
+            "lng": 2.3398,
+            "address": ""
+          },
+          "score": {
+            "poiId": "seed-fr-montmartre-bistro",
+            "fitScore": 0.585,
+            "failureProbability": 0.03,
+            "reasons": [
+              "가장 잘 맞는 사람: 민지 (94%)",
+              "가장 아쉬운 사람: 도윤 (58%)",
+              "그룹과 잘 맞는 축: 자연·도심"
+            ],
+            "perMemberFit": [
+              {
+                "memberId": "m-9dcfe521",
+                "fit": 0.936
+              },
+              {
+                "memberId": "m-55668f78",
+                "fit": 0.854
+              },
+              {
+                "memberId": "m-4080028f",
+                "fit": 0.585
+              }
+            ]
+          },
+          "arriveAt": "11:45",
+          "stayMin": 60,
+          "departAt": "12:45"
+        },
+        {
+          "order": 3,
+          "poi": {
+            "poiId": "seed-fr-sacrecoeur",
+            "name": "Basilique du Sacré-Cœur de Montmartre",
+            "category": "attraction",
+            "lat": 48.8867,
+            "lng": 2.3431,
+            "address": ""
+          },
+          "score": {
+            "poiId": "seed-fr-sacrecoeur",
+            "fitScore": 0.488,
+            "failureProbability": 0.03,
+            "reasons": [
+              "가장 잘 맞는 사람: 민지 (65%)",
+              "가장 아쉬운 사람: 서연 (49%)",
+              "그룹과 잘 맞는 축: 자연·도심",
+              "위험 요인: 취향이 덜 맞는 멤버 있음(최저 49%)"
+            ],
+            "perMemberFit": [
+              {
+                "memberId": "m-9dcfe521",
+                "fit": 0.653
+              },
+              {
+                "memberId": "m-55668f78",
+                "fit": 0.488
+              },
+              {
+                "memberId": "m-4080028f",
+                "fit": 0.604
+              }
+            ]
+          },
+          "arriveAt": "12:49",
+          "stayMin": 90,
+          "departAt": "14:19"
+        },
+        {
+          "order": 4,
+          "poi": {
+            "poiId": "seed-fr-eiffel",
+            "name": "Tour Eiffel",
+            "category": "attraction",
+            "lat": 48.8584,
+            "lng": 2.2945,
+            "address": ""
+          },
+          "score": {
+            "poiId": "seed-fr-eiffel",
+            "fitScore": 0.456,
+            "failureProbability": 0.05,
+            "reasons": [
+              "가장 잘 맞는 사람: 민지 (70%)",
+              "가장 아쉬운 사람: 도윤 (46%)",
+              "그룹과 잘 맞는 축: 활동량",
+              "위험 요인: 취향이 덜 맞는 멤버 있음(최저 46%)"
+            ],
+            "perMemberFit": [
+              {
+                "memberId": "m-9dcfe521",
+                "fit": 0.696
+              },
+              {
+                "memberId": "m-55668f78",
+                "fit": 0.494
+              },
+              {
+                "memberId": "m-4080028f",
+                "fit": 0.456
+              }
+            ]
+          },
+          "arriveAt": "14:39",
+          "stayMin": 90,
+          "departAt": "16:09"
+        },
+        {
+          "order": 5,
+          "poi": {
+            "poiId": "seed-fr-shakespeare-cafe",
+            "name": "Shakespeare and Company Café",
+            "category": "cafe",
+            "lat": 48.8526,
+            "lng": 2.3471,
+            "address": ""
+          },
+          "score": {
+            "poiId": "seed-fr-shakespeare-cafe",
+            "fitScore": 0.425,
+            "failureProbability": 0.06,
+            "reasons": [
+              "가장 잘 맞는 사람: 민지 (100%)",
+              "가장 아쉬운 사람: 도윤 (42%)",
+              "그룹과 잘 맞는 축: 혼잡 허용",
+              "위험 요인: 취향이 덜 맞는 멤버 있음(최저 42%)"
+            ],
+            "perMemberFit": [
+              {
+                "memberId": "m-9dcfe521",
+                "fit": 0.996
+              },
+              {
+                "memberId": "m-55668f78",
+                "fit": 0.615
+              },
+              {
+                "memberId": "m-4080028f",
+                "fit": 0.425
+              }
+            ]
+          },
+          "arriveAt": "16:27",
+          "stayMin": 40,
+          "departAt": "17:07"
+        },
+        {
+          "order": 6,
+          "poi": {
+            "poiId": "seed-fr-marche",
+            "name": "Marché des Enfants Rouges",
+            "category": "restaurant",
+            "lat": 48.8628,
+            "lng": 2.3619,
+            "address": ""
+          },
+          "score": {
+            "poiId": "seed-fr-marche",
+            "fitScore": 0.43,
+            "failureProbability": 0.06,
+            "reasons": [
+              "가장 잘 맞는 사람: 서연 (100%)",
+              "가장 아쉬운 사람: 도윤 (43%)",
+              "위험 요인: 취향이 덜 맞는 멤버 있음(최저 43%)"
+            ],
+            "perMemberFit": [
+              {
+                "memberId": "m-9dcfe521",
+                "fit": 0.612
+              },
+              {
+                "memberId": "m-55668f78",
+                "fit": 1.0
+              },
+              {
+                "memberId": "m-4080028f",
+                "fit": 0.43
+              }
+            ]
+          },
+          "arriveAt": "18:00",
+          "stayMin": 60,
+          "departAt": "19:00"
         }
       ],
       "segments": [
         {
-          "fromPoiId": "poi_001",
-          "toPoiId": "poi_002",
-          "preference": "scenic",
-          "totalDurationMin": 34,
-          "totalFare": 1550,
+          "fromPoiId": "seed-fr-louvre",
+          "toPoiId": "seed-fr-montmartre-bistro",
+          "preference": "fastest",
+          "totalDurationMin": 15,
+          "totalFare": 2.0,
+          "fareCurrency": null,
           "legs": [
             {
               "mode": "walk",
               "lineName": null,
-              "fromName": "예시 해변 산책로",
-              "toName": "예시 정류장",
-              "durationMin": 8,
-              "description": "해안선을 따라 걷는 구간. 최단 경로보다 4분 길지만 바다가 계속 보입니다."
+              "fromName": "Musée du Louvre",
+              "toName": "",
+              "durationMin": 4,
+              "departAt": null,
+              "arriveAt": null,
+              "description": "도보 4분 (모의)"
             },
             {
-              "mode": "bus",
-              "lineName": "예시 100번",
-              "fromName": "예시 정류장",
-              "toName": "도착 정류장",
-              "durationMin": 21,
-              "description": "해안도로 경유 노선"
+              "mode": "subway",
+              "lineName": "M1",
+              "fromName": "모의 정류장 1",
+              "toName": "모의 정류장 2",
+              "durationMin": 8,
+              "departAt": "2026-10-15T11:34:00+02:00",
+              "arriveAt": "2026-10-15T11:42:00+02:00",
+              "description": "모의 노선"
             },
             {
               "mode": "walk",
               "lineName": null,
-              "fromName": "도착 정류장",
-              "toName": "다음 장소",
-              "durationMin": 5,
-              "description": "평지 도보"
+              "fromName": "",
+              "toName": "La Maison Rose",
+              "durationMin": 3,
+              "departAt": null,
+              "arriveAt": null,
+              "description": "도보 3분 (모의)"
             }
-          ]
+          ],
+          "transferCount": 0,
+          "operators": [
+            {
+              "name": "모의 경로(실제 운행 정보 아님)",
+              "url": null
+            }
+          ],
+          "advisories": [],
+          "scenic": null,
+          "recommended": "fastest",
+          "riskFlags": []
+        },
+        {
+          "fromPoiId": "seed-fr-montmartre-bistro",
+          "toPoiId": "seed-fr-sacrecoeur",
+          "preference": "fastest",
+          "totalDurationMin": 4,
+          "totalFare": 0.0,
+          "fareCurrency": null,
+          "legs": [
+            {
+              "mode": "walk",
+              "lineName": null,
+              "fromName": "La Maison Rose",
+              "toName": "Basilique du Sacré-Cœur de Montmartre",
+              "durationMin": 4,
+              "departAt": null,
+              "arriveAt": null,
+              "description": "도보 4분 (약 319m)"
+            }
+          ],
+          "transferCount": 0,
+          "operators": [],
+          "advisories": [],
+          "scenic": null,
+          "recommended": "fastest",
+          "riskFlags": []
+        },
+        {
+          "fromPoiId": "seed-fr-sacrecoeur",
+          "toPoiId": "seed-fr-eiffel",
+          "preference": "fastest",
+          "totalDurationMin": 20,
+          "totalFare": 2.0,
+          "fareCurrency": null,
+          "legs": [
+            {
+              "mode": "walk",
+              "lineName": null,
+              "fromName": "Basilique du Sacré-Cœur de Montmartre",
+              "toName": "",
+              "durationMin": 4,
+              "departAt": null,
+              "arriveAt": null,
+              "description": "도보 4분 (모의)"
+            },
+            {
+              "mode": "subway",
+              "lineName": "M1",
+              "fromName": "모의 정류장 1",
+              "toName": "모의 정류장 2",
+              "durationMin": 13,
+              "departAt": "2026-10-15T14:23:00+02:00",
+              "arriveAt": "2026-10-15T14:36:00+02:00",
+              "description": "모의 노선"
+            },
+            {
+              "mode": "walk",
+              "lineName": null,
+              "fromName": "",
+              "toName": "Tour Eiffel",
+              "durationMin": 3,
+              "departAt": null,
+              "arriveAt": null,
+              "description": "도보 3분 (모의)"
+            }
+          ],
+          "transferCount": 0,
+          "operators": [
+            {
+              "name": "모의 경로(실제 운행 정보 아님)",
+              "url": null
+            }
+          ],
+          "advisories": [],
+          "scenic": null,
+          "recommended": "fastest",
+          "riskFlags": []
+        },
+        {
+          "fromPoiId": "seed-fr-eiffel",
+          "toPoiId": "seed-fr-shakespeare-cafe",
+          "preference": "fastest",
+          "totalDurationMin": 18,
+          "totalFare": 2.0,
+          "fareCurrency": null,
+          "legs": [
+            {
+              "mode": "walk",
+              "lineName": null,
+              "fromName": "Tour Eiffel",
+              "toName": "",
+              "durationMin": 4,
+              "departAt": null,
+              "arriveAt": null,
+              "description": "도보 4분 (모의)"
+            },
+            {
+              "mode": "subway",
+              "lineName": "M1",
+              "fromName": "모의 정류장 1",
+              "toName": "모의 정류장 2",
+              "durationMin": 11,
+              "departAt": "2026-10-15T16:13:00+02:00",
+              "arriveAt": "2026-10-15T16:24:00+02:00",
+              "description": "모의 노선"
+            },
+            {
+              "mode": "walk",
+              "lineName": null,
+              "fromName": "",
+              "toName": "Shakespeare and Company Café",
+              "durationMin": 3,
+              "departAt": null,
+              "arriveAt": null,
+              "description": "도보 3분 (모의)"
+            }
+          ],
+          "transferCount": 0,
+          "operators": [
+            {
+              "name": "모의 경로(실제 운행 정보 아님)",
+              "url": null
+            }
+          ],
+          "advisories": [],
+          "scenic": null,
+          "recommended": "fastest",
+          "riskFlags": []
+        },
+        {
+          "fromPoiId": "seed-fr-shakespeare-cafe",
+          "toPoiId": "seed-fr-marche",
+          "preference": "fastest",
+          "totalDurationMin": 11,
+          "totalFare": 2.0,
+          "fareCurrency": null,
+          "legs": [
+            {
+              "mode": "walk",
+              "lineName": null,
+              "fromName": "Shakespeare and Company Café",
+              "toName": "",
+              "durationMin": 4,
+              "departAt": null,
+              "arriveAt": null,
+              "description": "도보 4분 (모의)"
+            },
+            {
+              "mode": "subway",
+              "lineName": "M1",
+              "fromName": "모의 정류장 1",
+              "toName": "모의 정류장 2",
+              "durationMin": 4,
+              "departAt": "2026-10-15T17:11:00+02:00",
+              "arriveAt": "2026-10-15T17:15:00+02:00",
+              "description": "모의 노선"
+            },
+            {
+              "mode": "walk",
+              "lineName": null,
+              "fromName": "",
+              "toName": "Marché des Enfants Rouges",
+              "durationMin": 3,
+              "departAt": null,
+              "arriveAt": null,
+              "description": "도보 3분 (모의)"
+            }
+          ],
+          "transferCount": 0,
+          "operators": [
+            {
+              "name": "모의 경로(실제 운행 정보 아님)",
+              "url": null
+            }
+          ],
+          "advisories": [],
+          "scenic": null,
+          "recommended": "fastest",
+          "riskFlags": []
         }
       ]
     }
-  ]
+  ],
+  "members": [
+    {
+      "memberId": "m-9dcfe521",
+      "memberName": "민지"
+    },
+    {
+      "memberId": "m-55668f78",
+      "memberName": "서연"
+    },
+    {
+      "memberId": "m-4080028f",
+      "memberName": "도윤"
+    }
+  ],
+  "minMemberSatisfaction": 0.53,
+  "briefing": "민지·서연·도윤 3명의 파리 1일 일정이에요. 하루 평균 이동은 68분이에요. 가장 아쉬운 도윤님도 53%는 만족하도록 맞췄어요. 명소 위주로 6곳을 담았어요. 식사는 La Maison Rose, Marché des Enfants Rouges에서 해요.",
+  "memberSatisfaction": [
+    {
+      "memberId": "m-9dcfe521",
+      "fit": 0.823
+    },
+    {
+      "memberId": "m-55668f78",
+      "fit": 0.734
+    },
+    {
+      "memberId": "m-4080028f",
+      "fit": 0.53
+    }
+  ],
+  "warnings": [],
+  "riskSummary": "1일 일정의 모든 환승 여유가 10분 이상이에요",
+  "excludedNotes": [],
+  "dataSource": "seed",
+  "startDate": "2026-10-15",
+  "stats": {
+    "candidateCount": 16,
+    "routingCalls": 6,
+    "providerCalls": 4,
+    "attempts": 1,
+    "elapsedMs": 5
+  }
 }

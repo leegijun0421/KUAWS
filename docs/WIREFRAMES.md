@@ -97,3 +97,34 @@
 ## 공유 링크 열람 (`/s/<id>`)
 
 일정 화면과 같고, 상단에 “친구가 공유한 일정이에요 · 우리 일정 만들기” 한 줄이 붙는다.
+
+## 화면 요소 ↔ 데이터 필드 (백엔드 계약 `shared/types/api.ts`)
+
+| 화면 | 요소 | 필드 |
+|------|------|------|
+| 입력 | 도시 버튼(화이트리스트) | `CityInfo.key / label / poiCount` (`GET /api/planner/cities`) |
+| 입력 | 출발일·일수 | `PlanRequest.startDate / days` (대화에서 나오면 `ChatIntakeResponse.trip` 로 자동 채움) |
+| 취향 확인 | 멤버 카드 이름 | `IntakeMessageResponse.profile.memberName` |
+| 취향 확인 | 슬라이더 5축 | `profile.axes[].axis / value` (축 목록 = `docs/vector_schema.md`) |
+| 취향 확인 | "확인해 주세요" 노란 칸 + 질문 | `followUps[].axis / prompt / kind / choices` (신뢰도 < 0.6) |
+| 취향 확인 | 근거 인용 | `profile.axes[].evidence` |
+| 취향 확인 | 제약 칩 | `constraints.excludeCategories / avoidKeywords / earliestStart / latestEnd / notes`, `mustVisit` |
+| 일정 | 브리핑·위험 요약 | `Itinerary.briefing / riskSummary` |
+| 일정 | 최저 만족도·멤버 막대 | `minMemberSatisfaction`, `memberSatisfaction[]` |
+| 일정 | 주의·제외 안내 | `warnings[]`, `excludedNotes[]` |
+| 일정 | 스톱 카드 | `days[].stops[].arriveAt / departAt / stayMin / poi.name / poi.category / score.fitScore / score.failureProbability / score.perMemberFit[]` |
+| 일정 | 경로 카드 | `days[].segments[].totalDurationMin / transferCount / totalFare / fareCurrency / legs[].lineName / fromName / toName / departAt / arriveAt` |
+| 일정 | 경고 배지·위험 문장 | `segments[].advisories[]`, `segments[].riskFlags[].level / reason / suggestion` |
+| 일정 | 최단/경치 토글 | `segments[].scenic.extraMin / reason / highlights / segment`, `segments[].recommended` |
+| 일정 | 약관 표기 영역(가변 높이) | `segments[].operators[].name / url` (응답 값 그대로, 개수 가변) |
+| 상세 | 멤버별 만족도·근거 | `score.perMemberFit[]`, `score.reasons[]` ("위험 요인:" 접두는 위험 근거) |
+
+## 화면별 약관 표기 필요 여부 (Google Maps Platform)
+
+| 화면 | 지도 | Google 표기 | 운영기관 이름·URL |
+|------|------|-------------|--------------------|
+| 입력·취향 확인 | 없음 | 불필요(경로 데이터 없음) | 불필요 |
+| 일정(결과) — 지도 키 있음 | 있음 | 지도에 포함된 로고로 충족 | **경로 카드마다 필수** — 카드 하단 가변 높이 영역 |
+| 일정(결과) — 지도 키 없음 | 없음 | 카드 하단 "경로 데이터 © Google Maps" 표기 | 필수 |
+| 상세 모달 | 없음 | 경로를 보여주지 않으므로 불필요 | 불필요 |
+| 공유 링크 열람 | 일정 화면과 동일 | 동일 | 동일 |

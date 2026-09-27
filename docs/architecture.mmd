@@ -1,0 +1,43 @@
+flowchart LR
+    subgraph OFFLINE["사전 배치 (오프라인 · 1회성)"]
+        direction TB
+        PLACES["Google Places API<br/>POI 수집·정규화<br/>data/scripts/collect_pois.py"]
+        TAG["LLM 5축 태깅<br/>data/scripts/tag_pois.py"]
+        STORE[("tagged.json<br/>(커밋 금지 · 30일 갱신)")]
+        PLACES -->|"A"| TAG -->|"B"| STORE
+    end
+
+    subgraph FRONT["프론트엔드 (브라우저)"]
+        UI["입력 · 취향 확인 · 결과 · 상세<br/>React + Vite · Maps JS(키 B)"]
+    end
+
+    subgraph BACK["백엔드 (FastAPI) — 키 A·Anthropic 키는 여기에만"]
+        direction TB
+        INTAKE["intake<br/>대화 → 5축 선호·제약·확정 사항"]
+        SCORE["scoring<br/>하드 제약 필터 → maximin 매칭"]
+        PLAN["planner<br/>제약 스케줄러 · 위험도 · 브리핑"]
+        ROUTE["routing<br/>2지점 실경로 · 경치 대안"]
+        SHARE["share<br/>입력 + Place ID 순서만 저장"]
+    end
+
+    subgraph ADAPT["어댑터 계층"]
+        direction TB
+        LLMP{{"LLMProvider"}}
+        ANTH["AnthropicProvider<br/>현재 구현체"]
+        BED["BedrockProvider<br/>승인 시 교체(대체안)"]:::idle
+        RP{{"RouteProvider<br/>좌표로 자동 선택"}}
+        GOOG["GoogleRouteProvider<br/>Routes API v2 · 파리·타이베이"]
+        ODSAY["OdsayRouteProvider<br/>예선 미사용 · 국내 확장 슬롯"]:::idle
+    end
+
+    UI -->|"① 대화 붙여넣기"| INTAKE
+    INTAKE -->|"② 1회 호출"| LLMP --> ANTH
+    INTAKE -->|"③ 프로필·제약 (슬라이더로 확인)"| UI
+    UI -->|"④ 일정 요청"| SCORE
+    STORE -->|"⑤ 벡터 조회 (LLM 호출 없음)"| SCORE
+    SCORE --> PLAN -->|"⑥ 구간 조회"| ROUTE --> RP --> GOOG
+    PLAN -->|"⑦ 일정 응답"| UI
+    UI -->|"⑧ 링크 공유"| SHARE -->|"열람 시 재계산"| PLAN
+    TAG --> LLMP
+
+    classDef idle fill:#eeeeee,stroke:#aaaaaa,color:#777777,stroke-dasharray: 4 3
