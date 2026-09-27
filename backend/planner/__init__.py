@@ -8,7 +8,15 @@ C1 제약 스케줄러의 공개 진입점은 `build_schedule()` 하나다. 호�
 파일 경계 — 9/18 식사·이동상한·막차 작업은 `constraints.py` 안에서만 이뤄진다.
 """
 
-from backend.planner.constraints import DayState, StopVeto, day_warnings, score_bonus, veto_stop
+from backend.planner.constraints import (
+    DayState,
+    StopVeto,
+    adjust_arrival,
+    day_warnings,
+    record_stop,
+    score_bonus,
+    veto_stop,
+)
 from backend.planner.placement import PlacementOutcome, pick_score, place_days
 from backend.planner.scheduler import build_schedule
 from backend.planner.schemas import (
@@ -22,6 +30,7 @@ from backend.planner.schemas import (
 )
 
 __all__ = [
+    "adjust_arrival",
     "DayState",
     "MatchResult",
     "MealWindow",
@@ -36,6 +45,7 @@ __all__ = [
     "day_warnings",
     "pick_score",
     "place_days",
+    "record_stop",
     "score_bonus",
     "veto_stop",
 ]
