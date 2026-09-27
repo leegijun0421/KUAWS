@@ -8,10 +8,27 @@
 ## 0. 최초 1회 세팅
 
 ```bash
-git clone <리포 주소>
-cd trip-planner
+git clone https://github.com/leegijun0421/KUAWS.git
+cd KUAWS
 cp .env.example .env
 ```
+
+### 커밋 작성자 설정 (필수 — 제출 코드 평가의 개인 기여가 여기서 집계된다)
+
+커밋이 "Team" 같은 공용 이름으로 남으면 누가 무엇을 했는지 추적할 수 없다.
+**각자 PC 에서 한 번** 아래를 실행한다(PowerShell, 리포 폴더에서).
+
+```powershell
+git config user.name "본인 실명"
+git config user.email "<GitHub ID 숫자>+<GitHub ID>@users.noreply.github.com"
+git config user.name; git config user.email      # 확인
+```
+
+- 이메일은 GitHub → Settings → Emails 의 `users.noreply.github.com` 주소를 쓴다.
+  이메일 비공개 설정이 켜진 계정은 다른 주소로 push 하면 거부된다.
+- 이미 여러 표기로 커밋했다면 `.mailmap` 에 한 줄 추가해 집계를 합친다
+  (`git shortlog -sne` 로 확인).
+- Windows 에서는 `git config --global core.autocrlf true` 도 함께 켠다(줄바꿈 충돌 방지).
 
 Kiro로 이 폴더를 연 뒤, 채팅에 아래를 입력해 steering이 인식되는지 확인한다.
 
