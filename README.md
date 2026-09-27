@@ -24,9 +24,29 @@ LLM 에게 맡기면 그럴듯하지만 **존재하지 않는 버스 노선과 �
 | 5 | **경치 좋은 길** | 같은 호출로 받은 대안 경로 중 공원·명소를 지나는 길을 “+6분, 경치”로 함께 보여준다. |
 | 6 | **링크 하나로 공유** | 특정 메신저에 종속되지 않는 링크. 경로는 저장하지 않고 열 때 최신 시간표로 다시 계산한다(약관 준수). |
 
-지원 도시: **파리 · 타이베이** — 실제 대중교통 시간표가 제공되는지 호출로 검증한 도시만 지원한다
-(도쿄·오사카는 Google 이 TRANSIT 경로를 주지 않아 제외, 본선에서 전용 어댑터로 확장).
-→ [docs/DECISIONS.md](docs/DECISIONS.md) 2026-09-06
+## 핵심 설계 3가지 (코드 위치)
+
+| 설계 | 무엇이 다른가 | 코드 |
+|------|---------------|------|
+| **RoutingProvider 어댑터** | 스케줄러는 어떤 라우팅 API 인지 모른다. 좌표로 제공자를 고르고(해외 = Google Routes v2, 국내 = ODsay 참조 구현), 공통 모델의 `depart_at`/`arrive_at`(실제 편성 시각) 덕분에 제공자가 바뀌어도 스케줄러·위험도가 그대로 돈다 | [`backend/routing/provider.py`](backend/routing/provider.py) · [`google_provider.py`](backend/routing/google_provider.py) · [`planner.py`](backend/routing/planner.py) |
+| **사전 배치 vs 런타임 분리** | POI 성향 벡터는 오프라인에서 한 번 계산해 두고 런타임에는 조회만 한다. 일정 생성 요청의 런타임 LLM 호출은 **0회**, 대화 해석만 1회 | [`data/scripts/tag_pois.py`](data/scripts/tag_pois.py) · [`backend/planner/service.py`](backend/planner/service.py) |
+| **maximin 그룹 매칭** | 평균이 아니라 **가장 불만족한 멤버의 적합도**가 그룹 점수다. 평균으로 바꾸면 한 사람이 크게 손해 보는 장소가 다른 사람 점수에 가려 위로 올라온다 — 실데이터 비교에서 상위 10곳이 **하나도 겹치지 않았다**([PoC](docs/POC.md)) | [`backend/scoring/matcher.py`](backend/scoring/matcher.py) |
+
+## 지원 도시 — 데이터 품질을 직접 검증한 도시만
+
+현재 지원: **파리(데모 도시) · 타이베이(아시아 사례)**. 대중교통 데이터 품질은 도시마다 크게 다르다.
+9/6 스모크 테스트에서 7개 도시를 단계별로 진단했고, Google Routes API v2 가 TRANSIT 경로와
+**실제 편성 시각**을 실제로 반환하는 것을 호출로 확인한 도시만 넣었다.
+
+| 도시 | DRIVE | TRANSIT | 판정 |
+|------|:-----:|:-------:|------|
+| 파리 | ⬤ | ⬤ | **지원** — 편성 시각·운영기관·요금 7/7, 응답 0.6초 |
+| 타이베이 | ⬤ | ⬤ | **지원** — 7/7, 응답 0.5초 |
+| 런던 · 싱가포르 · 방콕 | ⬤ | ⬤ | 예비 — POI 수집만 하면 추가 가능 |
+| 도쿄 · 오사카 | ⬤ | ✗ (0개) | 제외 — Google 이 일본 대중교통 경로를 API 로 제공하지 않음 |
+
+도쿄는 DRIVE 는 정상(좌표·키 문제 아님)인데 TRANSIT 만 200 + 빈 응답이었다. 문서로는 사전 확인이
+불가능하고 호출로만 판정된다. → [docs/DECISIONS.md](docs/DECISIONS.md) 2026-09-06
 
 ---
 
@@ -168,6 +188,12 @@ cd frontend; npm test; npm run build
 ```
 
 CI(GitHub Actions)가 PR 마다 위 명령과 `.env` 커밋 여부를 검사한다.
+
+## 본선(10/3~) 계획 — 예선 범위 밖
+
+- 일본 도시: 일본 전용 라우팅 어댑터(`RouteProvider` 구현체 추가)
+- LLM 코스 브리핑 복원(현재 규칙 기반 템플릿, `LLMProvider` 뒤에 붙이면 됨), 택시 대안 재투입
+- AWS EC2 배포, UI 고도화
 
 ## 알려진 한계 (예선)
 
