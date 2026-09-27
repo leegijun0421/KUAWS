@@ -216,7 +216,7 @@ def test_segment_risk_flags_use_real_timetable_sentences():
     from backend.planner.risk import risk_summary, segment_flags
 
     legs = [
-        RouteLeg(mode="subway", line_name="M1", from_name="a", to_name="b", duration_min=10,
+        RouteLeg(mode="bus", line_name="87", from_name="a", to_name="Bastille", duration_min=10,
                  depart_at="2026-10-14T08:00:00Z", arrive_at="2026-10-14T08:10:00Z", description=""),
         RouteLeg(mode="walk", from_name="", to_name="", duration_min=2, description=""),
         RouteLeg(mode="subway", line_name="RER A", from_name="c", to_name="d", duration_min=10,
@@ -224,7 +224,7 @@ def test_segment_risk_flags_use_real_timetable_sentences():
     ]
     flags = segment_flags(segment(26, legs), ZoneInfo("Europe/Paris"))
     assert len(flags) == 1 and flags[0].level == "high"
-    assert flags[0].reason == "M1 → RER A 환승 여유 4분 (10:10 도착 · 10:16 출발)"
+    assert flags[0].reason == "Bastille에서 버스 87 → RER A 환승 여유 4분 (10:10 도착 · 10:16 출발)"
     assert risk_summary([flags, []]) == "2일 일정 중 주의 구간 0곳, 위험 구간 1곳"
     assert "모든 환승 여유" in risk_summary([[]])
 
@@ -243,3 +243,34 @@ def test_empty_candidates_return_reason_not_crash(monkeypatch):
     res = client.post("/api/planner/plan", json=blocked)
     assert res.status_code == 200
     assert res.json()["days"][0]["stops"] == [] and res.json()["warnings"]
+
+
+def test_placement_probes_past_vetoed_top_candidates(monkeypatch):
+    """상위 후보가 실제 경로로 모두 거부돼도 아래 후보로 그날을 이어 간다(9/27 실측 회귀)."""
+    from backend.planner import placement
+    from backend.planner.schemas import MatchResult
+
+    def fake_segment(origin, destination, depart_at=None, provider=None):  # noqa: ANN001
+        # 앞의 세 후보만 실제 이동이 매우 길다 — 직선거리 추정과 실제가 어긋난 상황.
+        return segment(200 if destination.poi_id.startswith("far") else 10)
+
+    monkeypatch.setattr(placement, "plan_segment", fake_segment)
+    pois = {pid: POIVector(poi_id=pid, name=pid, lat=48.85 + i * 0.001, lng=2.35,
+                           avg_duration_min=60, opening=OpeningHours())
+            for i, pid in enumerate(["start", "far1", "far2", "far3", "near"])}
+    matches = [MatchResult(poi_id=pid, group_score=score, member_scores={})
+               for pid, score in [("start", 0.9), ("far1", 0.8), ("far2", 0.8),
+                                  ("far3", 0.8), ("near", 0.5)]]
+    outcome = placement.place_days(matches, pois, None, 1,
+                                   ScheduleConstraints(max_travel_min_per_day=120))
+    assert [stop.poi_id for stop in outcome.stops][:2] == ["start", "near"]
+
+
+def test_meal_allowed_slightly_past_travel_cap():
+    """이동 상한을 다 써도 가까운 저녁 식사는 넣는다 — 끼니를 거르지 않게."""
+    constraints = ScheduleConstraints(meal_windows=MEALS, max_travel_min_per_day=120)
+    state = DayState(day=1, travel_min=115)
+    dinner = WED.replace(hour=18, minute=30)
+    assert veto_stop(vec(meal=True), dinner, 15, state, constraints) is None
+    assert veto_stop(vec(), dinner, 15, state, constraints).code == "travel_cap"
+    assert veto_stop(vec(meal=True), dinner, 30, state, constraints).code == "travel_cap"

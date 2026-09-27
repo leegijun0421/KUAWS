@@ -165,9 +165,8 @@ def _shortfall_warnings(
     for day in range(1, days + 1):
         placed = sum(1 for stop in outcome.stops if stop.day == day)
         if placed < constraints.min_stops_per_day:
-            warnings.append(
-                f"{day}일차는 {placed}곳만 배치됐습니다 — 후보가 부족하거나 서로 멀리 있습니다"
-            )
+            reason = outcome.stop_reasons.get(day, "후보가 부족하거나 서로 멀리 있습니다")
+            warnings.append(f"{day}일차는 {placed}곳만 배치됐습니다 — {reason}")
     return warnings
 
 

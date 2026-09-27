@@ -60,7 +60,7 @@ SCENARIOS = [
         captions={
             "start": "① 파리 여행 단톡방 대화를 그대로 붙여넣습니다",
             "review": "② AI 가 사람별 취향 5가지와 꼭 가고 싶은 곳을 근거 문장과 함께 읽었습니다",
-            "result": "③ 루브르부터 시작 · 12시·18시 식사 · 모두의 만족도를 함께",
+            "result": "③ 꼭 가고 싶은 루브르·오르세 포함 · 점심·저녁 시간 식사 · 모두의 만족도",
             "route": "④ 이동은 실제 대중교통 시간표 — 몇 시 몇 분 출발·환승까지",
             "detail": "⑤ 장소마다 누가 만족하고, 무엇이 실패 위험인지",
         },
@@ -148,7 +148,6 @@ def run_steps(page: Page, scenario: Scenario) -> None:
     page.get_by_text("코스 브리핑").wait_for(timeout=PLAN_TIMEOUT_MS)
     print(f"  일정 생성: {time.perf_counter() - tick:.1f}초")
     caption(page, scenario.captions["result"])
-    page.screenshot(path=str(OUT_DIR / f"{scenario.key}_result.png"), full_page=True)
     page.wait_for_timeout(3000)
     slow_scroll(page, 4)
     caption(page, scenario.captions["route"])
@@ -160,6 +159,10 @@ def run_steps(page: Page, scenario: Scenario) -> None:
     page.mouse.click(5, 5)
     if scenario.share:
         share(page)
+    # 전체 화면 캡처는 녹화에 깨진 프레임을 남긴다 → 맨 끝에서 찍고 편집 때 잘라낸다.
+    page.evaluate("window.scrollTo(0, 0)")
+    page.wait_for_timeout(2500)  # 지도 타일 로딩
+    page.screenshot(path=str(OUT_DIR / f"{scenario.key}_result.png"), full_page=True)
 
 
 def share(page: Page) -> None:

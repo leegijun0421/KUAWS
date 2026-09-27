@@ -42,8 +42,11 @@ from backend.routing.provider import GeoPoint, RouteProvider
 
 logger = get_logger(__name__)
 
-#: 한 스텝에서 실제 라우팅을 부를 후보 수 상한. 이 값이 곧 호출 예산이다.
-MAX_PROBES_PER_STEP = 3
+#: 한 스텝에서 실제 라우팅을 부를 후보 수 상한. 첫 후보가 통과하면 1회로 끝나므로
+#: 평소 호출 수는 스텝당 1회이고, 거부가 날 때만 아래로 내려간다.
+#: 9/27 실측: 상한이 3이던 때 직선거리 추정이 실제 대중교통보다 짧아 상위 3곳이 모두
+#: 거부되고 2일차가 2곳에서 끝났다. 그래서 8로 올렸다.
+MAX_PROBES_PER_STEP = 8
 #: 하루 총 스톱(관광 + 식사) 안전 상한.
 _MAX_TOTAL_STOPS = 10
 
@@ -62,6 +65,8 @@ class PlacementOutcome(BaseModel):
     stops: list[ScheduledStop] = []
     segments: list[SegmentRoute] = []
     warnings: list[str] = []
+    #: 일차 → 그날 배치가 멈춘 이유(마지막 거부 사유). 부족 경고에 붙인다.
+    stop_reasons: dict[int, str] = {}
     routing_calls: int = 0
     provider_calls: int = 0
 
@@ -113,6 +118,7 @@ def _place_one_day(day: int, remaining: list[MatchResult], context: PlacementCon
     while len(state.stops) < _MAX_TOTAL_STOPS and clock < day_end:
         choice = _choose_next(here, clock, remaining, state, context)
         if choice is None:
+            context.outcome.stop_reasons[day] = state.last_veto or "갈 수 있는 후보가 남지 않음"
             break
         poi, segment, travel_min, arrive = choice
         if arrive + timedelta(minutes=poi.avg_duration_min) > day_end:
@@ -177,6 +183,7 @@ def _choose_next(
     for poi in ranked[:MAX_PROBES_PER_STEP]:
         segment = _fetch_segment(origin, poi, clock, context)
         if segment is None:
+            state.last_veto = f"{poi.name}까지 대중교통 경로 없음"
             continue
         travel_min = segment.primary.total_duration_min
         arrive = adjust_arrival(
@@ -185,6 +192,7 @@ def _choose_next(
         veto = veto_stop(poi, arrive, travel_min, state, context.constraints)
         if veto is not None:
             logger.info("배치 거부: %s", veto.message)
+            state.last_veto = veto.message
             continue
         return poi, segment, travel_min, arrive
     return None
