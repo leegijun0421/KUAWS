@@ -161,3 +161,13 @@ def test_answer_unknown_member_is_404():
     client = TestClient(app)
     res = client.post("/api/intake/answer", json={"memberId": "nope", "axis": "pace", "value": 0.2})
     assert res.status_code == 404
+
+
+def test_mock_chats_parse_expected_speakers():
+    """가짜 카톡 대화 5종이 화자 수대로 분리된다(데모 입력 회귀 방지)."""
+    from pathlib import Path
+
+    expected = {"01": 3, "02": 4, "03": 2, "04": 4, "05": 3}
+    for path in sorted(Path("mocks/chats").glob("*.txt")):
+        speakers = parse_chat(path.read_text(encoding="utf-8"))
+        assert len(speakers) == expected[path.name[:2]], path.name
