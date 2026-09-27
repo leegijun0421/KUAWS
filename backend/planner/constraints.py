@@ -38,6 +38,9 @@ MAX_FREE_TIME_MIN = 180
 #: 이동 상한을 다 쓴 뒤에도 식사 장소만은 이만큼(분) 더 가서 넣는다. 끼니를 거르는 것보다
 #: 조금 더 걷는 편이 낫다 — 9/27 실측에서 상한 도달 후 저녁이 통째로 빠지는 일이 있었다.
 MEAL_TRAVEL_GRACE_MIN = 20
+#: 아직 남은 끼니가 있으면 관광·카페 이동은 상한에서 이만큼 남겨 두고 멈춘다(식사용 예약).
+#: 9/27 2차 실측: 유예만으로는 부족 — 관광이 상한을 117~119분까지 다 써서 저녁이 또 빠졌다.
+MEAL_TRAVEL_RESERVE_MIN = 20
 #: 하루 카페 상한. 실데이터에서 카페 4곳이 연달아 배치되는 문제가 있었다(9/27).
 MAX_CAFES_PER_DAY = 2
 
@@ -87,6 +90,8 @@ def veto_stop(
     cap = constraints.max_travel_min_per_day
     if cap is not None and poi.is_meal:
         cap += MEAL_TRAVEL_GRACE_MIN
+    elif cap is not None and _meal_still_ahead(arrive_at, state, constraints):
+        cap -= MEAL_TRAVEL_RESERVE_MIN
     if cap is not None and state.travel_min + travel_min > cap:
         message = f"{state.day}일차 이동시간이 상한({cap}분)을 넘습니다"
         return StopVeto(code="travel_cap", message=message)
@@ -192,6 +197,17 @@ def to_minutes(hhmm: str) -> int:
     except ValueError as exc:
         raise ValueError(f"시각 형식이 'HH:MM' 이 아닙니다: {hhmm!r}") from exc
     return hour * 60 + minute
+
+
+def _meal_still_ahead(
+    moment: datetime, state: DayState, constraints: ScheduleConstraints
+) -> bool:
+    """`moment` 이후에 아직 채우지 않은 식사 시간대가 남아 있는가."""
+    minutes = moment.hour * 60 + moment.minute
+    return any(
+        window.label not in state.meals_done and minutes < to_minutes(window.end_at)
+        for window in constraints.meal_windows
+    )
 
 
 def _window_at(moment: datetime, windows: list[MealWindow]) -> MealWindow | None:
