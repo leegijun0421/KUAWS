@@ -1,17 +1,17 @@
 import { useState } from "react";
-import chat1 from "../../../mocks/chats/01_paris_foodie_allergy.txt?raw";
-import chat2 from "../../../mocks/chats/02_paris_family.txt?raw";
-import chat3 from "../../../mocks/chats/03_paris_conflict.txt?raw";
-import chat4 from "../../../mocks/chats/04_taipei_night_market.txt?raw";
-import chat5 from "../../../mocks/chats/05_taipei_quiet.txt?raw";
+import chat1 from "../../../tests/fixtures/conversations/01_clean_demo.txt?raw";
+import chat2 from "../../../tests/fixtures/conversations/02_conflict.txt?raw";
+import chat3 from "../../../tests/fixtures/conversations/03_constraints.txt?raw";
+import chat4 from "../../../tests/fixtures/conversations/04_noisy.txt?raw";
+import chat5 from "../../../tests/fixtures/conversations/05_vague.txt?raw";
 
-/** 데모·테스트용 예시 대화(가상 인물). mocks/chats/README.md 참고. */
+/** 데모·테스트용 예시 대화(가상 인물). tests/fixtures/conversations/README.md 참고. */
 const SAMPLES = [
-  { label: "파리 · 먹방 + 알레르기", city: "paris", text: chat1 },
-  { label: "파리 · 가족여행", city: "paris", text: chat2 },
-  { label: "파리 · 정반대 두 사람", city: "paris", text: chat3 },
-  { label: "타이베이 · 야시장", city: "taipei", text: chat4 },
-  { label: "타이베이 · 힐링", city: "taipei", text: chat5 },
+  { label: "파리 · 친구 3명", city: "paris", text: chat1 },
+  { label: "파리 · 취향이 정반대", city: "paris", text: chat2 },
+  { label: "파리 · 알레르기·시간 제약", city: "paris", text: chat3 },
+  { label: "타이베이 · 잡담 섞인 대화", city: "taipei", text: chat4 },
+  { label: "파리 · 아무데나 좋아", city: "paris", text: chat5 },
 ];
 
 interface Props {

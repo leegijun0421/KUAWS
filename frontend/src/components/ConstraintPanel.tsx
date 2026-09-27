@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { HardConstraints } from "../../../shared/types/api";
 import { CATEGORY_LABEL } from "../lib/format";
 
@@ -21,8 +21,24 @@ export default function ConstraintPanel({ constraints, mustVisit, onChange }: Pr
       constraints,
       mustVisit.filter((item) => item !== name),
     );
+  const [draft, setDraft] = useState("");
+  const addKeyword = () => {
+    const word = draft.trim();
+    if (!word) return;
+    onChange(
+      { ...constraints, avoidKeywords: [...new Set([...constraints.avoidKeywords, word])] },
+      mustVisit,
+    );
+    setDraft("");
+  };
+  const clearTime = () =>
+    onChange({ ...constraints, earliestStart: null, latestEnd: null }, mustVisit);
   const empty =
-    !constraints.excludeCategories.length && !constraints.avoidKeywords.length && !mustVisit.length;
+    !constraints.excludeCategories.length &&
+    !constraints.avoidKeywords.length &&
+    !mustVisit.length &&
+    !constraints.earliestStart &&
+    !constraints.latestEnd;
 
   return (
     <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
@@ -39,6 +55,13 @@ export default function ConstraintPanel({ constraints, mustVisit, onChange }: Pr
             🚫 {CATEGORY_LABEL[key] ?? key} 제외
           </Chip>
         ))}
+        {(constraints.earliestStart || constraints.latestEnd) && (
+          <Chip tone="bg-sky-50 text-sky-700" onRemove={clearTime}>
+            ⏰ {constraints.earliestStart ? `${constraints.earliestStart} 이후 시작` : ""}
+            {constraints.earliestStart && constraints.latestEnd ? " · " : ""}
+            {constraints.latestEnd ? `${constraints.latestEnd} 전에 종료` : ""}
+          </Chip>
+        )}
         {constraints.avoidKeywords.length > 0 && (
           <Chip tone="bg-rose-50 text-rose-700" onRemove={clearKeywords}>
             🚫 이름에 “{constraints.avoidKeywords.slice(0, 3).join(", ")}”
@@ -48,6 +71,22 @@ export default function ConstraintPanel({ constraints, mustVisit, onChange }: Pr
             들어간 식당 제외
           </Chip>
         )}
+      </div>
+      <div className="mt-3 flex gap-2">
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && addKeyword()}
+          placeholder="빼야 할 음식·식당 키워드 추가 (예: seafood, 땅콩)"
+          className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+        />
+        <button
+          type="button"
+          onClick={addKeyword}
+          className="rounded-lg bg-slate-800 px-3 text-sm text-white"
+        >
+          + 추가
+        </button>
       </div>
       {constraints.notes.length > 0 && (
         <ul className="mt-2 list-inside list-disc text-xs text-slate-500">

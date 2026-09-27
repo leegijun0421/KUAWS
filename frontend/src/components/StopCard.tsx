@@ -1,14 +1,15 @@
-import type { ItineraryStop } from "../../../shared/types/api";
+import type { ItineraryStop, Member } from "../../../shared/types/api";
 import { CATEGORY_ICON, CATEGORY_LABEL, percent, riskLevel } from "../lib/format";
 
 interface Props {
   stop: ItineraryStop;
   index: number;
+  members: Member[];
   onOpen: () => void;
 }
 
 /** 일정의 장소 카드 한 장. 누르면 상세(멤버별 만족도·위험 요인)가 열린다. */
-export default function StopCard({ stop, index, onOpen }: Props) {
+export default function StopCard({ stop, index, members, onOpen }: Props) {
   const risk = riskLevel(stop.score.failureProbability);
   return (
     <button
@@ -36,6 +37,21 @@ export default function StopCard({ stop, index, onOpen }: Props) {
           <span className={`rounded-full px-2 py-0.5 ${risk.tone}`}>
             실패 위험 {percent(stop.score.failureProbability)} · {risk.text}
           </span>
+        </div>
+        {/* 멤버별 만족도 — maximin 을 눈으로 보여주는 줄 */}
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500">
+          {stop.score.perMemberFit.map((fit) => (
+            <span key={fit.memberId} className="inline-flex items-center gap-1">
+              {members.find((m) => m.memberId === fit.memberId)?.memberName ?? fit.memberId}
+              <span className="inline-block h-1.5 w-10 rounded-full bg-slate-100">
+                <span
+                  className="block h-1.5 rounded-full bg-indigo-400"
+                  style={{ width: percent(fit.fit) }}
+                />
+              </span>
+              {percent(fit.fit)}
+            </span>
+          ))}
         </div>
       </div>
     </button>
