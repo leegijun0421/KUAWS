@@ -36,3 +36,4 @@ Thumbs.db
 
 # Kiro — 설정은 커밋하고, 로컬 캐시만 제외한다
 .kiro/cache/
+Claude outputs/
