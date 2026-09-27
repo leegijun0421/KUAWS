@@ -284,3 +284,14 @@ def test_sights_leave_travel_budget_for_remaining_dinner():
     assert veto_stop(vec(), afternoon, 15, before_dinner, constraints).code == "travel_cap"
     after_dinner = DayState(day=1, travel_min=90, meals_done=["점심", "저녁"])
     assert veto_stop(vec(), afternoon, 15, after_dinner, constraints) is None
+
+
+def test_long_sight_covering_pending_lunch_is_penalized():
+    from backend.planner.constraints import score_bonus
+
+    constraints = ScheduleConstraints(meal_windows=MEALS)
+    late_morning = WED.replace(hour=11, minute=40)
+    assert score_bonus(vec(stay=120), late_morning, constraints, DayState(day=1)) < 0
+    assert score_bonus(vec(stay=30), late_morning, constraints, DayState(day=1)) == 0
+    lunched = DayState(day=1, meals_done=["점심"])
+    assert score_bonus(vec(stay=120), late_morning, constraints, lunched) == 0

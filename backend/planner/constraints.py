@@ -41,6 +41,8 @@ MEAL_TRAVEL_GRACE_MIN = 20
 #: 아직 남은 끼니가 있으면 관광·카페 이동은 상한에서 이만큼 남겨 두고 멈춘다(식사용 예약).
 #: 9/27 2차 실측: 유예만으로는 부족 — 관광이 상한을 117~119분까지 다 써서 저녁이 또 빠졌다.
 MEAL_TRAVEL_RESERVE_MIN = 20
+#: 비식사 장소가 남은 끼니 시간대를 통째로 덮을 때의 감점(그룹 점수 0~1 기준).
+MEAL_BLOCK_PENALTY = 0.6
 #: 하루 카페 상한. 실데이터에서 카페 4곳이 연달아 배치되는 문제가 있었다(9/27).
 MAX_CAFES_PER_DAY = 2
 
@@ -112,9 +114,16 @@ def score_bonus(
     constraints: ScheduleConstraints,
     state: DayState | None = None,
 ) -> float:
-    """후보 선택 점수에 더할 가산점. 제약이 꺼져 있거나 이미 채운 끼니면 0.0."""
-    if not constraints.meal_windows or not poi.is_meal:
+    """후보 선택 점수에 더할 가산점. 제약이 꺼져 있거나 이미 채운 끼니면 0.0.
+
+    식사가 아닌 곳이 아직 못 채운 식사 시간대를 통째로 덮으면(예: 11:40 루브르 120분 →
+    점심 끝) 감점한다. 거부(veto)가 아니라 감점이라 근처에 식당이 없으면 그래도 들어간다.
+    """
+    if not constraints.meal_windows:
         return 0.0
+    if not poi.is_meal:
+        blocks = _blocks_pending_meal(poi, arrive_at, state, constraints)
+        return -MEAL_BLOCK_PENALTY if blocks else 0.0
     window = _window_at(arrive_at, constraints.meal_windows)
     if window is None or (window.categories and poi.category not in window.categories):
         return 0.0
@@ -206,6 +215,19 @@ def _meal_still_ahead(
     minutes = moment.hour * 60 + moment.minute
     return any(
         window.label not in state.meals_done and minutes < to_minutes(window.end_at)
+        for window in constraints.meal_windows
+    )
+
+
+def _blocks_pending_meal(
+    poi: POIVector, arrive_at: datetime, state: DayState | None, constraints: ScheduleConstraints
+) -> bool:
+    """머무는 동안 아직 못 채운 식사 시간대가 끝나 버리는가."""
+    start = arrive_at.hour * 60 + arrive_at.minute
+    end = start + poi.avg_duration_min
+    done = state.meals_done if state is not None else []
+    return any(
+        window.label not in done and start < to_minutes(window.end_at) <= end
         for window in constraints.meal_windows
     )
 
