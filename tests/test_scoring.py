@@ -98,3 +98,11 @@ def test_must_visit_picks_single_best_match_in_real_like_data():
             poi("museum", [0.5] * 5, name="Louvre Museum"),
             poi("tour", [0.5] * 5, name="Tourism France Louvre")]
     assert match_must_visit(["Musée du Louvre"], pois) == {"museum"}
+
+
+def test_must_visit_requires_same_place_type():
+    pois = [poi("park", [0.5] * 5, name="Shilin Residence Park"),
+            poi("market", [0.5] * 5, name="Raohe Night Market")]
+    assert match_must_visit(["Shilin Night Market"], pois) == set()
+    assert match_must_visit(["Raohe Street Night Market"], pois) == {"market"}  # street 는 일반 명사
+    assert match_must_visit(["Raohe Night Market"], pois) == {"market"}
