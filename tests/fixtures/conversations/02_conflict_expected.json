@@ -1,0 +1,45 @@
+{
+  "type": "conflict",
+  "city": "paris",
+  "days": 2,
+  "start_date": null,
+  "members": [
+    {
+      "name": "현우",
+      "axes": {
+        "activity_level": 0.95,
+        "crowd_tolerance": 0.9,
+        "nature_vs_urban": 0.85,
+        "food_priority": 0.1,
+        "pace": 0.95
+      }
+    },
+    {
+      "name": "수아",
+      "axes": {
+        "activity_level": 0.15,
+        "crowd_tolerance": 0.1,
+        "nature_vs_urban": 0.15,
+        "food_priority": 0.85,
+        "pace": 0.1
+      }
+    },
+    {
+      "name": "지민",
+      "axes": {
+        "activity_level": 0.5,
+        "crowd_tolerance": null,
+        "nature_vs_urban": 0.6,
+        "food_priority": 0.55,
+        "pace": 0.5
+      }
+    }
+  ],
+  "must_visit_any": [],
+  "constraints": {
+    "avoid_keywords_any": [],
+    "exclude_categories": [],
+    "earliest_start": null
+  },
+  "note": "사람이 대화를 읽고 매긴 정답지. null = 대화에 근거 없음(낮은 신뢰도가 정답). 0.5±0.15 는 '중간'."
+}
