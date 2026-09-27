@@ -9,6 +9,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.intake.router import router as intake_router
+from backend.planner.router import router as planner_router
+from backend.share.router import router as share_router
 
 app = FastAPI(title="AI 여행 플래너", version="0.1.0")
 
@@ -28,14 +30,7 @@ def health() -> dict[str, str]:
 
 
 app.include_router(intake_router, prefix="/api/intake", tags=["intake"])
+app.include_router(planner_router, prefix="/api/planner", tags=["planner"])
+app.include_router(share_router, prefix="/api/share", tags=["share"])
 
-# 각 모듈 구현이 끝나면 아래 주석을 해제한다.
-# from backend.scoring.router import router as scoring_router
-# from backend.planner.router import router as planner_router
-# from backend.routing.router import router as routing_router
-# from backend.share.router import router as share_router
-#
-# app.include_router(scoring_router, prefix="/api/scoring", tags=["scoring"])
-# app.include_router(planner_router, prefix="/api/planner", tags=["planner"])
-# app.include_router(routing_router, prefix="/api/routing", tags=["routing"])
-# app.include_router(share_router, prefix="/api/share", tags=["share"])
+# scoring·routing 은 planner 파이프라인 안에서 호출되므로 별도 공개 API 가 없다.

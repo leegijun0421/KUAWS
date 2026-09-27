@@ -1,26 +1,38 @@
-"""배치 제약 훅.
+"""배치 제약 훅 — 영업시간·식사 배치·하루 이동시간 상한·막차 경고.
 
-⚠️ **이 파일이 9/18 홍성민 작업의 소유 경로다.** 식사 배치·이동시간 상한·막차 경고는
-전부 여기 세 함수 안에서 끝난다. 배치 루프(`placement.py`)와 재시도(`scheduler.py`)는
-아래 함수만 호출하므로, 두 사람이 같은 파일을 동시에 고칠 일이 없다.
+배치 루프(`placement.py`)와 재시도(`scheduler.py`)는 아래 네 함수만 호출한다.
+제약을 바꿀 때 이 파일 밖을 고칠 일이 없게 하는 것이 목적이다.
 
-훅은 세 종류다.
-
-* `veto_stop()`   — 이 POI 를 이 시각에 넣어도 되는가. 안 되면 사유를 돌려준다.
-* `score_bonus()` — 후보 선택 점수에 더할 가산점. 기본 0.0.
+* `veto_stop()`    — 이 POI 를 이 시각에 넣어도 되는가. 안 되면 사유를 돌려준다.
+* `score_bonus()`  — 후보 선택 점수에 더할 가산점. 식사 시간대의 식사 장소를 끌어올린다.
+* `record_stop()`  — 확정된 스톱을 하루 상태에 기록한다(식사 충족 여부 등).
 * `day_warnings()` — 하루 배치가 끝난 뒤 붙일 경고 문구.
 
-세 함수 모두 **제약 값이 비어 있으면 아무 일도 하지 않는다.** 기본 설정만으로도
-일정이 나와야 한다는 원칙(`schemas.ScheduleConstraints`)을 여기서 지킨다.
+모든 훅은 **제약 값이 비어 있으면 아무 일도 하지 않는다.** 기본 설정만으로도 일정이
+나와야 한다는 원칙(`schemas.ScheduleConstraints`)을 여기서 지킨다.
+
+식사 배치 방식(12시·18시 음식 POI 강제)
+    식사 시간대 안에 도착하는 식사 장소에 가산점 +1.0 을 준다. 그룹 점수가 0~1 이므로
+    사실상 '식사 장소가 있으면 무조건 먼저'가 된다. 반대로 식사 장소는 식사 시간대 밖에는
+    넣지 않는다(오전 10시 레스토랑 방지). 비식사 장소를 거부(veto)하는 방식은 쓰지 않는다 —
+    근처에 식사 후보가 없는 날 일정이 통째로 비기 때문이다. 대신 못 채운 끼니는 경고로 알린다.
 """
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta, timezone, tzinfo
 
 from pydantic import BaseModel
 
-from backend.planner.schemas import POIVector, ScheduleConstraints, ScheduledStop
+from backend.planner.schemas import MealWindow, POIVector, ScheduleConstraints, ScheduledStop
+from backend.routing.planner import SegmentRoute
+
+#: 도착 후 최소 이만큼은 머물 수 있어야 '열려 있다'고 본다(분).
+MIN_VISIT_MIN = 30
+#: 식사 시간대의 식사 장소 가산점. 그룹 점수(0~1)보다 커서 사실상 우선 배치된다.
+MEAL_BONUS = 1.0
+#: 식사 시간대 시작 전 이 시간(분) 안에 도착하면 시작까지 기다렸다가 식사한다.
+MAX_MEAL_WAIT_MIN = 45
 
 
 class DayState(BaseModel):
@@ -30,6 +42,10 @@ class DayState(BaseModel):
     stops: list[ScheduledStop] = []
     #: 그날 누적 이동시간(분).
     travel_min: int = 0
+    #: 그날 이동 구간(막차 경고가 편성 시각을 본다).
+    segments: list[SegmentRoute] = []
+    #: 이미 채운 식사 시간대 라벨.
+    meals_done: list[str] = []
 
 
 class StopVeto(BaseModel):
@@ -47,23 +63,24 @@ def veto_stop(
     constraints: ScheduleConstraints,
 ) -> StopVeto | None:
     """이 POI 를 `arrive_at` 에 넣어도 되는지 검사한다. 문제가 없으면 None."""
-    if not _is_open(poi, arrive_at):
-        return StopVeto(
-            code="closed",
-            message=f"{poi.name}: {arrive_at:%H:%M} 도착이면 영업시간({poi.opening.open_at}"
-            f"~{poi.opening.close_at}) 밖입니다",
-        )
+    if not poi.is_meal and sight_count(state) >= constraints.max_stops_per_day:
+        return StopVeto(code="day_full", message=f"{state.day}일차 관광 스톱이 가득 찼습니다")
+    if not is_open(poi, arrive_at, min(MIN_VISIT_MIN, poi.avg_duration_min)):
+        message = f"{poi.name}: {arrive_at:%a %H:%M} 도착이면 영업시간 밖입니다"
+        return StopVeto(code="closed", message=message)
 
     cap = constraints.max_travel_min_per_day
     if cap is not None and state.travel_min + travel_min > cap:
-        return StopVeto(
-            code="travel_cap",
-            message=f"{state.day}일차 이동시간이 상한({cap}분)을 넘습니다",
-        )
+        message = f"{state.day}일차 이동시간이 상한({cap}분)을 넘습니다"
+        return StopVeto(code="travel_cap", message=message)
 
-    # TODO(홍성민 · 9/18): 식사 시간대에 식사 아닌 POI 를 막을지 여부.
-    #   지금은 `score_bonus()` 의 가산점으로만 유도하고 거부하지는 않는다 —
-    #   거부로 만들면 식사 후보가 없는 도시에서 일정이 통째로 실패한다.
+    if poi.is_meal and constraints.meal_windows:
+        window = _window_at(arrive_at, constraints.meal_windows)
+        if window is None:
+            message = f"{poi.name}: 식사 시간대가 아닙니다"
+            return StopVeto(code="meal_outside_window", message=message)
+        if window.label in state.meals_done:
+            return StopVeto(code="meal_duplicate", message=f"{window.label}은 이미 배치했습니다")
     return None
 
 
@@ -71,18 +88,43 @@ def score_bonus(
     poi: POIVector,
     arrive_at: datetime,
     constraints: ScheduleConstraints,
+    state: DayState | None = None,
 ) -> float:
-    """후보 선택 점수에 더할 가산점. 제약이 꺼져 있으면 0.0."""
+    """후보 선택 점수에 더할 가산점. 제약이 꺼져 있거나 이미 채운 끼니면 0.0."""
     if not constraints.meal_windows or not poi.is_meal:
         return 0.0
+    window = _window_at(arrive_at, constraints.meal_windows)
+    if window is None or (window.categories and poi.category not in window.categories):
+        return 0.0
+    if state is not None and window.label in state.meals_done:
+        return 0.0
+    return MEAL_BONUS
+
+
+def adjust_arrival(
+    poi: POIVector, arrive_at: datetime, state: DayState, constraints: ScheduleConstraints
+) -> datetime:
+    """식사 장소에 끼니 시작 직전 도착하면 시작 시각까지 기다린 것으로 본다.
+
+    17:40 에 식당 앞에 도착했는데 저녁 시간대가 18:00 부터라 "식사 시간대 밖"으로 거부되면
+    저녁을 통째로 놓친다. 45분 이내 대기는 자연스러우므로 도착 시각을 시작으로 민다.
+    """
+    if not poi.is_meal:
+        return arrive_at
+    minutes = arrive_at.hour * 60 + arrive_at.minute
     for window in constraints.meal_windows:
-        if not _in_window(arrive_at, window.start_at, window.end_at):
-            continue
-        if window.categories and poi.category not in window.categories:
-            continue
-        # 식사 시간대에 식사 가능한 장소면 점수를 올려 사실상 먼저 뽑히게 한다.
-        return 0.5
-    return 0.0
+        start = to_minutes(window.start_at)
+        if window.label not in state.meals_done and 0 < start - minutes <= MAX_MEAL_WAIT_MIN:
+            return arrive_at + timedelta(minutes=start - minutes)
+    return arrive_at
+
+
+def record_stop(
+    poi: POIVector, arrive_at: datetime, state: DayState, constraints: ScheduleConstraints
+) -> None:
+    """확정된 스톱이 식사 시간대를 채웠는지 기록한다."""
+    if poi.is_meal and (window := _window_at(arrive_at, constraints.meal_windows)):
+        state.meals_done.append(window.label)
 
 
 def day_warnings(state: DayState, constraints: ScheduleConstraints) -> list[str]:
@@ -91,30 +133,78 @@ def day_warnings(state: DayState, constraints: ScheduleConstraints) -> list[str]
     cap = constraints.max_travel_min_per_day
     if cap is not None and state.travel_min > cap * 0.8:
         warnings.append(f"{state.day}일차 이동시간 {state.travel_min}분 — 상한 {cap}분에 근접")
-
-    # TODO(홍성민 · 9/18): 막차 경고.
-    #   `constraints.last_train_margin_min` 과 각 구간 마지막 탑승 leg 의
-    #   `depart_at` 을 비교해 "N일차 막차 여유 8분" 형태의 문구를 만든다.
-    #   `SegmentRoute.primary.legs[*].depart_at` 은 Google Routes 에서만 채워지고
-    #   도보 구간은 항상 None 이므로, None 이면 경고를 만들지 말 것(추정 금지).
+    if state.stops:
+        for window in constraints.meal_windows:
+            if window.label not in state.meals_done:
+                warnings.append(
+                    f"{state.day}일차 {window.label}({window.start_at}~{window.end_at})에 "
+                    "넣을 식사 장소를 찾지 못했습니다 — 근처에서 자유롭게 드세요"
+                )
+    warnings.extend(_last_train_warnings(state, constraints))
     return warnings
 
 
-def _is_open(poi: POIVector, moment: datetime) -> bool:
-    """도착 시각이 영업시간 안인지 본다. 자정을 넘는 영업시간은 다루지 않는다."""
-    return _in_window(moment, poi.opening.open_at, poi.opening.close_at)
+def sight_count(state: DayState) -> int:
+    """그날 배치된 관광(비식사) 스톱 수. 식사는 하루 상한에 세지 않는다."""
+    return len(state.stops) - len(state.meals_done)
 
 
-def _in_window(moment: datetime, start_at: str, end_at: str) -> bool:
-    """`moment` 의 시:분이 "HH:MM"~"HH:MM" 구간 안에 있는지 판정한다."""
-    minutes = moment.hour * 60 + moment.minute
-    return to_minutes(start_at) <= minutes <= to_minutes(end_at)
+def is_open(poi: POIVector, moment: datetime, stay_min: int = 0) -> bool:
+    """`moment` 에 도착해 `stay_min` 분 머무는 동안 영업 중인지. 요일별 영업시간을 쓴다."""
+    start = moment.hour * 60 + moment.minute
+    for open_at, close_at in poi.opening.ranges_for(moment.weekday()):
+        if to_minutes(open_at) <= start and start + stay_min <= to_minutes(close_at):
+            return True
+    return False
 
 
 def to_minutes(hhmm: str) -> int:
-    """"HH:MM" 을 자정 기준 분으로 바꾼다. 형식이 틀리면 즉시 알려준다."""
+    """"HH:MM" 을 자정 기준 분으로 바꾼다("24:00" 허용). 형식이 틀리면 즉시 알려준다."""
     try:
         hour, minute = (int(part) for part in hhmm.split(":"))
     except ValueError as exc:
         raise ValueError(f"시각 형식이 'HH:MM' 이 아닙니다: {hhmm!r}") from exc
     return hour * 60 + minute
+
+
+def _window_at(moment: datetime, windows: list[MealWindow]) -> MealWindow | None:
+    """`moment` 가 속한 식사 시간대."""
+    minutes = moment.hour * 60 + moment.minute
+    for window in windows:
+        if to_minutes(window.start_at) <= minutes <= to_minutes(window.end_at):
+            return window
+    return None
+
+
+def _last_train_warnings(state: DayState, constraints: ScheduleConstraints) -> list[str]:
+    """막차 경고. 편성 시각(Google 실제 시간표)이 있는 탑승 leg 와 그날 종료 시각을 본다.
+
+    편성 시각이 없는 구간(도보·ODsay)은 추정으로 채우지 않고 건너뛴다.
+    막차 시각이 "00:30" 처럼 자정 이후면 다음 날로 넘겨 계산한다.
+    """
+    margin = constraints.last_train_margin_min
+    if margin is None or constraints.last_service_at is None or not state.stops:
+        return []
+    last_service = to_minutes(constraints.last_service_at)
+    if last_service < 12 * 60:
+        last_service += 24 * 60
+    latest = to_minutes(state.stops[-1].depart_at)
+    tz = _tz(constraints.start_at)
+    for segment in state.segments:
+        for leg in segment.primary.legs:
+            if leg.depart_at and tz is not None:
+                local = datetime.fromisoformat(leg.depart_at.replace("Z", "+00:00")).astimezone(tz)
+                latest = max(latest, local.hour * 60 + local.minute)
+    slack = last_service - latest
+    if slack >= margin:
+        return []
+    last = constraints.last_service_at
+    return [f"{state.day}일차 마지막 이동 후 막차({last})까지 여유 {slack}분"]
+
+
+def _tz(start_at: str | None) -> tzinfo | None:
+    """출발 시각의 UTC 오프셋(편성 시각을 현지로 옮기는 데 쓴다)."""
+    if not start_at:
+        return None
+    parsed = datetime.fromisoformat(start_at.replace("Z", "+00:00"))
+    return parsed.tzinfo or timezone(timedelta(0))

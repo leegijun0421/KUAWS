@@ -24,74 +24,26 @@ import httpx
 
 from backend.common.config import get_settings
 from backend.common.logging import get_logger
+from backend.routing.google_fields import (
+    ENDPOINT,
+    FIELD_MASK,
+    PREFERENCE_TO_ROUTING,
+    VEHICLE_TO_MODE,
+    route_path,
+    seconds,
+)
 from backend.routing.provider import (
+    AlternativeRoute,
     GeoPoint,
     NoRouteError,
     Operator,
+    PathPoint,
     RouteProvider,
     RouteProviderError,
 )
 from shared.types.models import RouteLeg, RoutePreference, RouteSegment
 
 logger = get_logger(__name__)
-
-_ENDPOINT = "https://routes.googleapis.com/directions/v2:computeRoutes"
-
-#: Routes API 는 fieldMask 가 필수다. 빠뜨리면 빈 응답이 온다.
-#: 개발 중 탐색은 scripts/probe_routes.py 가 넓은 마스크로 하고,
-#: 운영 코드인 여기서는 정규화에 실제로 쓰는 필드만 좁게 요청한다.
-#: ('*' 는 비용이 오르고 신규 필드까지 딸려오므로 금지)
-_FIELD_MASK = ",".join(
-    [
-        "routes.duration",
-        "routes.travelAdvisory.transitFare",
-        "routes.legs.steps.travelMode",
-        "routes.legs.steps.staticDuration",
-        "routes.legs.steps.distanceMeters",
-        "routes.legs.steps.navigationInstruction.instructions",
-        "routes.legs.steps.transitDetails",
-    ]
-)
-
-#: Routes API vehicle type → 공통 모델의 mode. 목록에 없는 수단은 bus 로 묶는다.
-_VEHICLE_TO_MODE: dict[str, str] = {
-    "SUBWAY": "subway",
-    "METRO_RAIL": "subway",
-    "HEAVY_RAIL": "subway",
-    "COMMUTER_TRAIN": "subway",
-    "HIGH_SPEED_TRAIN": "subway",
-    "LONG_DISTANCE_TRAIN": "subway",
-    "MONORAIL": "subway",
-    "RAIL": "subway",
-    "TRAM": "bus",
-    "BUS": "bus",
-    "INTERCITY_BUS": "bus",
-    "TROLLEYBUS": "bus",
-}
-
-#: 서비스의 경로 선호도 → Routes API transitPreferences.routingPreference
-#: Google 에는 "경치" 개념이 없어 fewer_transfers 로 근사한다.
-_PREFERENCE_TO_ROUTING: dict[str, str] = {
-    "fastest": "LESS_WALKING",
-    "fewest_transfers": "FEWER_TRANSFERS",
-    "scenic": "FEWER_TRANSFERS",
-}
-
-
-def _seconds(value: str | None) -> int:
-    """Routes API 의 duration 문자열('1500s')을 초로 바꾼다.
-
-    형식이 예상과 다르면 0 을 돌려준다 — 시간 정보 하나 때문에 경로 전체를
-    버리지 않기 위해서다. 호출부는 0 을 '알 수 없음'으로 다룬다.
-    """
-    if not value:
-        return 0
-    try:
-        return int(float(value.rstrip("s")))
-    except ValueError:
-        logger.warning("duration 형식을 해석하지 못했습니다: %r", value)
-        return 0
-
 
 class GoogleRouteProvider(RouteProvider):
     """Google Routes API v2 로 해외 대중교통 경로를 조회한다."""
@@ -132,21 +84,23 @@ class GoogleRouteProvider(RouteProvider):
             },
             "travelMode": "TRANSIT",
             "transitPreferences": {
-                "routingPreference": _PREFERENCE_TO_ROUTING[preference]
+                "routingPreference": PREFERENCE_TO_ROUTING[preference]
             },
             "languageCode": "ko",
             "units": "METRIC",
+            # 대안 경로를 같은 호출에서 받는다 — 경치 경로 추천에 추가 호출이 들지 않는다.
+            "computeAlternativeRoutes": True,
         }
         if depart_at:
             body["departureTime"] = depart_at
         headers = {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": api_key,
-            "X-Goog-FieldMask": _FIELD_MASK,
+            "X-Goog-FieldMask": FIELD_MASK,
         }
 
         try:
-            response = httpx.post(_ENDPOINT, json=body, headers=headers, timeout=10.0)
+            response = httpx.post(ENDPOINT, json=body, headers=headers, timeout=10.0)
             response.raise_for_status()
         except httpx.HTTPStatusError as exc:
             # Routes API 는 오류 사유를 본문에 담아준다. 앞부분만 로그에 남긴다.
@@ -179,7 +133,16 @@ class GoogleRouteProvider(RouteProvider):
         if not routes:
             raise NoRouteError("Google 이 경로를 반환하지 않았습니다.")
 
-        route = routes[0]
+        return self._route_segment(routes[0], origin, destination, preference)
+
+    def _route_segment(
+        self,
+        route: dict,
+        origin: GeoPoint,
+        destination: GeoPoint,
+        preference: RoutePreference,
+    ) -> RouteSegment:
+        """routes[] 원소 하나를 공통 RouteSegment 로 바꾼다(대표·대안 경로 공용)."""
         # TRANSIT 은 경유지를 지정할 수 없으므로 leg 는 항상 1개다.
         leg = route.get("legs", [{}])[0]
         steps = [
@@ -202,11 +165,37 @@ class GoogleRouteProvider(RouteProvider):
             from_poi_id=origin.poi_id,
             to_poi_id=destination.poi_id,
             preference=preference,
-            total_duration_min=round(_seconds(route.get("duration")) / 60),
+            total_duration_min=round(seconds(route.get("duration")) / 60),
             total_fare=round(total_fare, 2),
             fare_currency=fare.get("currencyCode"),
             legs=steps,
         )
+
+    def _extract_path(self, payload: dict) -> list[PathPoint]:
+        """대표 경로의 정류장·꺾임점 좌표."""
+        return route_path((payload.get("routes") or [{}])[0])
+
+    def _extract_alternatives(
+        self,
+        payload: dict,
+        origin: GeoPoint,
+        destination: GeoPoint,
+        preference: RoutePreference,
+    ) -> list[AlternativeRoute]:
+        """routes[1:] 을 대안 경로로 정규화한다. 하나가 깨져도 나머지는 살린다."""
+        alternatives = []
+        for route in (payload.get("routes") or [])[1:]:
+            segment = self._route_segment(route, origin, destination, preference)
+            if not segment.legs:
+                continue
+            alternatives.append(
+                AlternativeRoute(
+                    segment=segment,
+                    operators=self._extract_operators({"routes": [route]}),
+                    path=route_path(route),
+                )
+            )
+        return alternatives
 
     def _extract_operators(self, payload: dict) -> list[Operator]:
         """응답에서 운영기관(이름·URL)을 중복 없이 모은다.
@@ -230,7 +219,7 @@ class GoogleRouteProvider(RouteProvider):
 
     def _to_leg(self, step: dict) -> RouteLeg | None:
         """step 하나를 RouteLeg 로 바꾼다. 길이 0인 도보는 버린다."""
-        duration = round(_seconds(step.get("staticDuration")) / 60)
+        duration = round(seconds(step.get("staticDuration")) / 60)
 
         if step.get("travelMode") != "TRANSIT":
             if duration <= 0:
@@ -253,7 +242,7 @@ class GoogleRouteProvider(RouteProvider):
         stops = detail.get("stopCount", 0)
 
         return RouteLeg(
-            mode=_VEHICLE_TO_MODE.get(vehicle, "bus"),
+            mode=VEHICLE_TO_MODE.get(vehicle, "bus"),
             line_name=str(line_name) if line_name else None,
             from_name=stop.get("departureStop", {}).get("name", ""),
             to_name=stop.get("arrivalStop", {}).get("name", ""),
@@ -263,3 +252,4 @@ class GoogleRouteProvider(RouteProvider):
             arrive_at=stop.get("arrivalTime"),
             description=f"{line_name} 탑승 {stops}개 정거장",
         )
+

@@ -34,8 +34,12 @@ class Settings(BaseModel):
     cache_dir: str = "data/processed/cache"
     #: 공유 링크의 앞부분. 배포 시 실제 프론트 주소로 바꾼다.
     public_base_url: str = "http://localhost:5173"
+    #: 공유 링크 저장소(SQLite). data/processed 아래라 커밋되지 않는다.
+    share_db_path: str = "data/processed/share.db"
     #: 1이면 LLM 을 부르지 않고 규칙 기반 추출기로 대체한다(키 없는 데모·CI 용).
     llm_offline: bool = False
+    #: 1이면 Google 대신 모의 경로를 쓴다(키 없는 화면 개발·CI 전용. 데모에서 켜지 말 것).
+    routing_mock: bool = False
 
 
 @lru_cache
@@ -48,7 +52,9 @@ def get_settings() -> Settings:
         google_backend_api_key=os.getenv("GOOGLE_BACKEND_API_KEY", ""),
         cache_dir=os.getenv("CACHE_DIR", "data/processed/cache"),
         public_base_url=os.getenv("PUBLIC_BASE_URL") or "http://localhost:5173",
+        share_db_path=os.getenv("SHARE_DB_PATH") or "data/processed/share.db",
         llm_offline=os.getenv("LLM_OFFLINE", "") == "1",
+        routing_mock=os.getenv("ROUTING_MOCK", "") == "1",
     )
 
 

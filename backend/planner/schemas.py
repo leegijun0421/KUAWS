@@ -19,10 +19,22 @@ from backend.routing.planner import SegmentRoute
 
 
 class OpeningHours(BaseModel):
-    """간이 영업시간. 요일 구분은 예선 범위 밖이다(전일 동일 적용)."""
+    """영업시간.
+
+    `weekly` 가 있으면 요일별 구간(0=월, "HH:MM" 쌍 목록, 빈 목록 = 휴무)을 쓰고,
+    없거나 그 요일 정보가 없으면 `open_at`~`close_at` 을 매일 적용한다.
+    `weekly` 는 `backend.common.opening_hours.parse_weekly_hours()` 가 만든다.
+    """
 
     open_at: str = "09:00"
     close_at: str = "21:00"
+    weekly: dict[int, list[tuple[str, str]]] | None = None
+
+    def ranges_for(self, weekday: int) -> list[tuple[str, str]]:
+        """그 요일의 영업 구간. 빈 목록이면 휴무."""
+        if self.weekly is not None and weekday in self.weekly:
+            return self.weekly[weekday]
+        return [(self.open_at, self.close_at)]
 
 
 class POIVector(BaseModel):
@@ -90,6 +102,8 @@ class ScheduleConstraints(BaseModel):
     max_travel_min_per_day: int | None = None
     #: 막차 경고 기준(분). 마지막 탑승 여유가 이보다 적으면 경고를 단다.
     last_train_margin_min: int | None = None
+    #: 도시 지하철 막차 시각(현지 "HH:MM", 자정 이후면 "00:30" 처럼). `backend.common.cities`.
+    last_service_at: str | None = None
 
 
 # ---------- 출력 ----------

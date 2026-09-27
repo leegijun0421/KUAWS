@@ -21,7 +21,15 @@ from datetime import datetime, timedelta
 from pydantic import BaseModel
 
 from backend.common.logging import get_logger
-from backend.planner.constraints import DayState, day_warnings, score_bonus, to_minutes, veto_stop
+from backend.planner.constraints import (
+    DayState,
+    adjust_arrival,
+    day_warnings,
+    record_stop,
+    score_bonus,
+    to_minutes,
+    veto_stop,
+)
 from backend.planner.schemas import MatchResult, POIVector, ScheduleConstraints, ScheduledStop
 from backend.routing.planner import (
     MAX_SEGMENT_KM,
@@ -36,6 +44,8 @@ logger = get_logger(__name__)
 
 #: 한 스텝에서 실제 라우팅을 부를 후보 수 상한. 이 값이 곧 호출 예산이다.
 MAX_PROBES_PER_STEP = 3
+#: 하루 총 스톱(관광 + 식사) 안전 상한.
+_MAX_TOTAL_STOPS = 10
 
 #: 추정 이동시간용 평균 속도(km/h). 대기·환승을 포함한 체감 속도라 실제보다 느리다.
 _ESTIMATE_SPEED_KMH = 18.0
@@ -99,12 +109,12 @@ def _place_one_day(day: int, remaining: list[MatchResult], context: PlacementCon
     state = DayState(day=day)
     here: POIVector | None = None
 
-    while len(state.stops) < context.constraints.max_stops_per_day and clock < day_end:
+    # 관광 스톱 상한은 veto_stop 이 막는다(식사는 상한에 세지 않음). 여기선 총량 안전장치만 둔다.
+    while len(state.stops) < _MAX_TOTAL_STOPS and clock < day_end:
         choice = _choose_next(here, clock, remaining, state, context)
         if choice is None:
             break
-        poi, segment, travel_min = choice
-        arrive = clock + timedelta(minutes=travel_min)
+        poi, segment, travel_min, arrive = choice
         if arrive + timedelta(minutes=poi.avg_duration_min) > day_end:
             break  # 오늘 안에 못 들어간다. 남은 후보는 다음 날로 넘긴다.
 
@@ -139,8 +149,10 @@ def _commit_stop(
     context.outcome.stops.append(stop)
     state.stops.append(stop)
     state.travel_min += travel_min
+    record_stop(poi, arrive, state, context.constraints)
     if segment is not None:
         context.outcome.segments.append(segment)
+        state.segments.append(segment)
 
 
 def _choose_next(
@@ -149,14 +161,15 @@ def _choose_next(
     remaining: list[MatchResult],
     state: DayState,
     context: PlacementContext,
-) -> tuple[POIVector, SegmentRoute | None, int] | None:
+) -> tuple[POIVector, SegmentRoute | None, int, datetime] | None:
     """다음에 갈 곳을 고른다. 고를 수 없으면 None.
 
     점수만 보지 않는다. 점수 0.9 인데 1시간 떨어진 곳보다 0.75 인데 10분 거리가 낫다.
     실제 이동시간은 라우팅을 불러야 알지만, 부르기 전에 추정치로 순위를 매겨
-    상위 `MAX_PROBES_PER_STEP` 개만 확인한다.
+    상위 `MAX_PROBES_PER_STEP` 개만 확인한다. 추정치로도 제약(영업시간·식사 시간대 등)에
+    걸리는 후보는 순위에서 미리 빼므로, 라우팅 호출은 가망 있는 후보에만 쓰인다.
     """
-    ranked = _rank(here, clock, remaining, context)
+    ranked = _rank(here, clock, remaining, state, context)
     if here is None:
         return _first_stop(ranked, clock, state, context)
 
@@ -166,12 +179,14 @@ def _choose_next(
         if segment is None:
             continue
         travel_min = segment.primary.total_duration_min
-        arrive = clock + timedelta(minutes=travel_min)
+        arrive = adjust_arrival(
+            poi, clock + timedelta(minutes=travel_min), state, context.constraints
+        )
         veto = veto_stop(poi, arrive, travel_min, state, context.constraints)
         if veto is not None:
             logger.info("배치 거부: %s", veto.message)
             continue
-        return poi, segment, travel_min
+        return poi, segment, travel_min, arrive
     return None
 
 
@@ -180,11 +195,12 @@ def _first_stop(
     clock: datetime,
     state: DayState,
     context: PlacementContext,
-) -> tuple[POIVector, None, int] | None:
+) -> tuple[POIVector, None, int, datetime] | None:
     """그날 첫 스톱을 고른다. 이동이 없으므로 라우팅을 부르지 않는다."""
     for poi in ranked:
-        if veto_stop(poi, clock, 0, state, context.constraints) is None:
-            return poi, None, 0
+        arrive = adjust_arrival(poi, clock, state, context.constraints)
+        if veto_stop(poi, arrive, 0, state, context.constraints) is None:
+            return poi, None, 0, arrive
     return None
 
 
@@ -192,9 +208,13 @@ def _rank(
     here: POIVector | None,
     clock: datetime,
     remaining: list[MatchResult],
+    state: DayState,
     context: PlacementContext,
 ) -> list[POIVector]:
-    """실질 점수(그룹 점수 − 이동 비용 + 제약 가산점) 내림차순으로 후보를 정렬한다."""
+    """실질 점수(그룹 점수 − 이동 비용 + 제약 가산점) 내림차순으로 후보를 정렬한다.
+
+    추정 이동시간으로도 제약에 걸리는 후보(휴무·식사 시간대 밖·이동 상한 등)는 뺀다.
+    """
     constraints = context.constraints
     scored: list[tuple[float, POIVector]] = []
     for match in remaining:
@@ -205,7 +225,10 @@ def _rank(
             if distance_km > constraints.max_leg_km:
                 continue  # 사전 필터 — 라우팅을 부르지도 않는다
             travel_min = estimate_travel_min(distance_km)
-        bonus = score_bonus(poi, clock + timedelta(minutes=travel_min), constraints)
+        arrive = adjust_arrival(poi, clock + timedelta(minutes=travel_min), state, constraints)
+        if veto_stop(poi, arrive, travel_min, state, constraints) is not None:
+            continue  # 추정치로도 안 되는 후보 — 라우팅 예산을 쓰지 않는다
+        bonus = score_bonus(poi, arrive, constraints, state)
         scored.append((pick_score(match, travel_min, constraints.travel_penalty) + bonus, poi))
     scored.sort(key=lambda pair: pair[0], reverse=True)
     return [poi for _, poi in scored]
@@ -225,7 +248,7 @@ def _fetch_segment(
         # 사전 필터를 통과한 구간만 실제 외부 호출로 이어진다.
         context.outcome.provider_calls += 1
     return plan_segment(
-        origin, destination, depart_at=_rfc3339(clock), provider=context.provider
+        origin, destination, depart_at=rfc3339_or_none(clock), provider=context.provider
     )
 
 
@@ -255,7 +278,7 @@ def _parse_start(start_at: str | None) -> datetime:
     return datetime.fromisoformat(start_at.replace("Z", "+00:00"))
 
 
-def _rfc3339(clock: datetime) -> str | None:
+def rfc3339_or_none(clock: datetime) -> str | None:
     """라우팅에 넘길 출발 시각. 시간대가 없으면 시간표를 쓸 수 없으므로 None."""
     if clock.tzinfo is None:
         return None

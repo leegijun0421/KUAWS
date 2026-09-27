@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 from abc import ABC, abstractmethod
+from functools import lru_cache
 from hashlib import sha256
 from pathlib import Path
 
@@ -55,12 +56,28 @@ class NoRouteError(RouteProviderError):
     """
 
 
+#: 경로가 지나는 좌표(위도, 경도). 탑승·하차 정류장과 도보 꺾임점이다.
+PathPoint = tuple[float, float]
+
+
+class AlternativeRoute(BaseModel):
+    """같은 요청에서 함께 온 대안 경로 1건(추가 호출 없음)."""
+
+    segment: RouteSegment
+    operators: list[Operator] = []
+    path: list[PathPoint] = []
+
+
 class RouteDetail(BaseModel):
     """정규화된 경로 + 공통 모델에 자리가 없는 부가 정보."""
 
     segment: RouteSegment
     #: 이 구간에 등장한 운영기관 (중복 제거). 프론트가 그대로 렌더링한다.
     operators: list[Operator] = []
+    #: 대표 경로가 지나는 좌표. 성향별(경치) 경로 추천이 주변 POI 를 찾는 데 쓴다.
+    path: list[PathPoint] = []
+    #: 대안 경로들. 제공자가 주지 않으면 빈 목록.
+    alternatives: list[AlternativeRoute] = []
 
 
 class RouteProvider(ABC):
@@ -108,6 +125,8 @@ class RouteProvider(ABC):
         return RouteDetail(
             segment=self._to_segment(payload, origin, destination, preference),
             operators=self._extract_operators(payload),
+            path=self._extract_path(payload),
+            alternatives=self._extract_alternatives(payload, origin, destination, preference),
         )
 
     @abstractmethod
@@ -122,6 +141,20 @@ class RouteProvider(ABC):
 
     def _extract_operators(self, payload: dict) -> list[Operator]:
         """원본 응답에서 운영기관 목록을 뽑는다. 주지 않는 제공자는 빈 목록."""
+        return []
+
+    def _extract_path(self, payload: dict) -> list[PathPoint]:
+        """대표 경로의 좌표열. 주지 않는 제공자는 빈 목록."""
+        return []
+
+    def _extract_alternatives(
+        self,
+        payload: dict,
+        origin: GeoPoint,
+        destination: GeoPoint,
+        preference: RoutePreference,
+    ) -> list[AlternativeRoute]:
+        """대안 경로. 주지 않는 제공자는 빈 목록."""
         return []
 
     @abstractmethod
@@ -173,12 +206,24 @@ def select_provider(origin: GeoPoint, destination: GeoPoint) -> RouteProvider:
     from backend.routing.google_provider import GoogleRouteProvider
     from backend.routing.odsay_provider import OdsayRouteProvider
 
+    if get_settings().routing_mock:
+        from backend.routing.mock_provider import MockRouteProvider
+
+        _warn_mock_once()
+        return MockRouteProvider()
+
     both_domestic = is_in_korea(origin.lat, origin.lng) and is_in_korea(
         destination.lat, destination.lng
     )
     provider = OdsayRouteProvider() if both_domestic else GoogleRouteProvider()
     logger.info("경로 프로바이더 선택: %s (국내 구간=%s)", provider.name, both_domestic)
     return provider
+
+
+@lru_cache(maxsize=1)
+def _warn_mock_once() -> None:
+    """모의 경로 경고는 프로세스당 한 번만 남긴다."""
+    logger.warning("ROUTING_MOCK=1 — 모의 경로를 씁니다(실제 운행 정보 아님)")
 
 
 def load_cached(key: str) -> dict | None:
