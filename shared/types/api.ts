@@ -47,10 +47,46 @@ export interface FollowUpQuestion {
   choices?: { label: string; value: number }[];
 }
 
+/** 대화에서 뽑은 하드 제약. 점수가 아니라 제외 규칙이다(알레르기·기피 장소 등). */
+export interface HardConstraints {
+  /** 제외할 category 키 (cafe / restaurant / culture / nature / attraction) */
+  excludeCategories: string[];
+  /** 장소 이름에 들어 있으면 제외할 키워드 */
+  avoidKeywords: string[];
+  /** 사람이 읽는 원문 근거 */
+  notes: string[];
+}
+
+export interface IntakeMessageRequest {
+  memberId?: string | null;
+  memberName: string;
+  text: string;
+}
+
+export interface IntakeAnswerRequest {
+  memberId: string;
+  axis: PreferenceAxis;
+  value: number;
+}
+
 export interface IntakeMessageResponse {
   profile: PreferenceProfile;
   followUps: FollowUpQuestion[];
   /** 대화를 이어갈 수 있도록 AI가 덧붙이는 말 */
+  assistantMessage: string;
+  constraints: HardConstraints;
+  /** "루브르는 꼭" 처럼 확정된 방문 희망 장소 */
+  mustVisit: string[];
+}
+
+export interface ChatIntakeRequest {
+  chatText: string;
+}
+
+export interface ChatIntakeResponse {
+  members: IntakeMessageResponse[];
+  constraints: HardConstraints;
+  mustVisit: string[];
   assistantMessage: string;
 }
 
@@ -80,12 +116,26 @@ export interface PoiScore {
 
 // ---------- 일정 ----------
 
+/** 대중교통 운영기관. Google 약관상 이름·URL 표기 의무. */
+export interface Operator {
+  name: string;
+  url: string | null;
+}
+
+export interface RouteAdvisory {
+  code: "long_duration" | "many_transfers";
+  message: string;
+}
+
 export interface RouteLeg {
   mode: "walk" | "bus" | "subway" | "transfer";
-  lineName?: string;
+  lineName?: string | null;
   fromName: string;
   toName: string;
   durationMin: number;
+  /** 실제 편성 출발·도착 시각(RFC3339). 제공자가 주는 경우에만. */
+  departAt?: string | null;
+  arriveAt?: string | null;
   description: string;
 }
 
@@ -94,8 +144,24 @@ export interface RouteSegment {
   toPoiId: string;
   preference: RoutePreference;
   totalDurationMin: number;
+  /** 주 단위 실수 (2.55 EUR). 통화는 fareCurrency */
   totalFare: number;
+  fareCurrency?: string | null;
   legs: RouteLeg[];
+  // --- 표시용 부가 정보(선택) ---
+  transferCount?: number | null;
+  operators: Operator[];
+  advisories: RouteAdvisory[];
+  /** 성향별 경로 추천 — 최단 대신 고를 수 있는 '경치' 대안 */
+  scenic?: ScenicOption | null;
+  recommended?: RoutePreference | null;
+}
+
+export interface ScenicOption {
+  segment: RouteSegment;
+  extraMin: number;
+  scenicScore: number;
+  highlights: string[];
 }
 
 export interface ItineraryStop {
@@ -104,6 +170,7 @@ export interface ItineraryStop {
   score: PoiScore;
   arriveAt: string;   // "HH:MM"
   stayMin: number;
+  departAt?: string | null; // "HH:MM"
 }
 
 export interface ItineraryDay {
@@ -119,8 +186,40 @@ export interface Itinerary {
   members: { memberId: string; memberName: string }[];
   /** 그룹 최저 만족도 — 아무도 소외되지 않았는지 보여주는 지표 */
   minMemberSatisfaction: number;
-  /** LLM이 생성한 일정 요약 브리핑 */
+  /** 일정 요약 브리핑 (예선: 규칙 기반 템플릿 — 런타임 LLM 호출 없음) */
   briefing: string;
+  warnings: string[];
+  excludedNotes: string[];
+  /** "collected" = Google Places 수집·태깅본, "seed" = 내장 예시 */
+  dataSource?: string | null;
+  startDate?: string | null;
+  stats?: PlanStats | null;
+}
+
+export interface PlanStats {
+  candidateCount: number;
+  routingCalls: number;
+  providerCalls: number;
+  attempts: number;
+  elapsedMs: number;
+}
+
+export interface PlanRequest {
+  city: string;
+  days: number;
+  /** "YYYY-MM-DD" 현지 기준 */
+  startDate: string;
+  members: PreferenceProfile[];
+  constraints: HardConstraints;
+  mustVisit: string[];
+}
+
+export interface CityInfo {
+  key: string;
+  label: string;
+  timezone: string;
+  poiCount: number;
+  dataSource: string;
 }
 
 // ---------- 공유 ----------
@@ -130,6 +229,12 @@ export interface ShareLinkResponse {
   /** 플랫폼 비종속. 링크 하나로 끝낸다. */
   url: string;
   expiresAt: string | null;
+}
+
+/** 공유 링크 생성 요청. 경로가 아닌 '입력 + 장소 순서'만 저장한다(Google 약관). */
+export interface ShareRequest {
+  request: PlanRequest;
+  dayOrders: string[][];
 }
 
 // ---------- 오류 ----------

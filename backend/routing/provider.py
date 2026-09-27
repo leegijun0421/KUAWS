@@ -21,7 +21,10 @@ from pydantic import BaseModel
 
 from backend.common.config import get_settings
 from backend.common.logging import get_logger
-from shared.types.models import RoutePreference, RouteSegment
+
+# Operator 는 프론트까지 그대로 나가므로 공용 계약(shared/types)에 정의돼 있다.
+# 약관 표기 필드 경로는 `transitLine.agencies[].name` / `.uri` (9/6 필드 확인).
+from shared.types.models import Operator, RoutePreference, RouteSegment
 
 logger = get_logger(__name__)
 
@@ -50,18 +53,6 @@ class NoRouteError(RouteProviderError):
     이쪽은 정상적인 결과이고, 호출부(`planner.plan_segment`)는 다른 후보로 넘어가면 된다.
     `RouteProviderError` 를 잡던 기존 호출부는 그대로 동작한다(상속).
     """
-
-
-class Operator(BaseModel):
-    """대중교통 운영기관. Google Maps 약관상 화면 표기 의무가 있다.
-
-    공통 모델 `RouteLeg` 에는 이 값을 담을 자리가 없다(`shared/types/` 는 PM 소유라
-    임의로 못 고친다). 그래서 구간 단위로 모아 `RouteDetail` 에 실어 보낸다.
-    필드 경로는 `transitLine.agencies[].name` / `.uri` — 9/6 필드 확인에서 두 도시 모두 확인됐다.
-    """
-
-    name: str
-    url: str | None = None
 
 
 class RouteDetail(BaseModel):
