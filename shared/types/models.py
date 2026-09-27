@@ -234,6 +234,8 @@ class Itinerary(ApiModel):
     )
     briefing: str
     # --- 설명 가능성을 위한 부가 정보(선택) ---
+    #: 멤버별 만족도(혼자 갔을 때의 최적 일정 대비). 최저값 = min_member_satisfaction.
+    member_satisfaction: list[MemberFit] = []
     #: 사용자에게 보여줄 주의 문구(막차·이동시간 상한·식사 누락 등).
     warnings: list[str] = []
     #: 하드 제약으로 제외된 장소 수와 근거.

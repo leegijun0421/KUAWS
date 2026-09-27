@@ -21,6 +21,7 @@ from shared.types.models import (
     ItineraryDay,
     ItineraryStop,
     Member,
+    MemberFit,
     PlanRequest,
     PlanStats,
     PoiScore,
@@ -68,7 +69,11 @@ def assemble_itinerary(
             previous = stop.poi_id
         days.append(ItineraryDay(day_number=day, stops=items, segments=day_segments))
 
-    worst_name, worst_value = _min_satisfaction(days, request, scores)
+    satisfaction = member_satisfaction(days, request, scores)
+    worst = min(satisfaction, key=lambda item: item.fit, default=None)
+    names = {m.member_id: m.member_name for m in request.members}
+    worst_name = names.get(worst.member_id) if worst else None
+    worst_value = worst.fit if worst else 0.0
     warnings = list(schedule.warnings)
     if not schedule.succeeded and schedule.failure_reason:
         warnings.insert(0, schedule.failure_reason)
@@ -90,6 +95,7 @@ def assemble_itinerary(
         days=days,
         members=[Member(member_id=m.member_id, member_name=m.member_name) for m in request.members],
         min_member_satisfaction=worst_value,
+        member_satisfaction=satisfaction,
         briefing=build_briefing(facts) if placed else "조건에 맞는 일정을 만들지 못했어요.",
         warnings=warnings,
         excluded_notes=excluded_notes + _must_visit_notes(request, must_ids),
@@ -139,10 +145,10 @@ def _segment_view(
     )
 
 
-def _min_satisfaction(
+def member_satisfaction(
     days: list[ItineraryDay], request: PlanRequest, scores: dict[str, PoiScore]
-) -> tuple[str | None, float]:
-    """그룹 최저 만족도와 그 멤버.
+) -> list[MemberFit]:
+    """멤버별 만족도. 최저값이 그룹 최저 만족도(maximin 지표)다.
 
     멤버 만족도 = 이 일정에서 그 사람의 평균 적합도 ÷ **그 사람만을 위해 같은 개수를 골랐을 때**
     의 평균 적합도. 즉 "혼자 여행했다면 받았을 일정 대비 몇 %"다. 그룹 여행에서 100% 는
@@ -163,11 +169,7 @@ def _min_satisfaction(
         )[: len(fits)]
         ideal = sum(personal) / len(personal) if personal else 1.0
         ratios[member_id] = min(sum(fits) / len(fits) / ideal, 1.0) if ideal else 0.0
-    if not ratios:
-        return None, 0.0
-    worst_id = min(ratios, key=ratios.get)
-    names = {m.member_id: m.member_name for m in request.members}
-    return names.get(worst_id), round(ratios[worst_id], 3)
+    return [MemberFit(member_id=mid, fit=round(value, 3)) for mid, value in ratios.items()]
 
 
 def _group_axis_mean(request: PlanRequest, axis: str) -> float:
