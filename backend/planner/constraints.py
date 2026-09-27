@@ -53,6 +53,8 @@ class DayState(BaseModel):
     #: 그날 넣은 카페 수와 직전 스톱 유형(카페 연속 방지).
     cafes: int = 0
     last_category: str | None = None
+    #: 가장 최근 배치 거부 사유(그날 배치가 일찍 끝났을 때 설명용).
+    last_veto: str | None = None
 
 
 class StopVeto(BaseModel):

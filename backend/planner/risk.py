@@ -116,7 +116,7 @@ def segment_flags(segment: SegmentRoute, tz: tzinfo | None) -> list[RiskFlag]:
             continue
         before, after = legs[previous], legs[following]
         reason = (
-            f"{_line(before)} → {_line(after)} 환승 여유 {slack}분 "
+            f"{before.to_name}에서 {_line(before)} → {_line(after)} 환승 여유 {slack}분 "
             f"({_local(before.arrive_at, tz)} 도착 · {_local(after.depart_at, tz)} 출발)"
         )
         level = "high" if slack < SLACK_CAUTION_MIN else "medium"
@@ -138,8 +138,11 @@ def risk_summary(flags_by_day: list[list[RiskFlag]]) -> str:
 
 
 def _line(leg: RouteLeg) -> str:
-    """노선 표기."""
-    return leg.line_name or ("지하철" if leg.mode == "subway" else "버스")
+    """노선 표기 — 숫자만 있는 노선명("87")은 뜻이 안 통하므로 수단을 앞에 붙인다."""
+    kind = "지하철" if leg.mode == "subway" else "버스"
+    if not leg.line_name:
+        return kind
+    return leg.line_name if not leg.line_name[0].isdigit() else f"{kind} {leg.line_name}"
 
 
 def _local(rfc3339: str | None, tz: tzinfo | None) -> str:
