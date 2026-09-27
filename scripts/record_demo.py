@@ -184,8 +184,10 @@ def caption(page: Page, text: str) -> None:
                 el = document.createElement('div');
                 el.id = '__demo_caption';
                 el.style.cssText = 'position:fixed;left:50%;bottom:32px;transform:translateX(-50%);'
-                    + 'z-index:99999;background:rgba(15,23,42,.88);color:#fff;padding:12px 22px;'
-                    + 'border-radius:14px;font:600 20px/1.4 sans-serif;max-width:80vw;text-align:center;'
+                    + 'z-index:99999;background:rgba(15,23,42,.88);color:#fff;'
+                    + 'padding:12px 22px;'
+                    + 'border-radius:14px;font:600 20px/1.4 sans-serif;'
+                    + 'max-width:80vw;text-align:center;'
                     + 'pointer-events:none';
                 document.body.appendChild(el);
             }
