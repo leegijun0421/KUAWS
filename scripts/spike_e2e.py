@@ -34,6 +34,10 @@ from datetime import datetime, timedelta, tzinfo
 from itertools import pairwise
 from pathlib import Path
 
+# Windows PowerShell 기본 출력 인코딩(cp949)은 프랑스어 é 같은 문자를 출력하지 못한다 — UTF-8 로 고정한다.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 # scripts/ 에서 실행해도 backend 패키지를 찾도록 프로젝트 루트를 경로에 넣는다.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
