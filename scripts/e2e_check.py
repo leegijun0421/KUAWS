@@ -27,10 +27,10 @@ if hasattr(sys.stdout, "reconfigure"):
 import httpx  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-CHATS = ROOT / "mocks" / "chats"
+CHATS = ROOT / "tests" / "fixtures" / "conversations"
 REPORT = ROOT / "Claude outputs" / "e2e_report.md"
 API = "http://127.0.0.1:8000"
-CITY_BY_PREFIX = {"01": "paris", "02": "paris", "03": "paris", "04": "taipei", "05": "taipei"}
+CITY_BY_PREFIX = {"01": "paris", "02": "paris", "03": "paris", "04": "taipei", "05": "paris"}
 
 
 def main() -> None:

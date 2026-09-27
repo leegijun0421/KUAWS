@@ -12,7 +12,7 @@ Google 약관상 결과(경로 응답)를 파일로 저장해 두는 방식은 �
 
 실행
     python scripts/record_demo.py                 # 3종 전부
-    python scripts/record_demo.py --only B        # 하나만
+    python scripts/record_demo.py --only 2_conflict   # 하나만
 
 산출물  Claude outputs/demo/<시나리오>.webm  (+ 각 단계 스크린샷 .png, 소요 시간 로그)
         리포에 커밋하지 않는다(용량). 발표 PC 로 복사해 둔다.
@@ -53,42 +53,42 @@ class Scenario:
 
 SCENARIOS = [
     Scenario(
-        key="A",
-        title="파리 3인 — 먹방 vs 미술관 + 갑각류 알레르기",
-        sample_label="예시: 파리 · 먹방 + 알레르기",
+        key="1_clean",
+        title="파리 3인 — 기본 흐름 전체 (발표 메인)",
+        sample_label="예시: 파리 · 친구 3명",
         days=2,
         captions={
             "start": "① 파리 여행 단톡방 대화를 그대로 붙여넣습니다",
-            "review": "② AI 가 사람별 취향 5가지와 알레르기·꼭 가고 싶은 곳을 읽었습니다",
-            "result": "③ 루브르부터 시작 · 12시·18시 식사 · 해산물 식당 제외",
+            "review": "② AI 가 사람별 취향 5가지와 꼭 가고 싶은 곳을 근거 문장과 함께 읽었습니다",
+            "result": "③ 루브르부터 시작 · 12시·18시 식사 · 모두의 만족도를 함께",
             "route": "④ 이동은 실제 대중교통 시간표 — 몇 시 몇 분 출발·환승까지",
             "detail": "⑤ 장소마다 누가 만족하고, 무엇이 실패 위험인지",
         },
     ),
     Scenario(
-        key="B",
-        title="파리 2인 — 모든 취향이 정반대",
-        sample_label="예시: 파리 · 정반대 두 사람",
+        key="2_conflict",
+        title="파리 3인 — 취향이 정반대인 그룹",
+        sample_label="예시: 파리 · 취향이 정반대",
         days=1,
         captions={
-            "start": "활동적 vs 휴식, 도심 vs 자연 — 정반대인 두 사람",
-            "review": "평균을 내면 둘 다 불만인 조합",
+            "start": "활동적 vs 휴식, 도심 vs 자연 — 정반대인 친구들",
+            "review": "평균을 내면 모두 불만인 조합입니다",
             "result": "평균이 아니라 ‘가장 아쉬운 사람’의 만족도를 먼저 올립니다",
-            "route": "경치 좋은 길이 있으면 최단 경로 옆에 함께 보여줍니다",
-            "detail": "멤버별 만족도가 한눈에",
+            "route": "경치 좋은 길이 있으면 최단 경로 옆에 이유와 함께 보여줍니다",
+            "detail": "멤버별 만족도가 장소마다 보입니다",
         },
     ),
     Scenario(
-        key="C",
-        title="타이베이 4인 — 야시장 + 땅콩 알레르기 + 링크 공유",
-        sample_label="예시: 타이베이 · 야시장",
-        days=1,
+        key="3_constraints",
+        title="파리 가족 — 갑각류 알레르기 + 오전 11시 이전 불가 + 링크 공유",
+        sample_label="예시: 파리 · 알레르기·시간 제약",
+        days=2,
         captions={
-            "start": "두 번째 지원 도시, 타이베이",
-            "review": "땅콩 알레르기도 조건으로 읽어냅니다",
-            "result": "타이베이 MRT 실제 시간표로 짠 하루",
+            "start": "알레르기와 시간 제약이 있는 가족 여행",
+            "review": "‘해산물 식당 제외’, ‘11시 이후 시작’을 조건으로 읽어냅니다",
+            "result": "모든 날이 11시에 시작하고, 해산물 식당은 빠졌습니다",
             "route": "운영기관 표기까지 — 약관을 지킨 서비스",
-            "detail": "링크 하나로 친구에게 공유",
+            "detail": "링크 하나로 가족에게 공유",
         },
         share=True,
     ),
@@ -124,7 +124,7 @@ def record(browser, scenario: Scenario) -> None:  # noqa: ANN001 — Playwright 
         video = page.video
         context.close()
         if video:
-            target = OUT_DIR / f"{scenario.key}.webm"
+            target = OUT_DIR / f"demo_{scenario.key}.webm"
             target.unlink(missing_ok=True)
             Path(video.path()).rename(target)
             print(f"  녹화: {target.name} ({time.perf_counter() - started:.0f}초)")
