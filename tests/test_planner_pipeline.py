@@ -173,3 +173,23 @@ def test_cities_endpoint_lists_whitelist(monkeypatch):
 def test_unknown_city_is_422(monkeypatch):
     res = _mock_client(monkeypatch).post("/api/planner/plan", json={**PLAN, "city": "tokyo"})
     assert res.status_code == 422
+
+
+def test_cafes_limited_and_not_consecutive():
+    constraints = ScheduleConstraints()
+    cafe = POIVector(poi_id="c", name="c", lat=0, lng=0, category="cafe")
+    state = DayState(day=1, last_category="cafe", cafes=1)
+    assert veto_stop(cafe, WED, 0, state, constraints).code == "cafe_limit"
+    assert veto_stop(cafe, WED, 0, DayState(day=1, cafes=2), constraints).code == "cafe_limit"
+    assert veto_stop(cafe, WED, 0, DayState(day=1, cafes=1, last_category="culture"),
+                     constraints) is None
+
+
+def test_free_time_before_dinner_when_day_is_full():
+    constraints = ScheduleConstraints(meal_windows=MEALS, max_stops_per_day=1)
+    full = DayState(day=1, stops=[stop()])
+    arrive = adjust_arrival(vec(meal=True), WED.replace(hour=16, minute=10), full, constraints)
+    assert (arrive.hour, arrive.minute) == (18, 0)
+    not_full = DayState(day=1)
+    same = adjust_arrival(vec(meal=True), WED.replace(hour=16, minute=10), not_full, constraints)
+    assert same.hour == 16

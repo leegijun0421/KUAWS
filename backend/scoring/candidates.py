@@ -77,18 +77,45 @@ def to_poi_vector(poi: TaggedPoi) -> POIVector:
 
 
 def match_must_visit(names: list[str], pois: list[TaggedPoi]) -> set[str]:
-    """'꼭 가고 싶은 곳' 이름을 POI 와 대조한다. 악센트·대소문자·일반 명사는 무시한다."""
+    """'꼭 가고 싶은 곳' 이름마다 **가장 비슷한 POI 1곳**을 찾는다.
+
+    "Musée du Louvre" 는 실제 데이터에서 "Louvre Museum", "Louvre Pyramid",
+    "Les Caves du Louvre" 등 여러 곳과 겹친다. 전부 must_visit 로 올리면 하루가 루브르로 채워지므로
+    핵심 토큰(4자 이상, 일반 명사 제외)의 자카드 유사도가 가장 높은 1곳만 고른다.
+    """
     matched: set[str] = set()
     for wanted in names:
-        target = _normalize(wanted)
-        tokens = {token for token in target.split() if len(token) >= 4 and token not in _GENERIC}
-        for poi in pois:
-            name = _normalize(poi.name)
-            if target and (target in name or name in target):
-                matched.add(poi.poi_id)
-            elif tokens and tokens <= set(name.split()):
-                matched.add(poi.poi_id)
+        best = _best_match(wanted, pois)
+        if best is not None:
+            matched.add(best)
     return matched
+
+
+def _best_match(wanted: str, pois: list[TaggedPoi]) -> str | None:
+    """이름 하나에 대한 최적 POI. 핵심 토큰이 전부 들어 있는 후보 중 유사도 최대."""
+    target = _normalize(wanted)
+    tokens = _key_tokens(target)
+    best_id, best_score = None, 0.0
+    for poi in pois:
+        name = _normalize(poi.name)
+        if target and target == name:
+            return poi.poi_id
+        poi_tokens = _key_tokens(name)
+        if target and (target in name or name in target):
+            # "Taipei 101" ⊂ "Taipei 101 Observatory" — 글자 길이 비율로 점수
+            score = min(len(target), len(name)) / max(len(target), len(name))
+        elif tokens and tokens <= poi_tokens:
+            score = len(tokens) / len(tokens | poi_tokens)
+        else:
+            continue
+        if score > best_score:
+            best_id, best_score = poi.poi_id, score
+    return best_id
+
+
+def _key_tokens(normalized: str) -> set[str]:
+    """이름의 핵심 토큰(4자 이상, 일반 명사 제외)."""
+    return {token for token in normalized.split() if len(token) >= 4 and token not in _GENERIC}
 
 
 def _bucket(poi: TaggedPoi) -> str:
