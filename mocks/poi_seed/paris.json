@@ -1,0 +1,482 @@
+[
+ {
+  "poi_id": "seed-fr-eiffel",
+  "name": "Tour Eiffel",
+  "category": "attraction",
+  "lat": 48.8584,
+  "lng": 2.2945,
+  "address": "",
+  "avg_duration_min": 90,
+  "open_hours": "Monday: 9:30 AM – 11:00 PM | Tuesday: 9:30 AM – 11:00 PM | Wednesday: 9:30 AM – 11:00 PM | Thursday: 9:30 AM – 11:00 PM | Friday: 9:30 AM – 11:00 PM | Saturday: 9:30 AM – 11:00 PM | Sunday: 9:30 AM – 11:00 PM",
+  "axis_features": [
+   0.5,
+   0.95,
+   0.8,
+   0.1,
+   0.6
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-louvre",
+  "name": "Musée du Louvre",
+  "category": "culture",
+  "lat": 48.8606,
+  "lng": 2.3376,
+  "address": "",
+  "avg_duration_min": 120,
+  "open_hours": "Monday: 9:00 AM – 6:00 PM | Tuesday: Closed | Wednesday: 9:00 AM – 6:00 PM | Thursday: 9:00 AM – 6:00 PM | Friday: 9:00 AM – 6:00 PM | Saturday: 9:00 AM – 6:00 PM | Sunday: 9:00 AM – 6:00 PM",
+  "axis_features": [
+   0.5,
+   0.9,
+   0.95,
+   0.05,
+   0.3
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-orsay",
+  "name": "Musée d'Orsay",
+  "category": "culture",
+  "lat": 48.86,
+  "lng": 2.3266,
+  "address": "",
+  "avg_duration_min": 120,
+  "open_hours": "Monday: Closed | Tuesday: 9:30 AM – 6:00 PM | Wednesday: 9:30 AM – 6:00 PM | Thursday: 9:30 AM – 6:00 PM | Friday: 9:30 AM – 6:00 PM | Saturday: 9:30 AM – 6:00 PM | Sunday: 9:30 AM – 6:00 PM",
+  "axis_features": [
+   0.35,
+   0.75,
+   0.9,
+   0.05,
+   0.3
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-notredame",
+  "name": "Cathédrale Notre-Dame de Paris",
+  "category": "attraction",
+  "lat": 48.853,
+  "lng": 2.3499,
+  "address": "",
+  "avg_duration_min": 90,
+  "open_hours": "Monday: 7:45 AM – 7:00 PM | Tuesday: 7:45 AM – 7:00 PM | Wednesday: 7:45 AM – 7:00 PM | Thursday: 7:45 AM – 7:00 PM | Friday: 7:45 AM – 7:00 PM | Saturday: 7:45 AM – 7:00 PM | Sunday: 7:45 AM – 7:00 PM",
+  "axis_features": [
+   0.3,
+   0.85,
+   0.85,
+   0.0,
+   0.7
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-sacrecoeur",
+  "name": "Basilique du Sacré-Cœur de Montmartre",
+  "category": "attraction",
+  "lat": 48.8867,
+  "lng": 2.3431,
+  "address": "",
+  "avg_duration_min": 90,
+  "open_hours": "Monday: 6:30 AM – 10:30 PM | Tuesday: 6:30 AM – 10:30 PM | Wednesday: 6:30 AM – 10:30 PM | Thursday: 6:30 AM – 10:30 PM | Friday: 6:30 AM – 10:30 PM | Saturday: 6:30 AM – 10:30 PM | Sunday: 6:30 AM – 10:30 PM",
+  "axis_features": [
+   0.8,
+   0.8,
+   0.6,
+   0.1,
+   0.6
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-arc",
+  "name": "Arc de Triomphe",
+  "category": "attraction",
+  "lat": 48.8738,
+  "lng": 2.295,
+  "address": "",
+  "avg_duration_min": 90,
+  "open_hours": "Monday: 10:00 AM – 10:30 PM | Tuesday: 10:00 AM – 10:30 PM | Wednesday: 10:00 AM – 10:30 PM | Thursday: 10:00 AM – 10:30 PM | Friday: 10:00 AM – 10:30 PM | Saturday: 10:00 AM – 10:30 PM | Sunday: 10:00 AM – 10:30 PM",
+  "axis_features": [
+   0.6,
+   0.85,
+   0.9,
+   0.0,
+   0.8
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-pompidou",
+  "name": "Centre Pompidou",
+  "category": "culture",
+  "lat": 48.8607,
+  "lng": 2.3522,
+  "address": "",
+  "avg_duration_min": 120,
+  "open_hours": "Monday: 11:00 AM – 9:00 PM | Tuesday: Closed | Wednesday: 11:00 AM – 9:00 PM | Thursday: 11:00 AM – 9:00 PM | Friday: 11:00 AM – 9:00 PM | Saturday: 11:00 AM – 9:00 PM | Sunday: 11:00 AM – 9:00 PM",
+  "axis_features": [
+   0.4,
+   0.7,
+   0.95,
+   0.1,
+   0.4
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-garnier",
+  "name": "Palais Garnier",
+  "category": "culture",
+  "lat": 48.872,
+  "lng": 2.3316,
+  "address": "",
+  "avg_duration_min": 120,
+  "open_hours": "Monday: 10:00 AM – 5:00 PM | Tuesday: 10:00 AM – 5:00 PM | Wednesday: 10:00 AM – 5:00 PM | Thursday: 10:00 AM – 5:00 PM | Friday: 10:00 AM – 5:00 PM | Saturday: 10:00 AM – 5:00 PM | Sunday: 10:00 AM – 5:00 PM",
+  "axis_features": [
+   0.3,
+   0.65,
+   0.95,
+   0.0,
+   0.6
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-luxembourg",
+  "name": "Jardin du Luxembourg",
+  "category": "nature",
+  "lat": 48.8462,
+  "lng": 2.3372,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 7:30 AM – 9:00 PM | Tuesday: 7:30 AM – 9:00 PM | Wednesday: 7:30 AM – 9:00 PM | Thursday: 7:30 AM – 9:00 PM | Friday: 7:30 AM – 9:00 PM | Saturday: 7:30 AM – 9:00 PM | Sunday: 7:30 AM – 9:00 PM",
+  "axis_features": [
+   0.4,
+   0.35,
+   0.1,
+   0.1,
+   0.2
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-tuileries",
+  "name": "Jardin des Tuileries",
+  "category": "nature",
+  "lat": 48.8635,
+  "lng": 2.3275,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 7:00 AM – 9:00 PM | Tuesday: 7:00 AM – 9:00 PM | Wednesday: 7:00 AM – 9:00 PM | Thursday: 7:00 AM – 9:00 PM | Friday: 7:00 AM – 9:00 PM | Saturday: 7:00 AM – 9:00 PM | Sunday: 7:00 AM – 9:00 PM",
+  "axis_features": [
+   0.4,
+   0.55,
+   0.15,
+   0.1,
+   0.4
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-buttes",
+  "name": "Parc des Buttes-Chaumont",
+  "category": "nature",
+  "lat": 48.8809,
+  "lng": 2.3828,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 7:00 AM – 8:00 PM | Tuesday: 7:00 AM – 8:00 PM | Wednesday: 7:00 AM – 8:00 PM | Thursday: 7:00 AM – 8:00 PM | Friday: 7:00 AM – 8:00 PM | Saturday: 7:00 AM – 8:00 PM | Sunday: 7:00 AM – 8:00 PM",
+  "axis_features": [
+   0.75,
+   0.2,
+   0.05,
+   0.05,
+   0.2
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-plantes",
+  "name": "Jardin des Plantes",
+  "category": "nature",
+  "lat": 48.844,
+  "lng": 2.3596,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 7:30 AM – 8:00 PM | Tuesday: 7:30 AM – 8:00 PM | Wednesday: 7:30 AM – 8:00 PM | Thursday: 7:30 AM – 8:00 PM | Friday: 7:30 AM – 8:00 PM | Saturday: 7:30 AM – 8:00 PM | Sunday: 7:30 AM – 8:00 PM",
+  "axis_features": [
+   0.45,
+   0.3,
+   0.1,
+   0.05,
+   0.3
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-canal",
+  "name": "Canal Saint-Martin",
+  "category": "nature",
+  "lat": 48.871,
+  "lng": 2.3655,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 12:00 AM – 11:59 PM | Tuesday: 12:00 AM – 11:59 PM | Wednesday: 12:00 AM – 11:59 PM | Thursday: 12:00 AM – 11:59 PM | Friday: 12:00 AM – 11:59 PM | Saturday: 12:00 AM – 11:59 PM | Sunday: 12:00 AM – 11:59 PM",
+  "axis_features": [
+   0.5,
+   0.45,
+   0.3,
+   0.3,
+   0.2
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-marais",
+  "name": "Place des Vosges",
+  "category": "attraction",
+  "lat": 48.8556,
+  "lng": 2.3655,
+  "address": "",
+  "avg_duration_min": 90,
+  "open_hours": "Monday: 12:00 AM – 11:59 PM | Tuesday: 12:00 AM – 11:59 PM | Wednesday: 12:00 AM – 11:59 PM | Thursday: 12:00 AM – 11:59 PM | Friday: 12:00 AM – 11:59 PM | Saturday: 12:00 AM – 11:59 PM | Sunday: 12:00 AM – 11:59 PM",
+  "axis_features": [
+   0.35,
+   0.4,
+   0.6,
+   0.1,
+   0.3
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-sainte",
+  "name": "Sainte-Chapelle",
+  "category": "culture",
+  "lat": 48.8554,
+  "lng": 2.345,
+  "address": "",
+  "avg_duration_min": 120,
+  "open_hours": "Monday: 9:00 AM – 7:00 PM | Tuesday: 9:00 AM – 7:00 PM | Wednesday: 9:00 AM – 7:00 PM | Thursday: 9:00 AM – 7:00 PM | Friday: 9:00 AM – 7:00 PM | Saturday: 9:00 AM – 7:00 PM | Sunday: 9:00 AM – 7:00 PM",
+  "axis_features": [
+   0.25,
+   0.7,
+   0.9,
+   0.0,
+   0.7
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-flore",
+  "name": "Café de Flore",
+  "category": "cafe",
+  "lat": 48.8542,
+  "lng": 2.3326,
+  "address": "",
+  "avg_duration_min": 40,
+  "open_hours": "Monday: 7:30 AM – 1:30 AM | Tuesday: 7:30 AM – 1:30 AM | Wednesday: 7:30 AM – 1:30 AM | Thursday: 7:30 AM – 1:30 AM | Friday: 7:30 AM – 1:30 AM | Saturday: 7:30 AM – 1:30 AM | Sunday: 7:30 AM – 1:30 AM",
+  "axis_features": [
+   0.1,
+   0.75,
+   0.9,
+   0.7,
+   0.2
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-angelina",
+  "name": "Angelina Paris",
+  "category": "cafe",
+  "lat": 48.8651,
+  "lng": 2.3285,
+  "address": "",
+  "avg_duration_min": 40,
+  "open_hours": "Monday: 8:00 AM – 8:00 PM | Tuesday: 8:00 AM – 8:00 PM | Wednesday: 8:00 AM – 8:00 PM | Thursday: 8:00 AM – 8:00 PM | Friday: 8:00 AM – 8:00 PM | Saturday: 8:00 AM – 8:00 PM | Sunday: 8:00 AM – 8:00 PM",
+  "axis_features": [
+   0.1,
+   0.7,
+   0.9,
+   0.8,
+   0.3
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-shakespeare-cafe",
+  "name": "Shakespeare and Company Café",
+  "category": "cafe",
+  "lat": 48.8526,
+  "lng": 2.3471,
+  "address": "",
+  "avg_duration_min": 40,
+  "open_hours": "Monday: 8:00 AM – 8:00 PM | Tuesday: 8:00 AM – 8:00 PM | Wednesday: 8:00 AM – 8:00 PM | Thursday: 8:00 AM – 8:00 PM | Friday: 8:00 AM – 8:00 PM | Saturday: 8:00 AM – 8:00 PM | Sunday: 8:00 AM – 8:00 PM",
+  "axis_features": [
+   0.15,
+   0.6,
+   0.8,
+   0.6,
+   0.3
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-bouillon",
+  "name": "Bouillon Chartier Grands Boulevards",
+  "category": "restaurant",
+  "lat": 48.872,
+  "lng": 2.3434,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 11:30 AM – 10:30 PM | Tuesday: 11:30 AM – 10:30 PM | Wednesday: 11:30 AM – 10:30 PM | Thursday: 11:30 AM – 10:30 PM | Friday: 11:30 AM – 10:30 PM | Saturday: 11:30 AM – 10:30 PM | Sunday: 11:30 AM – 10:30 PM",
+  "axis_features": [
+   0.2,
+   0.85,
+   0.9,
+   0.85,
+   0.5
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-bistrot",
+  "name": "Le Bistrot Paul Bert",
+  "category": "restaurant",
+  "lat": 48.8522,
+  "lng": 2.3827,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 11:30 AM – 10:30 PM | Tuesday: 11:30 AM – 10:30 PM | Wednesday: 11:30 AM – 10:30 PM | Thursday: 11:30 AM – 10:30 PM | Friday: 11:30 AM – 10:30 PM | Saturday: 11:30 AM – 10:30 PM | Sunday: 11:30 AM – 10:30 PM",
+  "axis_features": [
+   0.15,
+   0.55,
+   0.85,
+   0.9,
+   0.3
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-seafood",
+  "name": "Le Dôme Fruits de Mer",
+  "category": "restaurant",
+  "lat": 48.8424,
+  "lng": 2.3289,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 11:30 AM – 10:30 PM | Tuesday: 11:30 AM – 10:30 PM | Wednesday: 11:30 AM – 10:30 PM | Thursday: 11:30 AM – 10:30 PM | Friday: 11:30 AM – 10:30 PM | Saturday: 11:30 AM – 10:30 PM | Sunday: 11:30 AM – 10:30 PM",
+  "axis_features": [
+   0.15,
+   0.5,
+   0.9,
+   0.9,
+   0.3
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-crepe",
+  "name": "Breizh Café Le Marais",
+  "category": "restaurant",
+  "lat": 48.8603,
+  "lng": 2.3627,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 11:30 AM – 10:30 PM | Tuesday: 11:30 AM – 10:30 PM | Wednesday: 11:30 AM – 10:30 PM | Thursday: 11:30 AM – 10:30 PM | Friday: 11:30 AM – 10:30 PM | Saturday: 11:30 AM – 10:30 PM | Sunday: 11:30 AM – 10:30 PM",
+  "axis_features": [
+   0.15,
+   0.6,
+   0.85,
+   0.75,
+   0.6
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-marche",
+  "name": "Marché des Enfants Rouges",
+  "category": "restaurant",
+  "lat": 48.8628,
+  "lng": 2.3619,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: Closed | Tuesday: 8:30 AM – 8:30 PM | Wednesday: 8:30 AM – 8:30 PM | Thursday: 8:30 AM – 8:30 PM | Friday: 8:30 AM – 8:30 PM | Saturday: 8:30 AM – 8:30 PM | Sunday: 8:30 AM – 8:30 PM",
+  "axis_features": [
+   0.3,
+   0.75,
+   0.8,
+   0.85,
+   0.7
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-fr-montmartre-bistro",
+  "name": "La Maison Rose",
+  "category": "restaurant",
+  "lat": 48.8871,
+  "lng": 2.3398,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 11:30 AM – 10:30 PM | Tuesday: 11:30 AM – 10:30 PM | Wednesday: 11:30 AM – 10:30 PM | Thursday: 11:30 AM – 10:30 PM | Friday: 11:30 AM – 10:30 PM | Saturday: 11:30 AM – 10:30 PM | Sunday: 11:30 AM – 10:30 PM",
+  "axis_features": [
+   0.3,
+   0.65,
+   0.6,
+   0.75,
+   0.4
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ }
+]

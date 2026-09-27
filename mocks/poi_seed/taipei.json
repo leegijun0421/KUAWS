@@ -1,0 +1,462 @@
+[
+ {
+  "poi_id": "seed-tw-101",
+  "name": "Taipei 101 Observatory",
+  "category": "attraction",
+  "lat": 25.0339,
+  "lng": 121.5645,
+  "address": "",
+  "avg_duration_min": 90,
+  "open_hours": "Monday: 10:00 AM – 9:00 PM | Tuesday: 10:00 AM – 9:00 PM | Wednesday: 10:00 AM – 9:00 PM | Thursday: 10:00 AM – 9:00 PM | Friday: 10:00 AM – 9:00 PM | Saturday: 10:00 AM – 9:00 PM | Sunday: 10:00 AM – 9:00 PM",
+  "axis_features": [
+   0.3,
+   0.85,
+   0.95,
+   0.1,
+   0.6
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-palace",
+  "name": "National Palace Museum",
+  "category": "culture",
+  "lat": 25.1023,
+  "lng": 121.5485,
+  "address": "",
+  "avg_duration_min": 120,
+  "open_hours": "Monday: Closed | Tuesday: 9:00 AM – 5:00 PM | Wednesday: 9:00 AM – 5:00 PM | Thursday: 9:00 AM – 5:00 PM | Friday: 9:00 AM – 5:00 PM | Saturday: 9:00 AM – 5:00 PM | Sunday: 9:00 AM – 5:00 PM",
+  "axis_features": [
+   0.4,
+   0.8,
+   0.8,
+   0.05,
+   0.3
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-cks",
+  "name": "Chiang Kai-shek Memorial Hall",
+  "category": "attraction",
+  "lat": 25.0346,
+  "lng": 121.5219,
+  "address": "",
+  "avg_duration_min": 90,
+  "open_hours": "Monday: 9:00 AM – 6:00 PM | Tuesday: 9:00 AM – 6:00 PM | Wednesday: 9:00 AM – 6:00 PM | Thursday: 9:00 AM – 6:00 PM | Friday: 9:00 AM – 6:00 PM | Saturday: 9:00 AM – 6:00 PM | Sunday: 9:00 AM – 6:00 PM",
+  "axis_features": [
+   0.5,
+   0.7,
+   0.7,
+   0.0,
+   0.6
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-longshan",
+  "name": "Lungshan Temple",
+  "category": "attraction",
+  "lat": 25.0372,
+  "lng": 121.4997,
+  "address": "",
+  "avg_duration_min": 90,
+  "open_hours": "Monday: 6:00 AM – 10:00 PM | Tuesday: 6:00 AM – 10:00 PM | Wednesday: 6:00 AM – 10:00 PM | Thursday: 6:00 AM – 10:00 PM | Friday: 6:00 AM – 10:00 PM | Saturday: 6:00 AM – 10:00 PM | Sunday: 6:00 AM – 10:00 PM",
+  "axis_features": [
+   0.3,
+   0.8,
+   0.8,
+   0.0,
+   0.7
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-ximen",
+  "name": "Ximending",
+  "category": "attraction",
+  "lat": 25.0421,
+  "lng": 121.5075,
+  "address": "",
+  "avg_duration_min": 90,
+  "open_hours": "Monday: 7:00 AM – 11:00 PM | Tuesday: 7:00 AM – 11:00 PM | Wednesday: 7:00 AM – 11:00 PM | Thursday: 7:00 AM – 11:00 PM | Friday: 7:00 AM – 11:00 PM | Saturday: 7:00 AM – 11:00 PM | Sunday: 7:00 AM – 11:00 PM",
+  "axis_features": [
+   0.6,
+   0.95,
+   1.0,
+   0.5,
+   0.8
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-daan",
+  "name": "Daan Forest Park",
+  "category": "nature",
+  "lat": 25.0268,
+  "lng": 121.5359,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 12:00 AM – 11:59 PM | Tuesday: 12:00 AM – 11:59 PM | Wednesday: 12:00 AM – 11:59 PM | Thursday: 12:00 AM – 11:59 PM | Friday: 12:00 AM – 11:59 PM | Saturday: 12:00 AM – 11:59 PM | Sunday: 12:00 AM – 11:59 PM",
+  "axis_features": [
+   0.45,
+   0.35,
+   0.1,
+   0.05,
+   0.2
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-elephant",
+  "name": "Elephant Mountain Trail",
+  "category": "nature",
+  "lat": 25.0273,
+  "lng": 121.5708,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 12:00 AM – 11:59 PM | Tuesday: 12:00 AM – 11:59 PM | Wednesday: 12:00 AM – 11:59 PM | Thursday: 12:00 AM – 11:59 PM | Friday: 12:00 AM – 11:59 PM | Saturday: 12:00 AM – 11:59 PM | Sunday: 12:00 AM – 11:59 PM",
+  "axis_features": [
+   0.9,
+   0.45,
+   0.05,
+   0.0,
+   0.4
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-beitou",
+  "name": "Beitou Hot Spring Park",
+  "category": "nature",
+  "lat": 25.1365,
+  "lng": 121.5066,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: Closed | Tuesday: 9:00 AM – 5:00 PM | Wednesday: 9:00 AM – 5:00 PM | Thursday: 9:00 AM – 5:00 PM | Friday: 9:00 AM – 5:00 PM | Saturday: 9:00 AM – 5:00 PM | Sunday: 9:00 AM – 5:00 PM",
+  "axis_features": [
+   0.2,
+   0.4,
+   0.15,
+   0.1,
+   0.1
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-yangming",
+  "name": "Yangmingshan National Park",
+  "category": "nature",
+  "lat": 25.1558,
+  "lng": 121.5485,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 8:00 AM – 5:00 PM | Tuesday: 8:00 AM – 5:00 PM | Wednesday: 8:00 AM – 5:00 PM | Thursday: 8:00 AM – 5:00 PM | Friday: 8:00 AM – 5:00 PM | Saturday: 8:00 AM – 5:00 PM | Sunday: 8:00 AM – 5:00 PM",
+  "axis_features": [
+   0.85,
+   0.25,
+   0.0,
+   0.0,
+   0.3
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-riverside",
+  "name": "Dadaocheng Wharf",
+  "category": "nature",
+  "lat": 25.0563,
+  "lng": 121.5078,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 12:00 AM – 11:59 PM | Tuesday: 12:00 AM – 11:59 PM | Wednesday: 12:00 AM – 11:59 PM | Thursday: 12:00 AM – 11:59 PM | Friday: 12:00 AM – 11:59 PM | Saturday: 12:00 AM – 11:59 PM | Sunday: 12:00 AM – 11:59 PM",
+  "axis_features": [
+   0.4,
+   0.55,
+   0.3,
+   0.3,
+   0.3
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-huashan",
+  "name": "Huashan 1914 Creative Park",
+  "category": "culture",
+  "lat": 25.0441,
+  "lng": 121.5294,
+  "address": "",
+  "avg_duration_min": 120,
+  "open_hours": "Monday: 9:00 AM – 9:00 PM | Tuesday: 9:00 AM – 9:00 PM | Wednesday: 9:00 AM – 9:00 PM | Thursday: 9:00 AM – 9:00 PM | Friday: 9:00 AM – 9:00 PM | Saturday: 9:00 AM – 9:00 PM | Sunday: 9:00 AM – 9:00 PM",
+  "axis_features": [
+   0.4,
+   0.65,
+   0.85,
+   0.3,
+   0.5
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-fine-arts",
+  "name": "Taipei Fine Arts Museum",
+  "category": "culture",
+  "lat": 25.0724,
+  "lng": 121.5246,
+  "address": "",
+  "avg_duration_min": 120,
+  "open_hours": "Monday: Closed | Tuesday: 9:30 AM – 5:30 PM | Wednesday: 9:30 AM – 5:30 PM | Thursday: 9:30 AM – 5:30 PM | Friday: 9:30 AM – 5:30 PM | Saturday: 9:30 AM – 5:30 PM | Sunday: 9:30 AM – 5:30 PM",
+  "axis_features": [
+   0.3,
+   0.4,
+   0.85,
+   0.0,
+   0.3
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-dihua",
+  "name": "Dihua Street",
+  "category": "attraction",
+  "lat": 25.0579,
+  "lng": 121.51,
+  "address": "",
+  "avg_duration_min": 90,
+  "open_hours": "Monday: 9:00 AM – 7:00 PM | Tuesday: 9:00 AM – 7:00 PM | Wednesday: 9:00 AM – 7:00 PM | Thursday: 9:00 AM – 7:00 PM | Friday: 9:00 AM – 7:00 PM | Saturday: 9:00 AM – 7:00 PM | Sunday: 9:00 AM – 7:00 PM",
+  "axis_features": [
+   0.45,
+   0.6,
+   0.8,
+   0.4,
+   0.5
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-shilin",
+  "name": "Shilin Night Market",
+  "category": "restaurant",
+  "lat": 25.088,
+  "lng": 121.524,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 4:00 PM – 11:59 PM | Tuesday: 4:00 PM – 11:59 PM | Wednesday: 4:00 PM – 11:59 PM | Thursday: 4:00 PM – 11:59 PM | Friday: 4:00 PM – 11:59 PM | Saturday: 4:00 PM – 11:59 PM | Sunday: 4:00 PM – 11:59 PM",
+  "axis_features": [
+   0.5,
+   0.95,
+   0.9,
+   0.95,
+   0.8
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-raohe",
+  "name": "Raohe Street Night Market",
+  "category": "restaurant",
+  "lat": 25.051,
+  "lng": 121.5773,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 5:00 PM – 11:59 PM | Tuesday: 5:00 PM – 11:59 PM | Wednesday: 5:00 PM – 11:59 PM | Thursday: 5:00 PM – 11:59 PM | Friday: 5:00 PM – 11:59 PM | Saturday: 5:00 PM – 11:59 PM | Sunday: 5:00 PM – 11:59 PM",
+  "axis_features": [
+   0.45,
+   0.95,
+   0.9,
+   0.95,
+   0.8
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-dintai",
+  "name": "Din Tai Fung Xinyi",
+  "category": "restaurant",
+  "lat": 25.0336,
+  "lng": 121.53,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 10:00 AM – 9:00 PM | Tuesday: 10:00 AM – 9:00 PM | Wednesday: 10:00 AM – 9:00 PM | Thursday: 10:00 AM – 9:00 PM | Friday: 10:00 AM – 9:00 PM | Saturday: 10:00 AM – 9:00 PM | Sunday: 10:00 AM – 9:00 PM",
+  "axis_features": [
+   0.1,
+   0.85,
+   0.9,
+   0.9,
+   0.5
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-beefnoodle",
+  "name": "Yong Kang Beef Noodle",
+  "category": "restaurant",
+  "lat": 25.0322,
+  "lng": 121.5296,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 11:00 AM – 9:00 PM | Tuesday: 11:00 AM – 9:00 PM | Wednesday: 11:00 AM – 9:00 PM | Thursday: 11:00 AM – 9:00 PM | Friday: 11:00 AM – 9:00 PM | Saturday: 11:00 AM – 9:00 PM | Sunday: 11:00 AM – 9:00 PM",
+  "axis_features": [
+   0.1,
+   0.75,
+   0.9,
+   0.9,
+   0.7
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-seafood",
+  "name": "Addiction Aquatic Development 上引水產",
+  "category": "restaurant",
+  "lat": 25.0677,
+  "lng": 121.5367,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 10:00 AM – 10:00 PM | Tuesday: 10:00 AM – 10:00 PM | Wednesday: 10:00 AM – 10:00 PM | Thursday: 10:00 AM – 10:00 PM | Friday: 10:00 AM – 10:00 PM | Saturday: 10:00 AM – 10:00 PM | Sunday: 10:00 AM – 10:00 PM",
+  "axis_features": [
+   0.2,
+   0.8,
+   0.85,
+   0.95,
+   0.5
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-peanut",
+  "name": "Peanut Ice Cream Roll 花生捲冰淇淋",
+  "category": "restaurant",
+  "lat": 25.052,
+  "lng": 121.577,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: 5:00 PM – 11:00 PM | Tuesday: 5:00 PM – 11:00 PM | Wednesday: 5:00 PM – 11:00 PM | Thursday: 5:00 PM – 11:00 PM | Friday: 5:00 PM – 11:00 PM | Saturday: 5:00 PM – 11:00 PM | Sunday: 5:00 PM – 11:00 PM",
+  "axis_features": [
+   0.2,
+   0.8,
+   0.9,
+   0.7,
+   0.9
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-fuhang",
+  "name": "Fu Hang Soy Milk",
+  "category": "restaurant",
+  "lat": 25.0443,
+  "lng": 121.5251,
+  "address": "",
+  "avg_duration_min": 60,
+  "open_hours": "Monday: Closed | Tuesday: 5:30 AM – 12:30 PM | Wednesday: 5:30 AM – 12:30 PM | Thursday: 5:30 AM – 12:30 PM | Friday: 5:30 AM – 12:30 PM | Saturday: 5:30 AM – 12:30 PM | Sunday: 5:30 AM – 12:30 PM",
+  "axis_features": [
+   0.1,
+   0.9,
+   0.95,
+   0.85,
+   0.8
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-chunshui",
+  "name": "Chun Shui Tang",
+  "category": "cafe",
+  "lat": 25.0402,
+  "lng": 121.55,
+  "address": "",
+  "avg_duration_min": 40,
+  "open_hours": "Monday: 8:00 AM – 8:00 PM | Tuesday: 8:00 AM – 8:00 PM | Wednesday: 8:00 AM – 8:00 PM | Thursday: 8:00 AM – 8:00 PM | Friday: 8:00 AM – 8:00 PM | Saturday: 8:00 AM – 8:00 PM | Sunday: 8:00 AM – 8:00 PM",
+  "axis_features": [
+   0.1,
+   0.6,
+   0.9,
+   0.7,
+   0.3
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-fika",
+  "name": "Fika Fika Cafe",
+  "category": "cafe",
+  "lat": 25.0521,
+  "lng": 121.5212,
+  "address": "",
+  "avg_duration_min": 40,
+  "open_hours": "Monday: 8:00 AM – 8:00 PM | Tuesday: 8:00 AM – 8:00 PM | Wednesday: 8:00 AM – 8:00 PM | Thursday: 8:00 AM – 8:00 PM | Friday: 8:00 AM – 8:00 PM | Saturday: 8:00 AM – 8:00 PM | Sunday: 8:00 AM – 8:00 PM",
+  "axis_features": [
+   0.1,
+   0.5,
+   0.85,
+   0.6,
+   0.2
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ },
+ {
+  "poi_id": "seed-tw-wistaria",
+  "name": "Wistaria Tea House",
+  "category": "cafe",
+  "lat": 25.0266,
+  "lng": 121.53,
+  "address": "",
+  "avg_duration_min": 40,
+  "open_hours": "Monday: 10:00 AM – 10:00 PM | Tuesday: 10:00 AM – 10:00 PM | Wednesday: 10:00 AM – 10:00 PM | Thursday: 10:00 AM – 10:00 PM | Friday: 10:00 AM – 10:00 PM | Saturday: 10:00 AM – 10:00 PM | Sunday: 10:00 AM – 10:00 PM",
+  "axis_features": [
+   0.05,
+   0.3,
+   0.7,
+   0.5,
+   0.1
+  ],
+  "reasons": [
+   "예시 데이터 — 사람이 직접 입력한 값"
+  ]
+ }
+]
