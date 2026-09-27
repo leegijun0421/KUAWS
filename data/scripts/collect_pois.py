@@ -33,7 +33,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from logging import Logger
 from pathlib import Path
 
@@ -94,7 +94,7 @@ def main() -> None:
 
     out_dir = PROCESSED_ROOT / city.key
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     logger = build_logger(out_dir / f"collect_{stamp}.log")
 
     quota = allocate_quota(args.limit)
