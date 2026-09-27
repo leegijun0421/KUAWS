@@ -209,17 +209,20 @@ def _last_train_warnings(state: DayState, constraints: ScheduleConstraints) -> l
     if last_service < 12 * 60:
         last_service += 24 * 60
     latest = to_minutes(state.stops[-1].depart_at)
+    label = f"마지막 일정 종료 {state.stops[-1].depart_at}"
     tz = _tz(constraints.start_at)
     for segment in state.segments:
         for leg in segment.primary.legs:
             if leg.depart_at and tz is not None:
                 local = datetime.fromisoformat(leg.depart_at.replace("Z", "+00:00")).astimezone(tz)
-                latest = max(latest, local.hour * 60 + local.minute)
+                if local.hour * 60 + local.minute >= latest:
+                    latest = local.hour * 60 + local.minute
+                    label = f"마지막 탑승 {leg.line_name or '대중교통'} {local:%H:%M} 출발"
     slack = last_service - latest
     if slack >= margin:
         return []
     last = constraints.last_service_at
-    return [f"{state.day}일차 마지막 이동 후 막차({last})까지 여유 {slack}분"]
+    return [f"{state.day}일차 {label} — 도심 지하철 막차({last})까지 여유 {slack}분"]
 
 
 def _tz(start_at: str | None) -> tzinfo | None:

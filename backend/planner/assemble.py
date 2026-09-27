@@ -7,15 +7,17 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date, timedelta, tzinfo
+from typing import get_args
+from zoneinfo import ZoneInfo
 
 from backend.common.cities import CityProfile
 from backend.common.poi_data import MEAL_CATEGORIES, CityData
 from backend.planner.briefing import BriefingFacts, build_briefing
-from backend.planner.risk import stop_risk
+from backend.planner.risk import risk_summary, segment_flags, stop_risk
 from backend.planner.schemas import POIVector, ScheduledStop, ScheduleResult
 from backend.routing.planner import SegmentRoute
-from backend.routing.scenic import ScenicPoi, pick_scenic, recommend
+from backend.routing.scenic import ScenicPoi, group_preference, recommend_route
 from shared.types.models import (
     Itinerary,
     ItineraryDay,
@@ -25,10 +27,10 @@ from shared.types.models import (
     PlanRequest,
     PlanStats,
     PoiScore,
+    PreferenceAxis,
+    PreferenceProfile,
     RouteSegment,
 )
-
-_NATURE_AXIS = 2  # PreferenceAxis 순서상 nature_vs_urban 의 위치
 
 
 def assemble_itinerary(
@@ -48,11 +50,11 @@ def assemble_itinerary(
     by_id = data.by_id()
     segments = {(s.primary.from_poi_id, s.primary.to_poi_id): s for s in schedule.segments}
     scenic_pois = [
-        ScenicPoi(name=p.name, lat=p.lat, lng=p.lng, category=p.category,
-                  nature_vs_urban=p.axis_features[_NATURE_AXIS])
+        ScenicPoi(name=p.name, lat=p.lat, lng=p.lng, category=p.category, features=p.axis_features)
         for p in data.pois
     ]
-    group_nature = _group_axis_mean(request, "nature_vs_urban")
+    group_pref = group_preference([_member_vector(m) for m in request.members])
+    tz = ZoneInfo(city.timezone)
     days: list[ItineraryDay] = []
     for day in range(1, request.days + 1):
         stops = sorted((s for s in schedule.stops if s.day == day), key=lambda s: s.order)
@@ -65,7 +67,7 @@ def assemble_itinerary(
                                        score=score, arrive_at=stop.arrive_at,
                                        stay_min=stop.stay_min, depart_at=stop.depart_at))
             if inbound is not None:
-                day_segments.append(_segment_view(inbound, scenic_pois, group_nature))
+                day_segments.append(_segment_view(inbound, scenic_pois, group_pref, tz))
             previous = stop.poi_id
         days.append(ItineraryDay(day_number=day, stops=items, segments=day_segments))
 
@@ -88,6 +90,11 @@ def assemble_itinerary(
                                      / max(request.days, 1)),
         scenic_count=sum(1 for d in days for seg in d.segments if seg.scenic),
         warning_count=len(warnings),
+        constraint_notes=request.constraints.notes,
+        tightest_risk=next(
+            (f.reason for d in days for s in d.segments for f in s.risk_flags if f.level == "high"),
+            None,
+        ),
     )
     return Itinerary(
         plan_id=f"{city.key}-{request.start_date}",
@@ -98,6 +105,7 @@ def assemble_itinerary(
         member_satisfaction=satisfaction,
         briefing=build_briefing(facts) if placed else "조건에 맞는 일정을 만들지 못했어요.",
         warnings=warnings,
+        risk_summary=risk_summary([[f for s in d.segments for f in s.risk_flags] for d in days]),
         excluded_notes=excluded_notes + _must_visit_notes(request, must_ids),
         data_source=data.source,
         start_date=request.start_date,
@@ -130,19 +138,26 @@ def _with_risk(
 
 
 def _segment_view(
-    segment: SegmentRoute, pois: list[ScenicPoi], group_nature: float
+    segment: SegmentRoute, pois: list[ScenicPoi], group_pref: list[float], tz: tzinfo
 ) -> RouteSegment:
-    """구간 → 화면용 RouteSegment(운영기관·경고·경치 대안 포함)."""
-    scenic = pick_scenic(segment, pois)
+    """구간 → 화면용 RouteSegment(운영기관·경고·위험 문장·경치 대안 포함)."""
+    scenic, recommended = recommend_route(segment, pois, group_pref)
     return segment.primary.model_copy(
         update={
             "transfer_count": segment.transfer_count,
             "operators": segment.operators,
             "advisories": segment.advisories,
             "scenic": scenic,
-            "recommended": recommend(group_nature, scenic is not None),
+            "recommended": recommended,
+            "risk_flags": segment_flags(segment, tz),
         }
     )
+
+
+def _member_vector(member: PreferenceProfile) -> list[float]:
+    """멤버 프로필 → 5축 값 목록(PreferenceAxis 순서)."""
+    values = {axis.axis: axis.value for axis in member.axes}
+    return [values.get(axis, 0.5) for axis in get_args(PreferenceAxis)]
 
 
 def member_satisfaction(
@@ -170,12 +185,6 @@ def member_satisfaction(
         ideal = sum(personal) / len(personal) if personal else 1.0
         ratios[member_id] = min(sum(fits) / len(fits) / ideal, 1.0) if ideal else 0.0
     return [MemberFit(member_id=mid, fit=round(value, 3)) for mid, value in ratios.items()]
-
-
-def _group_axis_mean(request: PlanRequest, axis: str) -> float:
-    """그룹의 축 평균."""
-    values = [a.value for m in request.members for a in m.axes if a.axis == axis]
-    return sum(values) / len(values) if values else 0.5
 
 
 def _must_visit_notes(request: PlanRequest, must_ids: list[str]) -> list[str]:

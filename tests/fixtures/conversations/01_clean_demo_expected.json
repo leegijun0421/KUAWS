@@ -1,0 +1,47 @@
+{
+  "type": "clean",
+  "city": "paris",
+  "days": 3,
+  "start_date": "2026-10-15",
+  "members": [
+    {
+      "name": "민지",
+      "axes": {
+        "activity_level": 0.3,
+        "crowd_tolerance": null,
+        "nature_vs_urban": 0.85,
+        "food_priority": null,
+        "pace": 0.25
+      }
+    },
+    {
+      "name": "서연",
+      "axes": {
+        "activity_level": null,
+        "crowd_tolerance": null,
+        "nature_vs_urban": 0.7,
+        "food_priority": 0.95,
+        "pace": 0.7
+      }
+    },
+    {
+      "name": "도윤",
+      "axes": {
+        "activity_level": 0.6,
+        "crowd_tolerance": 0.2,
+        "nature_vs_urban": 0.2,
+        "food_priority": null,
+        "pace": null
+      }
+    }
+  ],
+  "must_visit_any": [
+    "louvre"
+  ],
+  "constraints": {
+    "avoid_keywords_any": [],
+    "exclude_categories": [],
+    "earliest_start": null
+  },
+  "note": "사람이 대화를 읽고 매긴 정답지. null = 대화에 근거 없음(낮은 신뢰도가 정답). 0.5±0.15 는 '중간'."
+}

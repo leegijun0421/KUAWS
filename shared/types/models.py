@@ -43,6 +43,8 @@ class AxisValue(ApiModel):
     axis: PreferenceAxis
     value: float = Field(ge=0.0, le=1.0)
     confidence: float = Field(ge=0.0, le=1.0, description="임계값 미만이면 후속 질문 대상")
+    #: 이 값의 근거가 된 발화(인용). 확인 화면에 그대로 보여준다. 없으면 None.
+    evidence: str | None = None
 
 
 class PreferenceProfile(ApiModel):
@@ -72,6 +74,19 @@ class HardConstraints(ApiModel):
     avoid_keywords: list[str] = []
     #: 사람이 읽는 원문 근거("민지: 갑각류 알레르기"). 결과 화면에 그대로 보여준다.
     notes: list[str] = []
+    #: 시간 제약 — 하루 일정을 이 시각 이후에 시작("11:00"), 이 시각 전에 끝("20:00").
+    earliest_start: str | None = None
+    latest_end: str | None = None
+
+
+class TripFacts(ApiModel):
+    """대화에서 확정된 여행 정보. 없으면 None — 화면에서 사용자가 채운다."""
+
+    city: str | None = None
+    #: city 가 지원 도시(화이트리스트)의 key 로 인식됐는가. False 면 지원 도시를 다시 묻는다.
+    city_supported: bool = False
+    days: int | None = None
+    start_date: str | None = None
 
 
 class IntakeMessageRequest(ApiModel):
@@ -107,12 +122,13 @@ class ChatIntakeRequest(ApiModel):
 
 
 class ChatIntakeResponse(ApiModel):
-    """대화 속 화자별 프로필 + 그룹 공통 제약."""
+    """대화 속 화자별 프로필 + 그룹 공통 제약 + 확정된 여행 정보."""
 
     members: list[IntakeMessageResponse]
     constraints: HardConstraints
     must_visit: list[str] = []
     assistant_message: str
+    trip: TripFacts = TripFacts()
 
 
 # ---------- 장소 ----------
@@ -157,6 +173,14 @@ class RouteAdvisory(ApiModel):
     message: str
 
 
+class RiskFlag(ApiModel):
+    """구간 위험 표시 — 숫자가 아니라 사람이 읽는 문장이 본체다."""
+
+    level: Literal["low", "medium", "high"]
+    reason: str
+    suggestion: str | None = None
+
+
 class RouteLeg(ApiModel):
     mode: Literal["walk", "bus", "subway", "transfer"]
     line_name: str | None = None
@@ -190,6 +214,8 @@ class RouteSegment(ApiModel):
     scenic: ScenicOption | None = None
     #: 그룹 성향으로 본 추천 유형. 자연 선호 그룹이면 scenic 을 권한다.
     recommended: RoutePreference | None = None
+    #: 실제 편성 시각으로 본 구간 위험(환승 연결 여유 등). 비면 특이사항 없음.
+    risk_flags: list[RiskFlag] = []
 
 
 class ScenicOption(ApiModel):
@@ -202,6 +228,8 @@ class ScenicOption(ApiModel):
     scenic_score: float
     #: 경로 근처를 지나는 대표 장소 이름(최대 3개).
     highlights: list[str] = []
+    #: 추천 이유 문장("6분 더 걸리지만 공원 2곳 옆을 지납니다 (자연 선호 그룹)").
+    reason: str = ""
 
 
 class ItineraryStop(ApiModel):
@@ -238,6 +266,8 @@ class Itinerary(ApiModel):
     member_satisfaction: list[MemberFit] = []
     #: 사용자에게 보여줄 주의 문구(막차·이동시간 상한·식사 누락 등).
     warnings: list[str] = []
+    #: 위험 구간 한 줄 요약("2일 일정 중 주의 구간 2곳, 위험 구간 1곳").
+    risk_summary: str = ""
     #: 하드 제약으로 제외된 장소 수와 근거.
     excluded_notes: list[str] = []
     #: POI 데이터 출처("collected" = Google Places 수집·태깅본, "seed" = 내장 예시).

@@ -142,7 +142,7 @@ def test_api_chat_then_answer_offline(monkeypatch):
         "/api/intake/answer", json={"memberId": member_id, "axis": "pace", "value": 0.2}
     )
     pace = next(a for a in res.json()["profile"]["axes"] if a["axis"] == "pace")
-    assert pace == {"axis": "pace", "value": 0.2, "confidence": 1.0}
+    assert pace == {"axis": "pace", "value": 0.2, "confidence": 1.0, "evidence": None}
 
 
 def test_rounds_limit_fills_neutral(monkeypatch):
@@ -167,8 +167,8 @@ def test_mock_chats_parse_expected_speakers():
     """가짜 카톡 대화 5종이 화자 수대로 분리된다(데모 입력 회귀 방지)."""
     from pathlib import Path
 
-    expected = {"01": 3, "02": 4, "03": 2, "04": 4, "05": 3}
-    for path in sorted(Path("mocks/chats").glob("*.txt")):
+    expected = {"01": 3, "02": 3, "03": 3, "04": 3, "05": 3}
+    for path in sorted(Path("tests/fixtures/conversations").glob("*.txt")):
         speakers = parse_chat(path.read_text(encoding="utf-8"))
         assert len(speakers) == expected[path.name[:2]], path.name
 
@@ -179,3 +179,40 @@ def test_rules_detect_type_refusal_without_false_positive():
     assert extract_by_rules("박물관이나 미술관은 절대 안 갈래")[1].exclude_categories == ["culture"]
     assert extract_by_rules("공원 좋아, 사람 많은 곳은 싫어")[1].exclude_categories == []
     assert "peanut" in extract_by_rules("땅콩 알레르기 있어요")[1].avoid_keywords
+
+
+def test_llm_unknown_axis_name_falls_back_to_rules():
+    bad = _llm_json(axes={"activity": {"value": 0.9, "confidence": 0.9}})
+    result = extract_profiles({"민지": ["공원 산책 좋아"]}, "파리", provider=FakeProvider(bad))
+    assert result.method == "rules"
+
+
+def test_llm_evidence_and_trip_facts_are_kept():
+    data = json.loads(_llm_json())
+    data["members"][0]["axes"]["pace"]["evidence"] = "하루에 너무 많이 돌면 기억도 안 남더라"
+    data["trip"] = {"city": "파리", "days": 3, "start_date": "2026-10-15",
+                    "earliest_start": "11:00", "latest_end": "25:00"}
+    result = extract_profiles({"민지": ["..."]}, "파리",
+                              provider=FakeProvider(json.dumps(data, ensure_ascii=False)))
+    pace = next(a for a in result.members[0].axes if a.axis == "pace")
+    assert pace.evidence.startswith("하루에")
+    assert result.trip.city == "paris" and result.trip.city_supported and result.trip.days == 3
+    assert result.earliest_start == "11:00" and result.latest_end is None  # 잘못된 시각은 버림
+
+
+def test_rules_extract_time_constraint_and_trip_from_fixture():
+    from pathlib import Path
+
+    text = Path("tests/fixtures/conversations/03_constraints.txt").read_text(encoding="utf-8")
+    client = TestClient(app)
+    body = client.post("/api/intake/chat", json={"chatText": text}).json()
+    assert body["constraints"]["earliestStart"] == "11:00"
+    assert body["trip"] == {"city": "paris", "citySupported": True, "days": 2, "startDate": None}
+    assert any("seafood" == k for k in body["constraints"]["avoidKeywords"])
+
+
+def test_unsupported_city_is_flagged():
+    from backend.intake.trip import facts_from_llm
+
+    facts, _, _ = facts_from_llm({"city": "도쿄", "days": 2})
+    assert facts.city == "도쿄" and facts.city_supported is False

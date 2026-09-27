@@ -54,11 +54,20 @@ export default function RouteCard({ segment, timeZone }: Props) {
             </Toggle>
           </div>
         )}
-        {showScenic && segment.scenic && segment.scenic.highlights.length > 0 && (
-          <p className="mt-1 text-xs text-emerald-700">
-            지나가는 곳: {segment.scenic.highlights.join(", ")}
-          </p>
+        {segment.scenic && (
+          <p className="mt-1 text-xs text-emerald-700">🌿 {segment.scenic.reason}</p>
         )}
+        {segment.riskFlags.map((flag) => (
+          <p
+            key={flag.reason}
+            className={`mt-2 rounded-lg px-2 py-1 text-xs ${
+              flag.level === "high" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-800"
+            }`}
+          >
+            ⚠ {flag.reason}
+            {flag.suggestion && <span className="block opacity-80">{flag.suggestion}</span>}
+          </p>
+        ))}
 
         <ol className="mt-2 space-y-1">
           {shown.legs.map((leg, index) => {
@@ -101,7 +110,7 @@ export default function RouteCard({ segment, timeZone }: Props) {
                 ))}
               </span>
             )}
-            {!isMock && <span className="ml-2">· 경로 데이터 © Google</span>}
+            {!isMock && <span className="ml-2">· 경로 데이터 © Google Maps</span>}
           </footer>
         )}
       </div>

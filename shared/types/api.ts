@@ -28,6 +28,8 @@ export interface AxisValue {
   value: number;
   /** 0.0 ~ 1.0. 임계값 미만이면 후속 질문 대상. */
   confidence: number;
+  /** 이 값의 근거가 된 발화(인용) */
+  evidence?: string | null;
 }
 
 export interface PreferenceProfile {
@@ -55,6 +57,17 @@ export interface HardConstraints {
   avoidKeywords: string[];
   /** 사람이 읽는 원문 근거 */
   notes: string[];
+  /** 시간 제약 "HH:MM" — 이 시각 이후 시작 / 이전 종료 */
+  earliestStart?: string | null;
+  latestEnd?: string | null;
+}
+
+/** 대화에서 확정된 여행 정보. 없으면 null — 화면에서 채운다. */
+export interface TripFacts {
+  city: string | null;
+  citySupported: boolean;
+  days: number | null;
+  startDate: string | null;
 }
 
 export interface IntakeMessageRequest {
@@ -88,6 +101,7 @@ export interface ChatIntakeResponse {
   constraints: HardConstraints;
   mustVisit: string[];
   assistantMessage: string;
+  trip: TripFacts;
 }
 
 // ---------- 장소 ----------
@@ -120,6 +134,13 @@ export interface PoiScore {
 export interface Operator {
   name: string;
   url: string | null;
+}
+
+/** 구간 위험 표시 — 사람이 읽는 문장이 본체 */
+export interface RiskFlag {
+  level: "low" | "medium" | "high";
+  reason: string;
+  suggestion?: string | null;
 }
 
 export interface RouteAdvisory {
@@ -155,6 +176,7 @@ export interface RouteSegment {
   /** 성향별 경로 추천 — 최단 대신 고를 수 있는 '경치' 대안 */
   scenic?: ScenicOption | null;
   recommended?: RoutePreference | null;
+  riskFlags: RiskFlag[];
 }
 
 export interface ScenicOption {
@@ -162,6 +184,8 @@ export interface ScenicOption {
   extraMin: number;
   scenicScore: number;
   highlights: string[];
+  /** 추천 이유 문장 */
+  reason: string;
 }
 
 export interface ItineraryStop {
@@ -196,6 +220,8 @@ export interface Itinerary {
   /** 멤버별 만족도(혼자 갔을 때의 최적 일정 대비). 최저값 = minMemberSatisfaction */
   memberSatisfaction: { memberId: string; fit: number }[];
   warnings: string[];
+  /** 위험 구간 한 줄 요약 */
+  riskSummary: string;
   excludedNotes: string[];
   /** "collected" = Google Places 수집·태깅본, "seed" = 내장 예시 */
   dataSource?: string | null;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Itinerary, ItineraryStop, PlanRequest } from "../../../shared/types/api";
 import { CITY_TIMEZONE } from "../lib/format";
 import MapView from "./MapView";
@@ -20,6 +20,23 @@ const CITY_LABEL: Record<string, string> = { paris: "파리", taipei: "타이베
 export default function ResultView({ itinerary, request, onRestart }: Props) {
   const [dayIndex, setDayIndex] = useState(0);
   const [detail, setDetail] = useState<ItineraryStop | null>(null);
+
+  // 상세는 /poi/<id> 주소를 가진다 — 뒤로 가기로 닫힌다.
+  const openDetail = (stop: ItineraryStop) => {
+    window.history.pushState({ poi: stop.poi.poiId }, "", `/poi/${stop.poi.poiId}`);
+    setDetail(stop);
+  };
+  const closeDetail = () => {
+    if (window.location.pathname.startsWith("/poi/")) window.history.back();
+    setDetail(null);
+  };
+  useEffect(() => {
+    const onPop = () => {
+      if (!window.location.pathname.startsWith("/poi/")) setDetail(null);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
   const day = itinerary.days[dayIndex];
   const timeZone = CITY_TIMEZONE[itinerary.city];
 
@@ -50,6 +67,11 @@ export default function ResultView({ itinerary, request, onRestart }: Props) {
       <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
         <h2 className="text-sm font-semibold text-slate-500">코스 브리핑</h2>
         <p className="mt-1 leading-relaxed text-slate-800">{itinerary.briefing}</p>
+        {itinerary.riskSummary && (
+          <p className="mt-3 border-t border-slate-100 pt-3 text-sm text-slate-600">
+            🚦 {itinerary.riskSummary}
+          </p>
+        )}
       </section>
 
       <SatisfactionPanel itinerary={itinerary} />
@@ -98,7 +120,12 @@ export default function ResultView({ itinerary, request, onRestart }: Props) {
               return (
                 <li key={stop.poi.poiId}>
                   {index > 0 && inbound && <RouteCard segment={inbound} timeZone={timeZone} />}
-                  <StopCard stop={stop} index={index + 1} onOpen={() => setDetail(stop)} />
+                  <StopCard
+                    stop={stop}
+                    index={index + 1}
+                    members={itinerary.members}
+                    onOpen={() => openDetail(stop)}
+                  />
                 </li>
               );
             })}
@@ -117,9 +144,7 @@ export default function ResultView({ itinerary, request, onRestart }: Props) {
           {(itinerary.stats.elapsedMs / 1000).toFixed(1)}초
         </p>
       )}
-      {detail && (
-        <StopDetail stop={detail} members={itinerary.members} onClose={() => setDetail(null)} />
-      )}
+      {detail && <StopDetail stop={detail} members={itinerary.members} onClose={closeDetail} />}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   CityInfo,
   HardConstraints,
@@ -19,6 +19,14 @@ import { dateAfter } from "../lib/format";
 type Step = "input" | "review" | "result";
 const EMPTY: HardConstraints = { excludeCategories: [], avoidKeywords: [], notes: [] };
 
+/** 단계별 주소. 결과(/result)와 장소 상세(/poi/<id>)는 뒤로 가기로 오갈 수 있다. */
+const PATHS: Record<Step, string> = { input: "/", review: "/review", result: "/result" };
+
+function stepFromPath(path: string): Step {
+  if (path.startsWith("/poi/") || path === "/result") return "result";
+  return path === "/review" ? "review" : "input";
+}
+
 /** 입력(도시·대화) → 취향 확인(슬라이더) → 결과. 상태는 이 페이지 하나에 모은다. */
 export default function PlannerPage() {
   const [step, setStep] = useState<Step>("input");
@@ -31,12 +39,24 @@ export default function PlannerPage() {
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const lastTask = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     fetchCities().then(setCities, (reason: Error) => setError(reason.message));
+    // 새로고침하면 메모리 상태가 사라지므로 입력 화면에서 다시 시작한다.
+    if (window.location.pathname !== "/") window.history.replaceState(null, "", "/");
+    const onPop = () => setStep(stepFromPath(window.location.pathname));
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
   }, []);
 
+  const goTo = (next: Step) => {
+    setStep(next);
+    if (window.location.pathname !== PATHS[next]) window.history.pushState(null, "", PATHS[next]);
+  };
+
   const run = async (label: string, task: () => Promise<void>) => {
+    lastTask.current = () => void run(label, task);
     setBusy(label);
     setError(null);
     try {
@@ -54,7 +74,16 @@ export default function PlannerPage() {
       setMembers(result.members);
       setConstraints(result.constraints);
       setMustVisit(result.mustVisit);
-      setStep("review");
+      // 대화에서 확정된 여행 정보로 입력칸을 채운다(지원 도시일 때만 도시를 바꾼다).
+      setTrip((current) => ({
+        city: result.trip.citySupported && result.trip.city ? result.trip.city : current.city,
+        days: result.trip.days ? Math.min(Math.max(result.trip.days, 1), 3) : current.days,
+        startDate:
+          result.trip.startDate && result.trip.startDate > dateAfter(0)
+            ? result.trip.startDate
+            : current.startDate,
+      }));
+      goTo("review");
     });
 
   const onMembers = (rows: { name: string; text: string }[]) =>
@@ -66,7 +95,7 @@ export default function PlannerPage() {
       setMembers(results);
       setConstraints(mergeConstraints(results));
       setMustVisit([...new Set(results.flatMap((r) => r.mustVisit))]);
-      setStep("review");
+      goTo("review");
     });
 
   const onAxisChange = (memberId: string, axis: PreferenceAxis, value: number, commit: boolean) => {
@@ -100,9 +129,10 @@ export default function PlannerPage() {
         constraints,
         mustVisit,
       };
+      console.info("일정 생성 요청(PlanRequest)", request);
       setItinerary(await createPlan(request));
       setLastRequest(request);
-      setStep("result");
+      goTo("result");
       window.scrollTo({ top: 0 });
     });
 
@@ -110,9 +140,18 @@ export default function PlannerPage() {
     <main className="mx-auto max-w-3xl space-y-4 px-4 py-6">
       {step !== "result" && <Hero />}
       {error && (
-        <p className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700 ring-1 ring-rose-200">
-          {error}
-        </p>
+        <div className="flex items-center justify-between gap-3 rounded-xl bg-rose-50 p-3 text-sm text-rose-700 ring-1 ring-rose-200">
+          <span>{error}</span>
+          {lastTask.current && (
+            <button
+              type="button"
+              onClick={() => lastTask.current?.()}
+              className="shrink-0 rounded-lg bg-rose-600 px-3 py-1 text-white"
+            >
+              다시 시도
+            </button>
+          )}
+        </div>
       )}
 
       {step === "input" && (
@@ -133,7 +172,7 @@ export default function PlannerPage() {
             <h2 className="text-lg font-semibold text-slate-800">3. 이렇게 이해했어요 — 맞나요?</h2>
             <button
               type="button"
-              onClick={() => setStep("input")}
+              onClick={() => goTo("input")}
               className="text-sm text-slate-500 underline"
             >
               다시 입력
@@ -169,11 +208,7 @@ export default function PlannerPage() {
       )}
 
       {step === "result" && itinerary && (
-        <ResultView
-          itinerary={itinerary}
-          request={lastRequest}
-          onRestart={() => setStep("input")}
-        />
+        <ResultView itinerary={itinerary} request={lastRequest} onRestart={() => goTo("input")} />
       )}
       {busy !== null && <LoadingOverlay message={busy || undefined} />}
     </main>

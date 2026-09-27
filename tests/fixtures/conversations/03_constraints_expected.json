@@ -1,0 +1,56 @@
+{
+  "type": "constraints",
+  "city": "paris",
+  "days": 2,
+  "start_date": null,
+  "members": [
+    {
+      "name": "엄마",
+      "axes": {
+        "activity_level": 0.3,
+        "crowd_tolerance": null,
+        "nature_vs_urban": 0.2,
+        "food_priority": 0.4,
+        "pace": 0.2
+      }
+    },
+    {
+      "name": "아빠",
+      "axes": {
+        "activity_level": 0.15,
+        "crowd_tolerance": null,
+        "nature_vs_urban": 0.2,
+        "food_priority": null,
+        "pace": 0.15
+      }
+    },
+    {
+      "name": "지우",
+      "axes": {
+        "activity_level": null,
+        "crowd_tolerance": 0.2,
+        "nature_vs_urban": null,
+        "food_priority": null,
+        "pace": null
+      }
+    }
+  ],
+  "must_visit_any": [],
+  "constraints": {
+    "avoid_keywords_any": [
+      "seafood",
+      "fruits de mer",
+      "crab",
+      "shrimp",
+      "crevette",
+      "crabe",
+      "homard",
+      "해산물",
+      "새우",
+      "게"
+    ],
+    "exclude_categories": [],
+    "earliest_start": "11:00"
+  },
+  "note": "사람이 대화를 읽고 매긴 정답지. null = 대화에 근거 없음(낮은 신뢰도가 정답). 0.5±0.15 는 '중간'."
+}

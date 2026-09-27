@@ -34,12 +34,17 @@ class BriefingFacts(BaseModel):
     avg_travel_min_per_day: int
     scenic_count: int
     warning_count: int
+    #: 반영한 하드 제약 근거 문장(예: "지우: 갑각류 알레르기").
+    constraint_notes: list[str] = []
+    #: 위험 구간 중 가장 빡빡한 것 한 줄(예: "M1 → RER A 환승 여유 4분 …").
+    tightest_risk: str | None = None
 
 
 def build_briefing(facts: BriefingFacts) -> str:
     """템플릿 문장 3~4개를 이어 붙인다."""
     sentences = [_opening(facts), _fairness(facts)]
-    optional = [_focus(facts), _meals(facts), _scenic(facts), _warnings(facts)]
+    optional = [_constraints(facts), _risk(facts), _focus(facts), _meals(facts),
+                _scenic(facts), _warnings(facts)]
     sentences.extend(sentence for sentence in optional if sentence)
     return " ".join(sentences[:4])
 
@@ -83,6 +88,20 @@ def _scenic(facts: BriefingFacts) -> str | None:
     if not facts.scenic_count:
         return None
     return f"{facts.scenic_count}개 구간에는 조금 돌아가도 풍경이 좋은 경로를 함께 넣었어요."
+
+
+def _constraints(facts: BriefingFacts) -> str | None:
+    """반영한 하드 제약(알레르기 등). 누구의 무엇인지 그대로 쓴다."""
+    if not facts.constraint_notes:
+        return None
+    return f"{facts.constraint_notes[0]} — 이 조건을 반영해 장소를 골랐어요."
+
+
+def _risk(facts: BriefingFacts) -> str | None:
+    """가장 빡빡한 환승 구간."""
+    if not facts.tightest_risk:
+        return None
+    return f"{facts.tightest_risk} 구간은 서둘러 주세요."
 
 
 def _warnings(facts: BriefingFacts) -> str | None:

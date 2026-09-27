@@ -19,6 +19,11 @@ export default function AxisSlider({ value, question, onChange, onCommit }: Prop
         <span>{unsure ? "확인해 주세요" : `AI 확신 ${Math.round(value.confidence * 100)}%`}</span>
       </div>
       {question && <p className="mt-1 text-xs text-amber-800">{question.prompt.split(" (")[0]}</p>}
+      {!question && value.evidence && (
+        <p className="mt-1 truncate text-[11px] text-slate-400" title={value.evidence}>
+          근거: “{value.evidence}”
+        </p>
+      )}
       {question?.kind === "choice" && question.choices ? (
         <div className="mt-2 flex gap-1">
           {question.choices.map((choice) => (
