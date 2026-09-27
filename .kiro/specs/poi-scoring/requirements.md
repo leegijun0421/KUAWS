@@ -90,8 +90,10 @@
 ## 미결 사항 (담당자가 채울 것)
 
 - [ ] 축별 값의 판정 기준 예시(프롬프트에 넣을 few-shot) — 백엔드 A
-- [ ] 검수 통과 기준: 10건 중 몇 건 이상 납득되면 전량 진행할지
-- [ ] `open_hours` 정규화 포맷(문자열/구조체) 최종 확인 — 데이터 리드
+- [x] 검수 통과 기준: 30건 층화 표본 중 납득(ok) ≥ 80% 이고 틀림(fail) ≤ 2건
+      (`data/scripts/review_tags.py`, 결과 `docs/TAGGING_REVIEW.md`)
+- [x] `open_hours` = Google `weekdayDescriptions` 를 ` | ` 로 이은 문자열. 스케줄러는
+      `backend/common/opening_hours.py` 로 요일별 구간으로 해석한다(2026-09-27)
 
 ## 소유권 메모
 
