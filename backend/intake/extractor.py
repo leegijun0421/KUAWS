@@ -23,6 +23,7 @@ from backend.common.llm import (
 from backend.common.logging import get_logger
 from backend.intake.rules import AXES, extract_by_rules
 from backend.intake.schema import ExtractedMember, ExtractionResult
+from backend.intake.trip import facts_from_llm, facts_from_text
 from shared.types.models import AxisValue, HardConstraints, LLMProvider
 
 logger = get_logger(__name__)
@@ -58,12 +59,20 @@ def extract_profiles(
         return _from_llm(data, speakers)
     except (LLMUnavailableError, LLMResponseError) as exc:
         logger.warning("LLM 추출 불가 — 규칙 기반으로 폴백: %s", exc)
-        return _from_rules(speakers)
+        return extract_with_rules(speakers)
 
 
 def _from_llm(data: dict, speakers: dict[str, list[str]]) -> ExtractionResult:
-    """LLM JSON 을 검증해 내부 모델로 바꾼다. 입력에 없는 화자는 버린다."""
+    """LLM JSON 을 검증해 내부 모델로 바꾼다. 입력에 없는 화자는 버린다.
+
+    축 이름이 동결 5축과 다르면 조용히 넘기지 않고 실패시킨다 — 그대로 두면 매칭에서
+    전부 0점이 나오고 원인을 못 찾는다(Notion W1). 실패는 규칙 기반 폴백으로 이어진다.
+    """
     by_name = {str(item.get("name", "")).strip(): item for item in data.get("members", [])}
+    for item in by_name.values():
+        unknown = set(item.get("axes") or {}) - set(AXES)
+        if unknown:
+            raise LLMResponseError(f"정의되지 않은 축 이름: {sorted(unknown)}")
     members = []
     for name, messages in speakers.items():
         item = by_name.get(name)
@@ -73,7 +82,11 @@ def _from_llm(data: dict, speakers: dict[str, list[str]]) -> ExtractionResult:
             continue
         members.append(_member_from_item(name, item))
     message = str(data.get("assistant_message") or "대화에서 취향을 정리했어요.")
-    return ExtractionResult(members=members, assistant_message=message, method="llm")
+    trip, earliest, latest = facts_from_llm(data.get("trip"))
+    return ExtractionResult(
+        members=members, assistant_message=message, method="llm",
+        trip=trip, earliest_start=earliest, latest_end=latest,
+    )
 
 
 def _member_from_item(name: str, item: dict) -> ExtractedMember:
@@ -102,18 +115,22 @@ def _axis_value(axis: str, raw: dict) -> AxisValue:
     """축 하나를 검증한다. 값이 null 이면 중립 0.5 + 원래 신뢰도(낮음)."""
     value = raw.get("value")
     confidence = _clip(raw.get("confidence", 0.0))
+    evidence = str(raw["evidence"]).strip()[:60] if raw.get("evidence") else None
     if value is None:
         return AxisValue(axis=axis, value=0.5, confidence=min(confidence, 0.3))
-    return AxisValue(axis=axis, value=_clip(value), confidence=confidence)
+    return AxisValue(axis=axis, value=_clip(value), confidence=confidence, evidence=evidence)
 
 
-def _from_rules(speakers: dict[str, list[str]]) -> ExtractionResult:
-    """전원 규칙 기반 추출."""
+def extract_with_rules(speakers: dict[str, list[str]]) -> ExtractionResult:
+    """전원 규칙 기반 추출(LLM 폴백 경로). 평가 스크립트에서 비교 기준으로도 쓴다."""
     members = [_rules_member(name, messages) for name, messages in speakers.items()]
+    trip, earliest = facts_from_text(" ".join(m for ms in speakers.values() for m in ms))
     return ExtractionResult(
         members=members,
         assistant_message=_RULES_MESSAGE,
         method="rules",
+        trip=trip,
+        earliest_start=earliest,
     )
 
 

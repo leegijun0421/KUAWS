@@ -53,11 +53,22 @@ def post_chat(body: ChatIntakeRequest, city: str = Query("paris")) -> ChatIntake
     for member in result.members:
         state = store.upsert_member(member, "\n".join(speakers[member.name]))
         responses.append(store.to_response(state, member.summary))
+    constraints = store.merge_constraints([m.constraints for m in result.members])
+    constraints = constraints.model_copy(
+        update={"earliest_start": result.earliest_start, "latest_end": result.latest_end}
+    )
+    message = result.assistant_message
+    if result.trip.city and not result.trip.city_supported:
+        message += (
+            f" 아쉽게도 '{result.trip.city}' 은(는) 아직 지원하지 않아요"
+            " — 파리·타이베이 중에서 골라 주세요."
+        )
     return ChatIntakeResponse(
         members=responses,
-        constraints=store.merge_constraints([m.constraints for m in result.members]),
+        constraints=constraints,
         must_visit=sorted({place for m in result.members for place in m.must_visit}),
-        assistant_message=result.assistant_message,
+        assistant_message=message,
+        trip=result.trip,
     )
 
 
