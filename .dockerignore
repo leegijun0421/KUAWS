@@ -1,0 +1,32 @@
+# 비밀 정보 — 절대 이미지에 넣지 않는다
+# (frontend/.env.local 의 지도 키 B 만 빌드에 쓴다 — 브라우저 노출용 키)
+.env
+.env.*
+*.pem
+
+# 빌드·캐시
+.git
+**/node_modules
+**/dist
+**/__pycache__
+.venv
+.pytest_cache
+.ruff_cache
+
+# 제출물·산출물
+Claude outputs
+submission
+docs
+tests/*
+!tests/fixtures
+.kiro
+.github
+
+# 데이터: 서비스에 필요한 tagged.json 만 남긴다
+data/raw
+data/processed/cache
+data/processed/share.db
+data/processed/pois/**/*.log
+data/processed/pois/**/checkpoint.json
+data/processed/pois/**/pois_*.json
+data/processed/pois/review_*

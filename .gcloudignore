@@ -1,0 +1,17 @@
+# gcloud run deploy --source 업로드 제외 목록.
+# 이 파일이 없으면 gcloud 가 .gitignore 를 써서 data/processed(태깅된 POI)까지 빠진다.
+# 세부 제외는 .dockerignore 가 담당한다.
+.gcloudignore
+.git
+.env
+*.pem
+**/node_modules
+**/dist
+**/__pycache__
+.venv
+.pytest_cache
+Claude outputs
+submission
+data/raw
+data/processed/cache
+data/processed/share.db

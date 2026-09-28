@@ -69,6 +69,13 @@ LLM 에게 맡기면 그럴듯하지만 **존재하지 않는 버스 노선과 �
 
 ---
 
+## 체험하기
+
+- **배포 주소:** https://DEPLOY_URL_PLACEHOLDER — 예시 대화 불러오기 → 일정 만들기 (파리·타이베이)
+- 배포 방법: [docs/DEPLOY.md](docs/DEPLOY.md) (Google Cloud Run, 컨테이너 1개 = 화면 + API)
+
+---
+
 ## 빠른 시작 (Windows PowerShell 기준)
 
 ### 1. 백엔드 — `C:\project\KUAWS` 에서
@@ -199,7 +206,7 @@ CI(GitHub Actions)가 PR 마다 위 명령과 `.env` 커밋 여부를 검사한�
 
 - 일본 도시: 일본 전용 라우팅 어댑터(`RouteProvider` 구현체 추가)
 - LLM 코스 브리핑 복원(현재 규칙 기반 템플릿, `LLMProvider` 뒤에 붙이면 됨), 택시 대안 재투입
-- AWS EC2 배포, UI 고도화
+- UI 고도화, 공유 링크 저장소를 관리형 DB 로 이전
 
 ## 알려진 한계 (예선)
 
