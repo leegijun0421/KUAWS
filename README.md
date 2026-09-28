@@ -71,7 +71,7 @@ LLM 에게 맡기면 그럴듯하지만 **존재하지 않는 버스 노선과 �
 
 ## 체험하기
 
-- **배포 주소:** https://DEPLOY_URL_PLACEHOLDER — 예시 대화 불러오기 → 일정 만들기 (파리·타이베이)
+- **배포 주소:** https://kuaws-np3ccjktdq-du.a.run.app — 예시 대화 불러오기 → 일정 만들기 (파리·타이베이)
 - 배포 방법: [docs/DEPLOY.md](docs/DEPLOY.md) (Google Cloud Run, 컨테이너 1개 = 화면 + API)
 
 ---
