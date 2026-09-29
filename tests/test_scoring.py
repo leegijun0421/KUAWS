@@ -12,14 +12,23 @@ AXES = ("activity_level", "crowd_tolerance", "nature_vs_urban", "food_priority",
 
 def profile(member_id: str, values: list[float], confidence: float = 0.9) -> PreferenceProfile:
     return PreferenceProfile(
-        member_id=member_id, member_name=member_id, raw_text="", updated_at="",
-        axes=[AxisValue(axis=a, value=v, confidence=confidence) for a, v in zip(AXES, values)],
+        member_id=member_id,
+        member_name=member_id,
+        raw_text="",
+        updated_at="",
+        axes=[
+            AxisValue(axis=a, value=v, confidence=confidence)
+            for a, v in zip(AXES, values, strict=True)
+        ],
     )
 
 
-def poi(poi_id: str, features: list[float], category: str = "attraction", name: str = "") -> TaggedPoi:
-    return TaggedPoi(poi_id=poi_id, name=name or poi_id, category=category, lat=0, lng=0,
-                     axis_features=features)
+def poi(
+    poi_id: str, features: list[float], category: str = "attraction", name: str = ""
+) -> TaggedPoi:
+    return TaggedPoi(
+        poi_id=poi_id, name=name or poi_id, category=category, lat=0, lng=0, axis_features=features
+    )
 
 
 def test_member_fit_prefers_matching_direction():
@@ -59,9 +68,11 @@ def test_hard_constraints_exclude_category_and_food_keywords():
 
 
 def test_must_visit_matches_across_accents_and_generic_words():
-    pois = [poi("louvre", [0.5] * 5, name="Musée du Louvre"),
-            poi("orsay", [0.5] * 5, name="Musée d'Orsay"),
-            poi("101", [0.5] * 5, name="Taipei 101 Observatory")]
+    pois = [
+        poi("louvre", [0.5] * 5, name="Musée du Louvre"),
+        poi("orsay", [0.5] * 5, name="Musée d'Orsay"),
+        poi("101", [0.5] * 5, name="Taipei 101 Observatory"),
+    ]
     assert match_must_visit(["Musee du Louvre"], pois) == {"louvre"}
     assert match_must_visit(["Louvre"], pois) == {"louvre"}
     assert match_must_visit(["Taipei 101"], pois) == {"101"}
@@ -79,9 +90,11 @@ def test_candidates_respect_category_quotas_and_must_visit():
 
 
 def test_parse_weekly_hours_handles_google_formats():
-    text = ("Monday: 7:30 AM – 1:30 AM | Tuesday: Closed | "
-            "Wednesday: 12:00 – 1:30 PM, 7:30 – 9:30 PM | "
-            "Thursday: Open 24 hours | Friday: 11:00 – 2:00 PM")
+    text = (
+        "Monday: 7:30 AM – 1:30 AM | Tuesday: Closed | "
+        "Wednesday: 12:00 – 1:30 PM, 7:30 – 9:30 PM | "
+        "Thursday: Open 24 hours | Friday: 11:00 – 2:00 PM"
+    )
     weekly = parse_weekly_hours(text)
     assert weekly[0] == [("07:30", "24:00")]
     assert weekly[1] == []
@@ -93,18 +106,22 @@ def test_parse_weekly_hours_handles_google_formats():
 
 def test_must_visit_picks_single_best_match_in_real_like_data():
     """실데이터처럼 '루브르'가 여러 곳이면 가장 비슷한 1곳만 고른다."""
-    pois = [poi("pyramid", [0.5] * 5, name="Louvre Pyramid"),
-            poi("caves", [0.5] * 5, name="Les Caves du Louvre"),
-            poi("museum", [0.5] * 5, name="Louvre Museum"),
-            poi("tour", [0.5] * 5, name="Tourism France Louvre")]
+    pois = [
+        poi("pyramid", [0.5] * 5, name="Louvre Pyramid"),
+        poi("caves", [0.5] * 5, name="Les Caves du Louvre"),
+        poi("museum", [0.5] * 5, name="Louvre Museum"),
+        poi("tour", [0.5] * 5, name="Tourism France Louvre"),
+    ]
     assert match_must_visit(["Musée du Louvre"], pois) == {"museum"}
 
 
 def test_must_visit_requires_same_place_type():
-    pois = [poi("park", [0.5] * 5, name="Shilin Residence Park"),
-            poi("market", [0.5] * 5, name="Raohe Night Market")]
+    pois = [
+        poi("park", [0.5] * 5, name="Shilin Residence Park"),
+        poi("market", [0.5] * 5, name="Raohe Night Market"),
+    ]
     assert match_must_visit(["Shilin Night Market"], pois) == set()
-    assert match_must_visit(["Raohe Street Night Market"], pois) == {"market"}  # street 는 일반 명사
+    assert match_must_visit(["Raohe Street Night Market"], pois) == {"market"}  # street: 일반 명사
     assert match_must_visit(["Raohe Night Market"], pois) == {"market"}
 
 

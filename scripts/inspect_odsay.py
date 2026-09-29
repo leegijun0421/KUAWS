@@ -1,7 +1,7 @@
 """ODsay 대중교통 길찾기 응답의 필드 체크리스트를 기계적으로 검증한다.
 
 사용법:
-    python inspect_odsay.py docs/odsay_sample_response.json
+    python scripts/inspect_odsay.py docs/odsay_sample_response.json
 
 출력:
     1) 응답 전체의 키 구조(스키마) — 실제로 어떤 필드가 오는지 한눈에 확인
@@ -12,11 +12,11 @@ from __future__ import annotations
 
 import json
 import sys
+from pathlib import Path
+
 # Windows 기본 출력 인코딩(cp949)은 이모지를 처리하지 못하므로 UTF-8로 고정한다.
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
-from pathlib import Path
-from typing import Any
 
 # ---------------------------------------------------------------------------
 # 체크리스트 정의
@@ -25,24 +25,24 @@ from typing import Any
 #   (예: 소요시간이 info에서는 totalTime, subPath에서는 sectionTime)
 # ---------------------------------------------------------------------------
 CHECKLIST: list[tuple[str, str, list[str]]] = [
-    ("총 소요시간",            "info",    ["totalTime"]),
-    ("총 요금",               "info",    ["payment"]),
-    ("환승 횟수",              "info",    ["busTransitCount", "subwayTransitCount"]),
-    ("구간별 교통수단 종류",     "subPath", ["trafficType"]),
-    ("구간별 승차 정류장·역",    "subPath", ["startName", "startID"]),
-    ("구간별 하차 정류장·역",    "subPath", ["endName", "endID"]),
-    ("구간별 소요시간",         "subPath", ["sectionTime"]),
-    ("배차간격 (구간별)",       "subPath", ["intervalTime"]),
-    ("배차간격 (경로 합계)",     "info",    ["totalIntervalTime", "checkIntervalTime"]),
-    ("도보 거리",              "info",    ["totalWalk"]),
-    ("도보 시간",              "info",    ["totalWalkTime"]),
+    ("총 소요시간", "info", ["totalTime"]),
+    ("총 요금", "info", ["payment"]),
+    ("환승 횟수", "info", ["busTransitCount", "subwayTransitCount"]),
+    ("구간별 교통수단 종류", "subPath", ["trafficType"]),
+    ("구간별 승차 정류장·역", "subPath", ["startName", "startID"]),
+    ("구간별 하차 정류장·역", "subPath", ["endName", "endID"]),
+    ("구간별 소요시간", "subPath", ["sectionTime"]),
+    ("배차간격 (구간별)", "subPath", ["intervalTime"]),
+    ("배차간격 (경로 합계)", "info", ["totalIntervalTime", "checkIntervalTime"]),
+    ("도보 거리", "info", ["totalWalk"]),
+    ("도보 시간", "info", ["totalWalkTime"]),
 ]
 
 # trafficType 코드 정의 (ODsay 공통 코드)
 TRAFFIC_TYPE = {1: "지하철", 2: "버스", 3: "도보"}
 
 
-def walk_schema(node: Any, prefix: str = "", depth: int = 0, max_depth: int = 4) -> list[str]:
+def walk_schema(node: object, prefix: str = "", depth: int = 0, max_depth: int = 4) -> list[str]:
     """중첩 dict/list를 재귀 순회하며 'a.b[].c' 형태의 키 경로 목록을 만든다.
 
     리스트는 모든 원소를 순회한 뒤 합집합을 취한다.
@@ -80,7 +80,7 @@ def collect_nodes(path_obj: dict, node_kind: str) -> list[dict]:
     return [s for s in path_obj.get("subPath", []) if isinstance(s, dict)]
 
 
-def find_field(nodes: list[dict], candidates: list[str]) -> tuple[str | None, Any]:
+def find_field(nodes: list[dict], candidates: list[str]) -> tuple[str | None, object]:
     """후보 필드명 중 실제로 존재하는 첫 번째 것과 그 샘플값을 반환한다."""
     for name in candidates:
         for node in nodes:
@@ -140,7 +140,8 @@ def main(json_path: str) -> int:
             tried = " / ".join(candidates)
             print(f"| {label} | ❌ 없음 | (탐색: {tried}) | - |")
         else:
-            location = f"`path[].{node_kind}" + ("[]" if node_kind == "subPath" else "") + f".{name}`"
+            suffix = "[]" if node_kind == "subPath" else ""
+            location = f"`path[].{node_kind}{suffix}.{name}`"
             print(f"| {label} | ✅ 있음 | {location} | `{sample}` |")
     print()
 

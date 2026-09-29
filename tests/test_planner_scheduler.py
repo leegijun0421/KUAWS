@@ -129,7 +129,10 @@ def test_stops_are_chronological_within_a_day(provider):
     """하루 안에서 도착 시각이 순서대로 증가한다."""
     pois = make_pois(20)
     result = build_schedule(
-        make_candidates(pois), pois, provider, days=2,
+        make_candidates(pois),
+        pois,
+        provider,
+        days=2,
         constraints=ScheduleConstraints(start_at=PARIS_START),
     )
 
@@ -142,7 +145,10 @@ def test_segments_come_from_the_router_not_hardcoded(provider):
     """스톱 사이 이동이 실제 라우팅 결과(목 프로바이더 응답)로 채워진다."""
     pois = make_pois(12)
     result = build_schedule(
-        make_candidates(pois), pois, provider, days=2,
+        make_candidates(pois),
+        pois,
+        provider,
+        days=2,
         constraints=ScheduleConstraints(start_at=PARIS_START),
     )
 
@@ -160,7 +166,10 @@ def test_depart_at_is_passed_to_provider(provider):
     """출발 시각이 프로바이더까지 전달된다 — 시간표 기반 경로의 전제다."""
     pois = make_pois(6)
     build_schedule(
-        make_candidates(pois), pois, provider, days=1,
+        make_candidates(pois),
+        pois,
+        provider,
+        days=1,
         constraints=ScheduleConstraints(start_at=PARIS_START),
     )
     assert provider.calls > 0
@@ -174,7 +183,10 @@ def test_returns_reason_when_nothing_can_be_placed(provider):
     pois = make_pois(8, opening=OpeningHours(open_at="22:00", close_at="23:30"))
     candidates = make_candidates(pois)
     result = build_schedule(
-        candidates, pois, provider, days=2,
+        candidates,
+        pois,
+        provider,
+        days=2,
         constraints=ScheduleConstraints(start_at=PARIS_START),
     )
 
@@ -189,7 +201,10 @@ def test_dropped_lists_unplaced_candidates(provider):
     """배치되지 못한 후보는 dropped 에 남는다."""
     pois = make_pois(20)
     result = build_schedule(
-        make_candidates(pois), pois, provider, days=1,
+        make_candidates(pois),
+        pois,
+        provider,
+        days=1,
         constraints=ScheduleConstraints(start_at=PARIS_START, max_stops_per_day=3),
     )
 
@@ -202,7 +217,10 @@ def test_no_route_anywhere_still_returns_a_result(provider):
     """모든 구간에 경로가 없어도 예외 없이 결과가 나온다(첫 스톱만 배치)."""
     pois = make_pois(6)
     result = build_schedule(
-        make_candidates(pois), pois, NoRouteProvider(), days=1,
+        make_candidates(pois),
+        pois,
+        NoRouteProvider(),
+        days=1,
         constraints=ScheduleConstraints(start_at=PARIS_START),
     )
 
@@ -218,7 +236,10 @@ def test_survives_tiny_candidate_lists(provider, count):
     """후보가 1·2·5개여도 결과 또는 실패 사유를 반환한다."""
     pois = make_pois(count)
     result = build_schedule(
-        make_candidates(pois), pois, provider, days=2,
+        make_candidates(pois),
+        pois,
+        provider,
+        days=2,
         constraints=ScheduleConstraints(start_at=PARIS_START),
     )
 
@@ -241,7 +262,10 @@ def test_counts_routing_calls(provider):
     """라우팅 호출 횟수가 결과에 기록된다."""
     pois = make_pois(20)
     result = build_schedule(
-        make_candidates(pois), pois, provider, days=3,
+        make_candidates(pois),
+        pois,
+        provider,
+        days=3,
         constraints=ScheduleConstraints(start_at=PARIS_START),
     )
 
@@ -255,7 +279,10 @@ def test_haversine_prefilter_skips_far_candidates(provider):
     """max_leg_km 밖의 후보에는 라우팅을 부르지 않는다."""
     pois = make_pois(20)
     result = build_schedule(
-        make_candidates(pois), pois, provider, days=1,
+        make_candidates(pois),
+        pois,
+        provider,
+        days=1,
         constraints=ScheduleConstraints(start_at=PARIS_START, max_leg_km=1.5),
     )
 
@@ -270,7 +297,10 @@ def test_writes_nothing_to_disk(provider, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     pois = make_pois(12)
     build_schedule(
-        make_candidates(pois), pois, provider, days=2,
+        make_candidates(pois),
+        pois,
+        provider,
+        days=2,
         constraints=ScheduleConstraints(start_at=PARIS_START),
     )
 
@@ -299,7 +329,10 @@ def test_travel_cap_limits_the_day(provider):
     """하루 이동시간 상한을 걸면 스톱 수가 줄어든다."""
     pois = make_pois(20)
     capped = build_schedule(
-        make_candidates(pois), pois, provider, days=1,
+        make_candidates(pois),
+        pois,
+        provider,
+        days=1,
         constraints=ScheduleConstraints(
             start_at=PARIS_START, max_travel_min_per_day=1, min_stops_per_day=1
         ),
@@ -315,12 +348,19 @@ def test_meal_window_pulls_a_meal_poi_forward(provider):
     candidates = make_candidates(pois)  # p7 은 최하위 점수
 
     result = build_schedule(
-        candidates, pois, provider, days=1,
+        candidates,
+        pois,
+        provider,
+        days=1,
         constraints=ScheduleConstraints(
             start_at=PARIS_START,
             meal_windows=[
-                {"label": "점심", "start_at": "10:00", "end_at": "14:00",
-                 "categories": ["restaurant"]}
+                {
+                    "label": "점심",
+                    "start_at": "10:00",
+                    "end_at": "14:00",
+                    "categories": ["restaurant"],
+                }
             ],
         ),
     )
@@ -332,7 +372,10 @@ def test_routing_calls_include_retries(provider):
     """재시도하면 그만큼 호출이 더 나간다 — 합산값이 기록돼야 한다."""
     pois = make_pois(5)
     result = build_schedule(
-        make_candidates(pois), pois, provider, days=2,
+        make_candidates(pois),
+        pois,
+        provider,
+        days=2,
         constraints=ScheduleConstraints(start_at=PARIS_START, min_stops_per_day=3),
     )
 

@@ -22,22 +22,24 @@ class ApiModel(BaseModel):
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
+
 # ---------- 공통 ----------
 
 # 취향 축: 5개로 확정·동결 (절단 3, 2026-09-04). 이후 변경 금지.
 # 스키마 변경 시 태깅 전량 재실행이 발생하므로 배치 전에 반드시 확정한다.
 PreferenceAxis = Literal[
-    "activity_level",   # 정적 ↔ 활동적
+    "activity_level",  # 정적 ↔ 활동적
     "crowd_tolerance",  # 한적함 ↔ 북적임 선호
     "nature_vs_urban",  # 자연 ↔ 도심
-    "food_priority",    # 식사 비중 낮음 ↔ 높음
-    "pace",             # 여유 ↔ 빡빡
+    "food_priority",  # 식사 비중 낮음 ↔ 높음
+    "pace",  # 여유 ↔ 빡빡
 ]
 
 RoutePreference = Literal["fastest", "fewest_transfers", "scenic"]
 
 
 # ---------- 취향 입력 ----------
+
 
 class AxisValue(ApiModel):
     axis: PreferenceAxis
@@ -133,6 +135,7 @@ class ChatIntakeResponse(ApiModel):
 
 # ---------- 장소 ----------
 
+
 class Poi(ApiModel):
     poi_id: str
     name: str
@@ -158,6 +161,7 @@ class PoiScore(ApiModel):
 
 
 # ---------- 일정 ----------
+
 
 class Operator(ApiModel):
     """대중교통 운영기관. Google Maps 약관상 경로를 보여줄 때 이름·URL 표기 의무가 있다."""
@@ -310,6 +314,7 @@ class CityInfo(ApiModel):
 
 # ---------- 공유 ----------
 
+
 class ShareLinkResponse(ApiModel):
     plan_id: str
     url: str
@@ -326,6 +331,7 @@ class ShareRequest(ApiModel):
 
 # ---------- 오류 ----------
 
+
 class ApiError(ApiModel):
     code: str
     message: str
@@ -338,6 +344,7 @@ class ApiError(ApiModel):
 # ======================================================================
 
 # ---------- 스코어링 입력 벡터 ----------
+
 
 class PoiVector(ApiModel):
     """스코어링 엔진 입력. Poi(메타)·PoiScore(결과)와 별개 계층.
@@ -354,7 +361,7 @@ class PoiVector(ApiModel):
     avg_stay_min: int | None = None
     price_level: int | None = Field(default=None, ge=0, le=4)
     embedding: list[float] | None = None  # 의미 임베딩(있는 provider만)
-    source: str | None = None             # 데이터 출처 표기용
+    source: str | None = None  # 데이터 출처 표기용
 
 
 # MatchResult 는 PoiScore 와 동일 개념 — 새 타입을 만들지 않고 별칭으로 노출한다.
@@ -371,6 +378,7 @@ ScheduledStop = ItineraryStop
 
 # ---------- LLM 응답 표준형 ----------
 
+
 class LLMCompletion(ApiModel):
     """LLM 응답 표준형. provider별 부가 정보는 Optional."""
 
@@ -382,6 +390,7 @@ class LLMCompletion(ApiModel):
 
 
 # ---------- LLM Provider 프로토콜 ----------
+
 
 @runtime_checkable
 class LLMProvider(Protocol):

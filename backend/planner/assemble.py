@@ -63,9 +63,16 @@ def assemble_itinerary(
         for stop in stops:
             inbound = segments.get((previous, stop.poi_id)) if previous else None
             score = _with_risk(stop, scores, vectors[stop.poi_id], weekday, inbound, request)
-            items.append(ItineraryStop(order=stop.order, poi=by_id[stop.poi_id].to_poi(),
-                                       score=score, arrive_at=stop.arrive_at,
-                                       stay_min=stop.stay_min, depart_at=stop.depart_at))
+            items.append(
+                ItineraryStop(
+                    order=stop.order,
+                    poi=by_id[stop.poi_id].to_poi(),
+                    score=score,
+                    arrive_at=stop.arrive_at,
+                    stay_min=stop.stay_min,
+                    depart_at=stop.depart_at,
+                )
+            )
             if inbound is not None:
                 day_segments.append(_segment_view(inbound, scenic_pois, group_pref, tz))
             previous = stop.poi_id
@@ -81,13 +88,17 @@ def assemble_itinerary(
         warnings.insert(0, schedule.failure_reason)
     placed = [stop for day in days for stop in day.stops]
     facts = BriefingFacts(
-        city_label=city.label, days=request.days,
+        city_label=city.label,
+        days=request.days,
         member_names=[m.member_name for m in request.members],
-        categories=[s.poi.category for s in placed], stop_count=len(placed),
+        categories=[s.poi.category for s in placed],
+        stop_count=len(placed),
         meal_names=[s.poi.name for s in placed if s.poi.category in MEAL_CATEGORIES],
-        min_satisfaction=worst_value, worst_member=worst_name,
-        avg_travel_min_per_day=round(sum(seg.total_duration_min for d in days for seg in d.segments)
-                                     / max(request.days, 1)),
+        min_satisfaction=worst_value,
+        worst_member=worst_name,
+        avg_travel_min_per_day=round(
+            sum(seg.total_duration_min for d in days for seg in d.segments) / max(request.days, 1)
+        ),
         scenic_count=sum(1 for d in days for seg in d.segments if seg.scenic),
         warning_count=len(warnings),
         constraint_notes=request.constraints.notes,
@@ -109,9 +120,13 @@ def assemble_itinerary(
         excluded_notes=excluded_notes + _must_visit_notes(request, must_ids),
         data_source=data.source,
         start_date=request.start_date,
-        stats=PlanStats(candidate_count=candidate_count, routing_calls=schedule.routing_calls,
-                        provider_calls=schedule.provider_calls, attempts=schedule.attempts,
-                        elapsed_ms=elapsed_ms),
+        stats=PlanStats(
+            candidate_count=candidate_count,
+            routing_calls=schedule.routing_calls,
+            provider_calls=schedule.provider_calls,
+            attempts=schedule.attempts,
+            elapsed_ms=elapsed_ms,
+        ),
     )
 
 

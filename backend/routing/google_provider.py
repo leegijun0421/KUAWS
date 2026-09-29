@@ -45,6 +45,7 @@ from shared.types.models import RouteLeg, RoutePreference, RouteSegment
 
 logger = get_logger(__name__)
 
+
 class GoogleRouteProvider(RouteProvider):
     """Google Routes API v2 로 해외 대중교통 경로를 조회한다."""
 
@@ -74,18 +75,12 @@ class GoogleRouteProvider(RouteProvider):
             raise RouteProviderError("GOOGLE_BACKEND_API_KEY 가 설정되지 않았습니다.")
 
         body = {
-            "origin": {
-                "location": {"latLng": {"latitude": origin.lat, "longitude": origin.lng}}
-            },
+            "origin": {"location": {"latLng": {"latitude": origin.lat, "longitude": origin.lng}}},
             "destination": {
-                "location": {
-                    "latLng": {"latitude": destination.lat, "longitude": destination.lng}
-                }
+                "location": {"latLng": {"latitude": destination.lat, "longitude": destination.lng}}
             },
             "travelMode": "TRANSIT",
-            "transitPreferences": {
-                "routingPreference": PREFERENCE_TO_ROUTING[preference]
-            },
+            "transitPreferences": {"routingPreference": PREFERENCE_TO_ROUTING[preference]},
             "languageCode": "ko",
             "units": "METRIC",
             # 대안 경로를 같은 호출에서 받는다 — 경치 경로 추천에 추가 호출이 들지 않는다.
@@ -252,4 +247,3 @@ class GoogleRouteProvider(RouteProvider):
             arrive_at=stop.get("arrivalTime"),
             description=f"{line_name} 탑승 {stops}개 정거장",
         )
-

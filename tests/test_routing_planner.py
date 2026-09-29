@@ -77,6 +77,7 @@ LONG_PAYLOAD = _payload("4920s", ["4", "12", "RER C", "B"])  # 82분 · 환승 3
 
 # ---------- 정상 구간 ----------
 
+
 def test_returns_segment_route():
     """임의 두 지점 입력 시 SegmentRoute 가 반환된다."""
     with patch.object(GoogleRouteProvider, "_request", return_value=SHORT_PAYLOAD):
@@ -118,6 +119,7 @@ def test_operators_are_deduplicated():
 
 # ---------- 긴 구간 — 경고 배지 ----------
 
+
 def test_long_segment_gets_advisories():
     """60분 초과·환승 3회 이상이면 경고 배지가 붙는다 (대안은 제시하지 않는다)."""
     with patch.object(GoogleRouteProvider, "_request", return_value=LONG_PAYLOAD):
@@ -130,22 +132,29 @@ def test_long_segment_gets_advisories():
 
 def test_advisory_thresholds_are_exclusive_and_inclusive():
     """기준선 자체에서 오작동하지 않는지 확인한다."""
-    assert build_advisories(WARN_DURATION_MIN, 0) == []            # 60분 '초과'만 발동
+    assert build_advisories(WARN_DURATION_MIN, 0) == []  # 60분 '초과'만 발동
     assert build_advisories(WARN_DURATION_MIN + 1, 0)[0].code == "long_duration"
-    assert build_advisories(10, WARN_TRANSFER_COUNT - 1) == []     # 3회 '이상' 발동
+    assert build_advisories(10, WARN_TRANSFER_COUNT - 1) == []  # 3회 '이상' 발동
     assert build_advisories(10, WARN_TRANSFER_COUNT)[0].code == "many_transfers"
 
 
 def test_consecutive_walk_legs_are_merged():
     """Routes v2 는 도보를 회전 안내 단위로 쪼개 준다 — 탑승 사이 도보는 하나로 합친다."""
     legs = [
-        RouteLeg(mode="walk", from_name="북서쪽으로 걷기", to_name="",
-                 duration_min=1, description=""),
+        RouteLeg(
+            mode="walk", from_name="북서쪽으로 걷기", to_name="", duration_min=1, description=""
+        ),
         RouteLeg(mode="walk", from_name="우회전", to_name="", duration_min=3, description=""),
-        RouteLeg(mode="walk", from_name="램프로 우회전", to_name="",
-                 duration_min=1, description=""),
-        RouteLeg(mode="bus", from_name="Pont d'Iéna", to_name="Quai François Mitterrand",
-                 duration_min=15, description=""),
+        RouteLeg(
+            mode="walk", from_name="램프로 우회전", to_name="", duration_min=1, description=""
+        ),
+        RouteLeg(
+            mode="bus",
+            from_name="Pont d'Iéna",
+            to_name="Quai François Mitterrand",
+            duration_min=15,
+            description="",
+        ),
         RouteLeg(mode="walk", from_name="우회전", to_name="", duration_min=2, description=""),
     ]
     merged = merge_walk_legs(legs)
@@ -178,6 +187,7 @@ def test_count_transfers_ignores_walking():
 
 # ---------- 경로 없음 ----------
 
+
 def test_no_route_returns_none_not_exception():
     """경로가 없으면 예외가 아니라 None. 스케줄러가 다른 후보로 넘어간다."""
     with patch.object(GoogleRouteProvider, "_request", side_effect=NoRouteError("없음")):
@@ -186,13 +196,15 @@ def test_no_route_returns_none_not_exception():
 
 def test_api_failure_still_raises():
     """키 미설정·API 오류는 삼키지 않는다 — 우리가 고쳐야 할 버그다."""
-    with patch.object(
-        GoogleRouteProvider, "_request", side_effect=RouteProviderError("키 없음")
-    ), pytest.raises(RouteProviderError):
+    with (
+        patch.object(GoogleRouteProvider, "_request", side_effect=RouteProviderError("키 없음")),
+        pytest.raises(RouteProviderError),
+    ):
         plan_segment(CHATELET, MONTMARTRE)
 
 
 # ---------- 사전 필터 — 호출 절감 ----------
+
 
 def test_short_segment_skips_external_call():
     """직선거리 800m 미만이면 외부 호출 없이 도보 구간을 만든다."""
@@ -215,6 +227,7 @@ def test_too_far_segment_returns_none_without_call():
 
 # ---------- 출발 시각 전달 ----------
 
+
 def test_departure_time_is_sent_to_routes_api():
     """depart_at 이 요청 본문의 departureTime 으로 실려야 한다.
 
@@ -233,8 +246,10 @@ def test_departure_time_is_sent_to_routes_api():
         captured.update(json)
         return _Response()
 
-    with patch("backend.routing.google_provider.httpx.post", side_effect=_fake_post), \
-         patch("backend.routing.google_provider.get_settings") as settings:
+    with (
+        patch("backend.routing.google_provider.httpx.post", side_effect=_fake_post),
+        patch("backend.routing.google_provider.get_settings") as settings,
+    ):
         settings.return_value.google_backend_api_key = "test-key"
         plan_segment(CHATELET, MONTMARTRE, depart_at="2026-10-15T09:00:00+02:00")
 
@@ -257,8 +272,10 @@ def test_no_departure_time_key_when_omitted():
         captured.update(json)
         return _Response()
 
-    with patch("backend.routing.google_provider.httpx.post", side_effect=_fake_post), \
-         patch("backend.routing.google_provider.get_settings") as settings:
+    with (
+        patch("backend.routing.google_provider.httpx.post", side_effect=_fake_post),
+        patch("backend.routing.google_provider.get_settings") as settings,
+    ):
         settings.return_value.google_backend_api_key = "test-key"
         plan_segment(CHATELET, MONTMARTRE)
 

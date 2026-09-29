@@ -1,7 +1,7 @@
 """ODsay 대중교통 길찾기 어댑터 (국내 구간 전용).
 
 ODsay 응답의 필드 구조는 `docs/odsay_sample_response.json` 과
-`inspect_odsay.py` 의 체크리스트를 근거로 한다.
+`scripts/inspect_odsay.py` 의 체크리스트를 근거로 한다.
 """
 
 from __future__ import annotations
@@ -94,11 +94,7 @@ class OdsayRouteProvider(RouteProvider):
 
         best = paths[0]
         info = best.get("info", {})
-        legs = [
-            leg
-            for sub in best.get("subPath", [])
-            if (leg := self._to_leg(sub)) is not None
-        ]
+        legs = [leg for sub in best.get("subPath", []) if (leg := self._to_leg(sub)) is not None]
         return RouteSegment(
             from_poi_id=origin.poi_id,
             to_poi_id=destination.poi_id,

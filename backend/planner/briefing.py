@@ -43,8 +43,14 @@ class BriefingFacts(BaseModel):
 def build_briefing(facts: BriefingFacts) -> str:
     """템플릿 문장 3~4개를 이어 붙인다."""
     sentences = [_opening(facts), _fairness(facts)]
-    optional = [_constraints(facts), _risk(facts), _focus(facts), _meals(facts),
-                _scenic(facts), _warnings(facts)]
+    optional = [
+        _constraints(facts),
+        _risk(facts),
+        _focus(facts),
+        _meals(facts),
+        _scenic(facts),
+        _warnings(facts),
+    ]
     sentences.extend(sentence for sentence in optional if sentence)
     return " ".join(sentences[:4])
 

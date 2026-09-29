@@ -84,8 +84,12 @@ def _from_llm(data: dict, speakers: dict[str, list[str]]) -> ExtractionResult:
     message = str(data.get("assistant_message") or "대화에서 취향을 정리했어요.")
     trip, earliest, latest = facts_from_llm(data.get("trip"))
     return ExtractionResult(
-        members=members, assistant_message=message, method="llm",
-        trip=trip, earliest_start=earliest, latest_end=latest,
+        members=members,
+        assistant_message=message,
+        method="llm",
+        trip=trip,
+        earliest_start=earliest,
+        latest_end=latest,
     )
 
 
@@ -97,9 +101,7 @@ def _member_from_item(name: str, item: dict) -> ExtractedMember:
         exclude_categories=[
             str(c) for c in item.get("exclude_categories") or [] if str(c) in VALID_CATEGORIES
         ],
-        avoid_keywords=[
-            str(k).strip() for k in item.get("avoid_keywords") or [] if str(k).strip()
-        ],
+        avoid_keywords=[str(k).strip() for k in item.get("avoid_keywords") or [] if str(k).strip()],
         notes=[f"{name}: {note}" for note in item.get("constraint_notes") or [] if note],
     )
     return ExtractedMember(

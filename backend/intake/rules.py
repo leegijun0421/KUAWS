@@ -46,7 +46,15 @@ _SIGNALS: dict[PreferenceAxis, list[tuple[float, tuple[str, ...]]]] = {
 #: 알레르기·기피 → 음식점 이름 필터 키워드(영어·프랑스어·중국어·한국어).
 _ALLERGY_KEYWORDS: dict[str, list[str]] = {
     "갑각류": [
-        "seafood", "fruits de mer", "crab", "shrimp", "homard", "海鮮", "蝦", "蟹", "해산물",
+        "seafood",
+        "fruits de mer",
+        "crab",
+        "shrimp",
+        "homard",
+        "海鮮",
+        "蝦",
+        "蟹",
+        "해산물",
     ],
     "해산물": ["seafood", "fruits de mer", "poisson", "oyster", "huître", "海鮮", "魚", "해산물"],
     "견과": ["nut", "noix", "peanut", "花生", "堅果", "견과"],

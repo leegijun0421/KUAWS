@@ -200,7 +200,7 @@ def is_open(poi: POIVector, moment: datetime, stay_min: int = 0) -> bool:
 
 
 def to_minutes(hhmm: str) -> int:
-    """"HH:MM" 을 자정 기준 분으로 바꾼다("24:00" 허용). 형식이 틀리면 즉시 알려준다."""
+    """ "HH:MM" 을 자정 기준 분으로 바꾼다("24:00" 허용). 형식이 틀리면 즉시 알려준다."""
     try:
         hour, minute = (int(part) for part in hhmm.split(":"))
     except ValueError as exc:
@@ -208,9 +208,7 @@ def to_minutes(hhmm: str) -> int:
     return hour * 60 + minute
 
 
-def _meal_still_ahead(
-    moment: datetime, state: DayState, constraints: ScheduleConstraints
-) -> bool:
+def _meal_still_ahead(moment: datetime, state: DayState, constraints: ScheduleConstraints) -> bool:
     """`moment` 이후에 아직 채우지 않은 식사 시간대가 남아 있는가."""
     minutes = moment.hour * 60 + moment.minute
     return any(

@@ -227,7 +227,7 @@ CITIES: dict[str, CityConfig] = {
         label="파리",
         search_suffix="Paris, France",
         region_code="FR",
-        low=(48.8156, 2.2241),   # périphérique 내부 파리시 경계에 맞춘 박스
+        low=(48.8156, 2.2241),  # périphérique 내부 파리시 경계에 맞춘 박스
         high=(48.9022, 2.4699),
     ),
     "taipei": CityConfig(

@@ -21,26 +21,50 @@ from backend.routing.provider import AlternativeRoute
 from backend.routing.scenic import ScenicPoi, recommend_route
 from shared.types.models import RouteLeg, RouteSegment
 
-MEALS = [MealWindow(label="점심", start_at="11:30", end_at="13:30"),
-         MealWindow(label="저녁", start_at="18:00", end_at="20:00")]
+MEALS = [
+    MealWindow(label="점심", start_at="11:30", end_at="13:30"),
+    MealWindow(label="저녁", start_at="18:00", end_at="20:00"),
+]
 WED = datetime(2026, 10, 14, 10, 0)  # 수요일
 
 
 def vec(poi_id="p", meal=False, weekly=None, stay=60) -> POIVector:
-    return POIVector(poi_id=poi_id, name=poi_id, lat=0, lng=0, is_meal=meal,
-                     avg_duration_min=stay, opening=OpeningHours(weekly=weekly))
+    return POIVector(
+        poi_id=poi_id,
+        name=poi_id,
+        lat=0,
+        lng=0,
+        is_meal=meal,
+        avg_duration_min=stay,
+        opening=OpeningHours(weekly=weekly),
+    )
 
 
 def stop(depart="17:00") -> ScheduledStop:
-    return ScheduledStop(day=1, order=1, poi_id="x", name="x", arrive_at="16:00",
-                         depart_at=depart, stay_min=60, group_score=0.5)
+    return ScheduledStop(
+        day=1,
+        order=1,
+        poi_id="x",
+        name="x",
+        arrive_at="16:00",
+        depart_at=depart,
+        stay_min=60,
+        group_score=0.5,
+    )
 
 
 def segment(minutes: int, legs: list[RouteLeg] | None = None, path=None, alts=None) -> SegmentRoute:
-    primary = RouteSegment(from_poi_id="a", to_poi_id="b", preference="fastest",
-                           total_duration_min=minutes, total_fare=0, legs=legs or [])
-    return SegmentRoute(primary=primary, transfer_count=0, path=path or [],
-                        transit_alternatives=alts or [])
+    primary = RouteSegment(
+        from_poi_id="a",
+        to_poi_id="b",
+        preference="fastest",
+        total_duration_min=minutes,
+        total_fare=0,
+        legs=legs or [],
+    )
+    return SegmentRoute(
+        primary=primary, transfer_count=0, path=path or [], transit_alternatives=alts or []
+    )
 
 
 def test_meal_outside_window_is_vetoed_but_waiting_is_allowed():
@@ -67,11 +91,21 @@ def test_meals_do_not_count_toward_daily_sight_cap():
 
 
 def test_missing_meal_and_last_train_warnings():
-    constraints = ScheduleConstraints(meal_windows=MEALS, last_train_margin_min=45,
-                                      last_service_at="23:45", start_at="2026-10-14T09:30:00+08:00")
-    late_leg = RouteLeg(mode="subway", from_name="a", to_name="b", duration_min=10,
-                        depart_at="2026-10-14T15:20:00Z", arrive_at="2026-10-14T15:30:00Z",
-                        description="")  # 현지 23:20 출발
+    constraints = ScheduleConstraints(
+        meal_windows=MEALS,
+        last_train_margin_min=45,
+        last_service_at="23:45",
+        start_at="2026-10-14T09:30:00+08:00",
+    )
+    late_leg = RouteLeg(
+        mode="subway",
+        from_name="a",
+        to_name="b",
+        duration_min=10,
+        depart_at="2026-10-14T15:20:00Z",
+        arrive_at="2026-10-14T15:30:00Z",
+        description="",
+    )  # 현지 23:20 출발
     state = DayState(day=1, stops=[stop()], segments=[segment(10, [late_leg])])
     warnings = day_warnings(state, constraints)
     assert any("점심" in w for w in warnings) and any("저녁" in w for w in warnings)
@@ -80,11 +114,25 @@ def test_missing_meal_and_last_train_warnings():
 
 def test_risk_uses_real_timetable_connection_slack():
     legs = [
-        RouteLeg(mode="subway", from_name="a", to_name="b", duration_min=10,
-                 depart_at="2026-10-14T01:00:00Z", arrive_at="2026-10-14T01:10:00Z", description=""),
+        RouteLeg(
+            mode="subway",
+            from_name="a",
+            to_name="b",
+            duration_min=10,
+            depart_at="2026-10-14T01:00:00Z",
+            arrive_at="2026-10-14T01:10:00Z",
+            description="",
+        ),
         RouteLeg(mode="walk", from_name="", to_name="", duration_min=2, description=""),
-        RouteLeg(mode="bus", from_name="c", to_name="d", duration_min=10,
-                 depart_at="2026-10-14T01:13:00Z", arrive_at="2026-10-14T01:23:00Z", description=""),
+        RouteLeg(
+            mode="bus",
+            from_name="c",
+            to_name="d",
+            duration_min=10,
+            depart_at="2026-10-14T01:13:00Z",
+            arrive_at="2026-10-14T01:23:00Z",
+            description="",
+        ),
     ]
     inbound = segment(23, legs)
     inbound.transfer_count = 1
@@ -96,13 +144,27 @@ def test_risk_uses_real_timetable_connection_slack():
 
 
 def _pois_around(lat: float, nature: float, category: str) -> list[ScenicPoi]:
-    return [ScenicPoi(name=f"{category}{i}", lat=lat + i * 0.0005, lng=lat, category=category,
-                      features=[0.5, 0.5, nature, 0.2, 0.5]) for i in range(3)]
+    return [
+        ScenicPoi(
+            name=f"{category}{i}",
+            lat=lat + i * 0.0005,
+            lng=lat,
+            category=category,
+            features=[0.5, 0.5, nature, 0.2, 0.5],
+        )
+        for i in range(3)
+    ]
 
 
 def _two_routes(primary_min: int = 20, alt_min: int = 26) -> SegmentRoute:
-    alt_segment = RouteSegment(from_poi_id="a", to_poi_id="b", preference="fastest",
-                               total_duration_min=alt_min, total_fare=0, legs=[])
+    alt_segment = RouteSegment(
+        from_poi_id="a",
+        to_poi_id="b",
+        preference="fastest",
+        total_duration_min=alt_min,
+        total_fare=0,
+        legs=[],
+    )
     alt = AlternativeRoute(segment=alt_segment, path=[(1.0, 1.0)])
     return segment(primary_min, path=[(5.0, 5.0)], alts=[alt])
 
@@ -125,22 +187,49 @@ def test_scenic_skipped_for_short_segments_and_sparse_areas():
 
 
 def test_briefing_is_3_to_4_template_sentences():
-    facts = BriefingFacts(city_label="파리", days=2, member_names=["민지", "서연"],
-                          categories=["culture", "culture", "nature"], stop_count=3,
-                          meal_names=["A", "B", "C"], min_satisfaction=0.62, worst_member="서연",
-                          avg_travel_min_per_day=40, scenic_count=1, warning_count=0)
+    facts = BriefingFacts(
+        city_label="파리",
+        days=2,
+        member_names=["민지", "서연"],
+        categories=["culture", "culture", "nature"],
+        stop_count=3,
+        meal_names=["A", "B", "C"],
+        min_satisfaction=0.62,
+        worst_member="서연",
+        avg_travel_min_per_day=40,
+        scenic_count=1,
+        warning_count=0,
+    )
     text = build_briefing(facts)
     assert "서연님도 62%" in text and "파리 2일" in text
     assert 3 <= text.count("요.") <= 5
 
 
 PLAN = {
-    "city": "paris", "days": 1, "startDate": "2026-10-14",
+    "city": "paris",
+    "days": 1,
+    "startDate": "2026-10-14",
     "members": [
-        {"memberId": "a", "memberName": "민지", "rawText": "", "updatedAt": "",
-         "axes": [{"axis": x, "value": v, "confidence": 0.9} for x, v in
-                  zip(["activity_level", "crowd_tolerance", "nature_vs_urban", "food_priority",
-                       "pace"], [0.3, 0.4, 0.9, 0.6, 0.4])]},
+        {
+            "memberId": "a",
+            "memberName": "민지",
+            "rawText": "",
+            "updatedAt": "",
+            "axes": [
+                {"axis": x, "value": v, "confidence": 0.9}
+                for x, v in zip(
+                    [
+                        "activity_level",
+                        "crowd_tolerance",
+                        "nature_vs_urban",
+                        "food_priority",
+                        "pace",
+                    ],
+                    [0.3, 0.4, 0.9, 0.6, 0.4],
+                    strict=True,
+                )
+            ],
+        },
     ],
     "constraints": {"excludeCategories": [], "avoidKeywords": ["fruits de mer"], "notes": []},
     "mustVisit": ["Musée du Louvre"],
@@ -196,8 +285,10 @@ def test_cafes_limited_and_not_consecutive():
     state = DayState(day=1, last_category="cafe", cafes=1)
     assert veto_stop(cafe, WED, 0, state, constraints).code == "cafe_limit"
     assert veto_stop(cafe, WED, 0, DayState(day=1, cafes=2), constraints).code == "cafe_limit"
-    assert veto_stop(cafe, WED, 0, DayState(day=1, cafes=1, last_category="culture"),
-                     constraints) is None
+    assert (
+        veto_stop(cafe, WED, 0, DayState(day=1, cafes=1, last_category="culture"), constraints)
+        is None
+    )
 
 
 def test_free_time_before_dinner_when_day_is_full():
@@ -216,11 +307,27 @@ def test_segment_risk_flags_use_real_timetable_sentences():
     from backend.planner.risk import risk_summary, segment_flags
 
     legs = [
-        RouteLeg(mode="bus", line_name="87", from_name="a", to_name="Bastille", duration_min=10,
-                 depart_at="2026-10-14T08:00:00Z", arrive_at="2026-10-14T08:10:00Z", description=""),
+        RouteLeg(
+            mode="bus",
+            line_name="87",
+            from_name="a",
+            to_name="Bastille",
+            duration_min=10,
+            depart_at="2026-10-14T08:00:00Z",
+            arrive_at="2026-10-14T08:10:00Z",
+            description="",
+        ),
         RouteLeg(mode="walk", from_name="", to_name="", duration_min=2, description=""),
-        RouteLeg(mode="subway", line_name="RER A", from_name="c", to_name="d", duration_min=10,
-                 depart_at="2026-10-14T08:16:00Z", arrive_at="2026-10-14T08:26:00Z", description=""),
+        RouteLeg(
+            mode="subway",
+            line_name="RER A",
+            from_name="c",
+            to_name="d",
+            duration_min=10,
+            depart_at="2026-10-14T08:16:00Z",
+            arrive_at="2026-10-14T08:26:00Z",
+            description="",
+        ),
     ]
     flags = segment_flags(segment(26, legs), ZoneInfo("Europe/Paris"))
     assert len(flags) == 1 and flags[0].level == "high"
@@ -255,14 +362,30 @@ def test_placement_probes_past_vetoed_top_candidates(monkeypatch):
         return segment(200 if destination.poi_id.startswith("far") else 10)
 
     monkeypatch.setattr(placement, "plan_segment", fake_segment)
-    pois = {pid: POIVector(poi_id=pid, name=pid, lat=48.85 + i * 0.001, lng=2.35,
-                           avg_duration_min=60, opening=OpeningHours())
-            for i, pid in enumerate(["start", "far1", "far2", "far3", "near"])}
-    matches = [MatchResult(poi_id=pid, group_score=score, member_scores={})
-               for pid, score in [("start", 0.9), ("far1", 0.8), ("far2", 0.8),
-                                  ("far3", 0.8), ("near", 0.5)]]
-    outcome = placement.place_days(matches, pois, None, 1,
-                                   ScheduleConstraints(max_travel_min_per_day=120))
+    pois = {
+        pid: POIVector(
+            poi_id=pid,
+            name=pid,
+            lat=48.85 + i * 0.001,
+            lng=2.35,
+            avg_duration_min=60,
+            opening=OpeningHours(),
+        )
+        for i, pid in enumerate(["start", "far1", "far2", "far3", "near"])
+    }
+    matches = [
+        MatchResult(poi_id=pid, group_score=score, member_scores={})
+        for pid, score in [
+            ("start", 0.9),
+            ("far1", 0.8),
+            ("far2", 0.8),
+            ("far3", 0.8),
+            ("near", 0.5),
+        ]
+    ]
+    outcome = placement.place_days(
+        matches, pois, None, 1, ScheduleConstraints(max_travel_min_per_day=120)
+    )
     assert [stop.poi_id for stop in outcome.stops][:2] == ["start", "near"]
 
 

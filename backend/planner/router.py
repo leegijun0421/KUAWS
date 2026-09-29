@@ -26,8 +26,13 @@ def get_cities() -> list[CityInfo]:
     for city in CITIES.values():
         data = load_city(city.key)
         infos.append(
-            CityInfo(key=city.key, label=city.label, timezone=city.timezone,
-                     poi_count=len(data.pois), data_source=data.source)
+            CityInfo(
+                key=city.key,
+                label=city.label,
+                timezone=city.timezone,
+                poi_count=len(data.pois),
+                data_source=data.source,
+            )
         )
     return infos
 

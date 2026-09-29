@@ -49,8 +49,9 @@ def facts_from_text(text: str) -> tuple[TripFacts, str | None]:
 
     내보내기 머리말의 날짜(저장한 날짜·날짜 구분선)가 섞이지 않도록 **발화만** 넘길 것.
     """
-    key = next((k for k, names in _CITY_ALIASES.items() if any(n in text.lower() for n in names)),
-               None)
+    key = next(
+        (k for k, names in _CITY_ALIASES.items() if any(n in text.lower() for n in names)), None
+    )
     days = None
     if match := _NIGHTS_DAYS.search(text):
         days = int(match.group(2))
@@ -83,7 +84,7 @@ def city_key(name: str) -> str | None:
 
 
 def _valid_hhmm(value: object) -> str | None:
-    """"HH:MM" 이면 두 자리로 맞춰 돌려주고, 아니면 None."""
+    """ "HH:MM" 이면 두 자리로 맞춰 돌려주고, 아니면 None."""
     if not isinstance(value, str) or not (match := _HHMM.match(value.strip())):
         return None
     return f"{int(match.group(1)):02d}:{match.group(2)}"
