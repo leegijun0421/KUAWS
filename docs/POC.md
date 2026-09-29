@@ -130,12 +130,13 @@
 | 기술적 우월성 (30) | 정규화 maximin, 실제 편성 시각 기반 스케줄링·위험도, 경치 대안(추가 호출 0회), 어댑터 2계층 |
 | 서비스 활용성·완성도 (30) | 대화 붙여넣기 한 번으로 끝나는 흐름, 설명 가능한 결과(만족도·위험 근거), 공유 링크, LLM 장애 폴백 |
 | 목적 부합성 (10) | LLM 을 "사람 말 이해"에만, 사실 데이터는 API 로 — 역할 분리 |
-| 데이터 활용성 (10) | 5절 |
-| 제출 코드 (10) | README·ARCHITECTURE·ADR·spec, 테스트 103개(pytest)+6개(vitest), CI, 파일 300줄 규칙 |
+| 데이터 활용성 (10) | 5절 — 수집 → 필터 → 태깅 → 검수, 도시 선정 자체를 호출로 검증 |
+| 제출 코드 (10) | README·ARCHITECTURE·ADR·spec, 테스트 103개(pytest)+6개(vitest), 리포 전체 ruff·prettier, CI, 파일 300줄 규칙 |
+| (공통) 실사용 가능성 | Cloud Run 공개 배포 — https://kuaws-np3ccjktdq-du.a.run.app ([DEPLOY.md](DEPLOY.md)) |
 
-## 8. 한계와 본선 계획
+## 8. 현재 범위와 향후 계획
 
-| 한계 | 본선(10/3~) 계획 |
+| 현재 | 향후 |
 |------|------------------|
 | 알레르기 필터가 음식점 이름 기준 | 메뉴·유형 태그로 확장 |
 | 이동 상한 120분 그룹은 실측에서 끼니 1개가 빠질 수 있음(01) | 식당을 먼저 고정하고 관광지를 채우는 2단계 배치 |
@@ -144,12 +145,13 @@
 | 명소 체류시간이 유형 기본값 | 장소별 체류시간 수집 |
 | 코스 브리핑이 템플릿(절단 1) | `LLMProvider` 로 LLM 브리핑 복원 |
 | 택시 대안 없음(절단 2) | `SegmentRoute.alternative` 자리에 재투입 |
-| 로컬 실행 | AWS EC2 배포 + `PUBLIC_BASE_URL` |
 
 ## 9. 제출물 체크리스트
 
 - [x] PoC 문서 — 이 파일
 - [x] README — 실행법·API 명세·아키텍처·화이트리스트 이유
 - [x] 저장소 링크 — https://github.com/leegijun0421/KUAWS
+- [x] 배포 주소 — https://kuaws-np3ccjktdq-du.a.run.app (Cloud Run, [DEPLOY.md](DEPLOY.md))
+- [x] 서비스 소개서 · 발표자료 (10장, PDF·PPTX) — 제출 사이트 업로드
 - [x] 대중평가용 서비스 소개 문구 — [SERVICE_INTRO.md](SERVICE_INTRO.md)
-- [x] 데모 영상 — `Claude outputs/demo/KUAWS_demo_3min.mp4`(2:16, 실호출 녹화 편집, [DEMO.md](DEMO.md)) · 제출 사이트 업로드는 팀장
+- [x] 데모 영상 — 2:16, 실호출 녹화 편집([DEMO.md](DEMO.md)) · 영상 파일은 리포 밖에서 관리
