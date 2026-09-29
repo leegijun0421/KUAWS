@@ -33,8 +33,26 @@ _TYPE_WORDS = {
 
 #: 장소 이름 매칭에서 무시하는 일반 명사(이것만 겹쳐서는 같은 장소가 아니다).
 _GENERIC = frozenset(
-    {"musee", "museum", "national", "parc", "park", "jardin", "garden", "place", "temple",
-     "cathedrale", "church", "market", "night", "street", "paris", "taipei", "tower", "tour"}
+    {
+        "musee",
+        "museum",
+        "national",
+        "parc",
+        "park",
+        "jardin",
+        "garden",
+        "place",
+        "temple",
+        "cathedrale",
+        "church",
+        "market",
+        "night",
+        "street",
+        "paris",
+        "taipei",
+        "tower",
+        "tour",
+    }
 )
 
 
@@ -46,8 +64,11 @@ def build_candidates(
 ) -> tuple[list[MatchResult], list[str]]:
     """유형별 몫으로 후보를 고른다. (후보 목록, 매칭된 must_visit poi_id) 를 돌려준다."""
     must_ids = match_must_visit(must_visit, list(pois.values()))
-    quotas = {"meal": MEALS_PER_DAY * days, "cafe": CAFES_PER_DAY * days,
-              "sight": SIGHTS_PER_DAY * days}
+    quotas = {
+        "meal": MEALS_PER_DAY * days,
+        "cafe": CAFES_PER_DAY * days,
+        "sight": SIGHTS_PER_DAY * days,
+    }
     chosen: list[MatchResult] = []
     for score in scores:  # 이미 점수 내림차순
         poi = pois[score.poi_id]

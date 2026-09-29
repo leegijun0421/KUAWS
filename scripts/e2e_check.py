@@ -64,16 +64,20 @@ def run_one(client: httpx.Client, path: Path, days: int, start: str) -> dict:
     row: dict = {"chat": path.stem, "city": city, "ok": False}
     try:
         tick = time.perf_counter()
-        intake = post(client, f"/api/intake/chat?city={city}",
-                      {"chatText": path.read_text(encoding="utf-8")})
+        intake = post(
+            client, f"/api/intake/chat?city={city}", {"chatText": path.read_text(encoding="utf-8")}
+        )
         row["intake_s"] = time.perf_counter() - tick
         row["members"] = len(intake["members"])
         row["followups"] = sum(len(m["followUps"]) for m in intake["members"])
         row["must"] = ", ".join(intake["mustVisit"]) or "-"
         request = {
-            "city": city, "days": days, "startDate": start,
+            "city": city,
+            "days": days,
+            "startDate": start,
             "members": [m["profile"] for m in intake["members"]],
-            "constraints": intake["constraints"], "mustVisit": intake["mustVisit"],
+            "constraints": intake["constraints"],
+            "mustVisit": intake["mustVisit"],
         }
         tick = time.perf_counter()
         plan = post(client, "/api/planner/plan", request)
@@ -132,8 +136,7 @@ def render(rows: list[dict], start: str) -> str:
         f"성공 {sum(r['ok'] for r in rows)}/{len(rows)}\n\n"
         "| 대화 | 도시 | 인원 | 후속질문 | 취향추출(s) | 일정생성(s) | 공유열람(s) | 스톱 | 식사 "
         "| 최저만족 | 최대위험 | 경로호출(외부) | 편성시각 leg | 운영기관 구간 | 경치대안 "
-        "| 경고 | 공유 일치 |\n"
-        + "|---" * 17 + "|\n"
+        "| 경고 | 공유 일치 |\n" + "|---" * 17 + "|\n"
     )
     lines = []
     for r in rows:
@@ -148,8 +151,12 @@ def render(rows: list[dict], start: str) -> str:
             f"| {r['timed']}/{r['transit']} | {r['operators']}/{r['segments']} | {r['scenic']} "
             f"| {r['warnings']} | {'✅' if r['share_same'] else '❌'} |"
         )
-    notes = [f"- {r['chat']}: must_visit={r.get('must', '-')} · 제외={r.get('excluded', '-')} "
-             f"· 데이터={r.get('source', '-')}" for r in rows if "error" not in r]
+    notes = [
+        f"- {r['chat']}: must_visit={r.get('must', '-')} · 제외={r.get('excluded', '-')} "
+        f"· 데이터={r.get('source', '-')}"
+        for r in rows
+        if "error" not in r
+    ]
     return head + "\n".join(lines) + "\n\n" + "\n".join(notes) + "\n" + _variance(rows)
 
 

@@ -1,5 +1,6 @@
 """태깅 배치 — 계약(길이 5·0~1) 검증과 실패 POI 건너뛰기."""
 
+import json
 import sys
 from pathlib import Path
 
@@ -12,8 +13,14 @@ import tag_pois  # noqa: E402
 from shared.types.models import LLMCompletion  # noqa: E402
 
 POI = {
-    "poi_id": "p1", "name": 'Café "Flore"', "lat": 48.85, "lng": 2.33, "tags": {},
-    "category": "cafe", "avg_duration_min": 40, "open_hours": None,
+    "poi_id": "p1",
+    "name": 'Café "Flore"',
+    "lat": 48.85,
+    "lng": 2.33,
+    "tags": {},
+    "category": "cafe",
+    "avg_duration_min": 40,
+    "open_hours": None,
 }
 
 
@@ -30,7 +37,9 @@ class Fake:
 
 
 def test_tag_one_builds_contract_record():
-    body = '{"axis_features": [0.1, 0.2, 0.9, 0.7, 0.3], "confidence": [1,1,1,1,1], "reasons": ["카페"]}'
+    body = json.dumps(
+        {"axis_features": [0.1, 0.2, 0.9, 0.7, 0.3], "confidence": [1] * 5, "reasons": ["카페"]}
+    )
     record = tag_pois.tag_one(POI, Fake(body))
     assert record["axis_features"] == [0.1, 0.2, 0.9, 0.7, 0.3]
     assert record["reasons"] == ["카페"] and "tags" not in record

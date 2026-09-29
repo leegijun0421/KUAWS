@@ -21,8 +21,11 @@ jobs:
       - name: 의존성 설치
         run: pip install -r requirements.txt
 
-      - name: 린트
-        run: ruff check backend/ shared/ data/scripts/
+      - name: 린트 (리포 전체)
+        run: ruff check .
+
+      - name: 포맷 검사
+        run: ruff format --check .
 
       - name: 테스트
         run: pytest -q
@@ -41,6 +44,9 @@ jobs:
 
       - name: 의존성 설치
         run: npm ci
+
+      - name: 포맷 검사
+        run: npm run format:check
 
       - name: 타입 체크 + 빌드
         run: npm run build

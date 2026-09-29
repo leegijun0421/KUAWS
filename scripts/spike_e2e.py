@@ -63,6 +63,7 @@ MEMBERS = [
     {"id": "c", "tags": {"activity": 0.6, "quiet": 0.4, "food_focus": 0.9}},
 ]
 
+
 @dataclass(frozen=True)
 class City:
     """더미 도시 하나. 실제 POI 는 W1 태깅 결과로 교체된다."""
@@ -122,8 +123,9 @@ SLOW_RESPONSE_SEC = 3.0
 def main() -> None:
     """더미 입력으로 경로 조회까지 한 번 관통시키고 결과를 콘솔에 출력한다."""
     parser = argparse.ArgumentParser(description="수직 관통 스파이크 (더미 데이터 e2e 1회)")
-    parser.add_argument("--city", default="paris", choices=sorted(CITIES),
-                        help="지원 도시. 기본 paris")
+    parser.add_argument(
+        "--city", default="paris", choices=sorted(CITIES), help="지원 도시. 기본 paris"
+    )
     parser.add_argument("--depart", help="RFC3339 출발 시각. 생략하면 도시별 기본값")
     args = parser.parse_args()
 
@@ -165,8 +167,10 @@ def _render(segment: SegmentRoute, tz: tzinfo | None) -> None:
             continue
         schedule = _schedule_text(leg.depart_at, leg.arrive_at, tz)
         line = f" {leg.line_name}" if leg.line_name else ""
-        print(f"  ↓ {leg.mode}{line} · {leg.from_name} → {leg.to_name} "
-              f"· {leg.duration_min}분{schedule}")
+        print(
+            f"  ↓ {leg.mode}{line} · {leg.from_name} → {leg.to_name} "
+            f"· {leg.duration_min}분{schedule}"
+        )
 
     if segment.operators:
         # 약관 표기 의무 — 응답이 준 값을 그대로 쓴다(하드코딩 금지).
@@ -176,8 +180,10 @@ def _render(segment: SegmentRoute, tz: tzinfo | None) -> None:
     # 통화마다 소수 자릿수가 다르다(EUR 2.05 / TWD 25). :g 로 불필요한 .0 을 지운다.
     fare = f"{segment.primary.total_fare:g}"
     currency = segment.primary.fare_currency or ""
-    print(f"  ↓ 합계 {segment.primary.total_duration_min}분 · 환승 "
-          f"{segment.transfer_count}회 · 요금 {fare} {currency}".rstrip())
+    print(
+        f"  ↓ 합계 {segment.primary.total_duration_min}분 · 환승 "
+        f"{segment.transfer_count}회 · 요금 {fare} {currency}".rstrip()
+    )
     for advisory in segment.advisories:
         print(f"  ⚠ {advisory.message}")
     print()
@@ -193,8 +199,7 @@ def _report(elapsed_log: list[tuple[str, float]]) -> None:
         flag = "  ← 3초 초과. W2 통합 전에 확인할 것" if elapsed > SLOW_RESPONSE_SEC else ""
         print(f"  {label}: {elapsed:.2f}s{flag}")
     worst = max(elapsed for _, elapsed in elapsed_log)
-    print(f"  최대 {worst:.2f}s / 평균 "
-          f"{sum(e for _, e in elapsed_log) / len(elapsed_log):.2f}s")
+    print(f"  최대 {worst:.2f}s / 평균 {sum(e for _, e in elapsed_log) / len(elapsed_log):.2f}s")
 
 
 def _schedule_text(depart_at: str | None, arrive_at: str | None, tz: tzinfo | None) -> str:

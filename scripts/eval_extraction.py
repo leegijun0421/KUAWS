@@ -74,8 +74,11 @@ def evaluate(expected_path: Path, rules_only: bool) -> dict:
             labeled += 1
             agree += int(got is not None and _same_direction(target, got.value))
     return {
-        "name": name, "type": expected["type"], "method": method,
-        "direction": agree / labeled if labeled else None, "labeled": labeled,
+        "name": name,
+        "type": expected["type"],
+        "method": method,
+        "direction": agree / labeled if labeled else None,
+        "labeled": labeled,
         "low_conf": low_conf / total,
         "constraints_ok": _constraints_ok(expected, constraints, earliest),
         "speakers": len(speakers) == len(expected["members"]),
@@ -108,7 +111,8 @@ def render(rows: list[dict], label: str) -> str:
     vague_ok = all(r["low_conf"] >= 0.8 for r in rows if r["type"] == "vague")
     constraints_ok = all(r["constraints_ok"] for r in rows)
     lines = [
-        f"# 대화 → 선호 벡터 추출 정답지 대조 ({label})", "",
+        f"# 대화 → 선호 벡터 추출 정답지 대조 ({label})",
+        "",
         "| 대화 | 성격 | 방식 | 화자 분리 | 방향 일치 | 저신뢰 축 비율 | 하드 제약 |",
         "|---|---|---|---|---|---|---|",
     ]

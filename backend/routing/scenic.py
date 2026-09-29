@@ -70,8 +70,12 @@ def recommend_route(
     alternatives = [
         evaluated
         for alt in segment.transit_alternatives
-        if (evaluated := _evaluate(alt.segment, alt.path, pois,
-                                   alt.segment.total_duration_min - base_min)) is not None
+        if (
+            evaluated := _evaluate(
+                alt.segment, alt.path, pois, alt.segment.total_duration_min - base_min
+            )
+        )
+        is not None
         and 0 <= evaluated.extra_min <= MAX_EXTRA_MIN
         and evaluated.vector[_NATURE] <= primary.vector[_NATURE] - MIN_NATURE_GAIN
     ]
@@ -81,8 +85,7 @@ def recommend_route(
     prefers_scenic = _score(scenic, group_pref) > _score(primary, group_pref)
     option = ScenicOption(
         segment=scenic.segment.model_copy(
-            update={"preference": "scenic",
-                    "transfer_count": count_transfers(scenic.segment.legs)}
+            update={"preference": "scenic", "transfer_count": count_transfers(scenic.segment.legs)}
         ),
         extra_min=scenic.extra_min,
         scenic_score=round(1 - scenic.vector[_NATURE], 2),

@@ -87,7 +87,8 @@ flowchart LR
 
 ### ④ API 키 백엔드 격리
 
-- 키 A(Routes·Places)는 백엔드 `.env` 에만 있고 IP 제한이 걸려 있다. 프론트는 `/api` 만 부른다.
+- 키 A(Routes·Places)는 서버에만 있다 — 로컬은 `.env`(IP 제한), 배포는 Cloud Run 환경변수(Routes·Places API 제한,
+  나가는 IP 가 고정되지 않아 IP 제한 대신). 이미지와 Git 에는 들어가지 않는다. 프론트는 `/api` 만 부른다.
 - 그림에서 "백엔드" 경계 안에만 키 A·Anthropic 키가 있다.
 - 키 B(Maps JS)는 브라우저에 노출되는 대신 HTTP 리퍼러 제한 + Maps JavaScript API 전용.
   하나로 합치면 노출된 키로 누구나 우리 결제 계정의 Routes 를 무제한 호출할 수 있다.

@@ -38,17 +38,17 @@ CHECKPOINT_VERSION = 1
 class Stats:
     """도시 1회 수집의 집계 카운터. 체크포인트에 그대로 저장된다."""
 
-    candidates: int = 0        # 검색으로 받은 장소 수 (중복 포함)
-    duplicates: int = 0        # Place ID 중복으로 건너뛴 수
-    low_reviews: int = 0       # userRatingCount < MIN_REVIEW_COUNT
-    no_location: int = 0       # location 결측
-    closed: int = 0            # businessStatus == CLOSED_PERMANENTLY
-    out_of_bounds: int = 0     # 도시 경계 사각형 밖
-    no_name: int = 0           # displayName 결측
-    details_failed: int = 0    # 결측 보강용 Place Details 실패
-    api_failures: int = 0      # 그 외 API 실패 (HTTP 오류·재시도 소진·id 결측)
-    over_quota: int = 0        # 필터는 통과했지만 카테고리 쿼터가 차서 미채택
-    accepted: int = 0          # 최종 채택
+    candidates: int = 0  # 검색으로 받은 장소 수 (중복 포함)
+    duplicates: int = 0  # Place ID 중복으로 건너뛴 수
+    low_reviews: int = 0  # userRatingCount < MIN_REVIEW_COUNT
+    no_location: int = 0  # location 결측
+    closed: int = 0  # businessStatus == CLOSED_PERMANENTLY
+    out_of_bounds: int = 0  # 도시 경계 사각형 밖
+    no_name: int = 0  # displayName 결측
+    details_failed: int = 0  # 결측 보강용 Place Details 실패
+    api_failures: int = 0  # 그 외 API 실패 (HTTP 오류·재시도 소진·id 결측)
+    over_quota: int = 0  # 필터는 통과했지만 카테고리 쿼터가 차서 미채택
+    accepted: int = 0  # 최종 채택
 
 
 def new_checkpoint(city: CityConfig, language_code: str) -> dict:

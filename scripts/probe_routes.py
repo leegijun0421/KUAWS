@@ -187,13 +187,13 @@ PROBE_FIELD_MASK = ",".join(
         "routes.distanceMeters",
         "routes.description",
         "routes.routeLabels",
-        "routes.localizedValues",          # 총 소요/거리/요금의 사람이 읽는 문자열
-        "routes.travelAdvisory",           # transitFare (통화·금액)
+        "routes.localizedValues",  # 총 소요/거리/요금의 사람이 읽는 문자열
+        "routes.travelAdvisory",  # transitFare (통화·금액)
         "routes.legs.duration",
         "routes.legs.distanceMeters",
         "routes.legs.startLocation",
         "routes.legs.endLocation",
-        "routes.legs.stepsOverview",       # 이동수단별 step 묶음 요약
+        "routes.legs.stepsOverview",  # 이동수단별 step 묶음 요약
         "routes.legs.steps.travelMode",
         "routes.legs.steps.distanceMeters",
         "routes.legs.steps.staticDuration",
@@ -241,9 +241,9 @@ def build_body(seg: dict, departure_time: str, language_code: str, region_code: 
         "origin": {"location": {"latLng": {"latitude": o_lat, "longitude": o_lng}}},
         "destination": {"location": {"latLng": {"latitude": d_lat, "longitude": d_lng}}},
         "travelMode": "TRANSIT",
-        "departureTime": departure_time,      # ★ 없으면 시간표 결과가 안 나온다
-        "computeAlternativeRoutes": True,     # 대안 경로 개수 확인용 (최대 3개 추가)
-        "languageCode": language_code,        # localizedValues 언어
+        "departureTime": departure_time,  # ★ 없으면 시간표 결과가 안 나온다
+        "computeAlternativeRoutes": True,  # 대안 경로 개수 확인용 (최대 3개 추가)
+        "languageCode": language_code,  # localizedValues 언어
         "regionCode": region_code,
         "units": "METRIC",
         # 선택: 필요하면 주석 해제
@@ -302,33 +302,65 @@ def report(data: dict) -> None:
     ]
 
     rows = [
-        ("편성 출발 시각 ★", stop.get("departureTime"),
-         "routes[].legs[].steps[].transitDetails.stopDetails.departureTime"),
-        ("편성 도착 시각 ★", stop.get("arrivalTime"),
-         "routes[].legs[].steps[].transitDetails.stopDetails.arrivalTime"),
+        (
+            "편성 출발 시각 ★",
+            stop.get("departureTime"),
+            "routes[].legs[].steps[].transitDetails.stopDetails.departureTime",
+        ),
+        (
+            "편성 도착 시각 ★",
+            stop.get("arrivalTime"),
+            "routes[].legs[].steps[].transitDetails.stopDetails.arrivalTime",
+        ),
         ("총 소요시간", route.get("duration"), "routes[].duration"),
-        ("총 요금", (route.get("travelAdvisory", {}).get("transitFare")
-                  or route.get("localizedValues", {}).get("transitFare")),
-         "routes[].travelAdvisory.transitFare / routes[].localizedValues.transitFare"),
-        ("환승 횟수(=transit step 수 - 1)",
-         max(len(transit_steps) - 1, 0) if transit_steps else None,
-         "routes[].legs[].steps[travelMode=TRANSIT] 개수 - 1"),
-        ("구간별 교통수단 종류", line.get("vehicle", {}).get("type"),
-         "…transitDetails.transitLine.vehicle.type"),
-        ("구간별 노선명", line.get("name") or line.get("nameShort"),
-         "…transitDetails.transitLine.name / .nameShort / .color"),
-        ("구간별 승·하차 정류장명",
-         (stop.get("departureStop", {}).get("name"), stop.get("arrivalStop", {}).get("name")),
-         "…transitDetails.stopDetails.departureStop.name / .arrivalStop.name"),
-        ("구간별 소요시간", (step or {}).get("staticDuration"),
-         "routes[].legs[].steps[].staticDuration"),
-        ("운영기관 이름 ★약관", agencies[0].get("name") if agencies else None,
-         "…transitDetails.transitLine.agencies[].name"),
-        ("운영기관 URL ★약관", agencies[0].get("uri") if agencies else None,
-         "…transitDetails.transitLine.agencies[].uri"),
-        ("도보 거리·시간",
-         (sum(s.get("distanceMeters", 0) for s in walk_steps) if walk_steps else None),
-         "routes[].legs[].steps[travelMode=WALK].distanceMeters / .staticDuration"),
+        (
+            "총 요금",
+            (
+                route.get("travelAdvisory", {}).get("transitFare")
+                or route.get("localizedValues", {}).get("transitFare")
+            ),
+            "routes[].travelAdvisory.transitFare / routes[].localizedValues.transitFare",
+        ),
+        (
+            "환승 횟수(=transit step 수 - 1)",
+            max(len(transit_steps) - 1, 0) if transit_steps else None,
+            "routes[].legs[].steps[travelMode=TRANSIT] 개수 - 1",
+        ),
+        (
+            "구간별 교통수단 종류",
+            line.get("vehicle", {}).get("type"),
+            "…transitDetails.transitLine.vehicle.type",
+        ),
+        (
+            "구간별 노선명",
+            line.get("name") or line.get("nameShort"),
+            "…transitDetails.transitLine.name / .nameShort / .color",
+        ),
+        (
+            "구간별 승·하차 정류장명",
+            (stop.get("departureStop", {}).get("name"), stop.get("arrivalStop", {}).get("name")),
+            "…transitDetails.stopDetails.departureStop.name / .arrivalStop.name",
+        ),
+        (
+            "구간별 소요시간",
+            (step or {}).get("staticDuration"),
+            "routes[].legs[].steps[].staticDuration",
+        ),
+        (
+            "운영기관 이름 ★약관",
+            agencies[0].get("name") if agencies else None,
+            "…transitDetails.transitLine.agencies[].name",
+        ),
+        (
+            "운영기관 URL ★약관",
+            agencies[0].get("uri") if agencies else None,
+            "…transitDetails.transitLine.agencies[].uri",
+        ),
+        (
+            "도보 거리·시간",
+            (sum(s.get("distanceMeters", 0) for s in walk_steps) if walk_steps else None),
+            "routes[].legs[].steps[travelMode=WALK].distanceMeters / .staticDuration",
+        ),
         ("대안 경로 개수", len(routes), "routes[] 배열 길이 (computeAlternativeRoutes=true)"),
     ]
 
@@ -441,8 +473,10 @@ def score(api_key: str) -> None:
             "line": line.get("nameShort") or line.get("name"),
             "agency": agencies[0].get("name"),
             "agency_uri": agencies[0].get("uri"),
-            "fare": (route.get("travelAdvisory", {}).get("transitFare")
-                     or route.get("localizedValues", {}).get("transitFare")),
+            "fare": (
+                route.get("travelAdvisory", {}).get("transitFare")
+                or route.get("localizedValues", {}).get("transitFare")
+            ),
             "transfers": max(len(transit_steps) - 1, 0),
             "stops_named": bool(stop.get("departureStop", {}).get("name")),
             "elapsed": round(elapsed, 1),
@@ -464,13 +498,19 @@ def score(api_key: str) -> None:
             return f"⬤ {value}" if value else "✗"
         if key == "agency":
             uri = r.get("agency_uri")
-            return f"⬤ {value} / {uri}" if value and uri else (f"△ {value} (URL 없음)"
-                                                              if value else "✗")
+            return (
+                f"⬤ {value} / {uri}"
+                if value and uri
+                else (f"△ {value} (URL 없음)" if value else "✗")
+            )
         if key == "fare":
             return f"⬤ {value}" if value else "✗ 안 옴"
         if key == "transfers":
-            return (f"⬤ 환승 {value}회, 정류장명 있음" if r.get("stops_named")
-                    else f"△ 환승 {value}회, 정류장명 없음")
+            return (
+                f"⬤ 환승 {value}회, 정류장명 있음"
+                if r.get("stops_named")
+                else f"△ 환승 {value}회, 정류장명 없음"
+            )
         return str(value)
 
     print("\n노션 채점표에 붙여넣을 표\n")
@@ -487,23 +527,24 @@ def score(api_key: str) -> None:
     ]
     for label, key in rows:
         print(f"| {label} | {cell('paris', key)} | {cell('taipei', key)} |")
-    print("\n측정 구간: "
-          + " / ".join(f"{c}={results.get(c, {}).get('segment', '?')}" for c, _ in SCORE_TARGETS))
+    print(
+        "\n측정 구간: "
+        + " / ".join(f"{c}={results.get(c, {}).get('segment', '?')}" for c, _ in SCORE_TARGETS)
+    )
     print("⚠️ 이 출력을 파일로 저장하거나 리포에 커밋하지 말 것 (Google 약관).")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Routes API TRANSIT 응답 필드 프로브")
-    parser.add_argument("city", nargs="?", default="paris",
-                        help="--list 로 전체 목록 확인")
+    parser.add_argument("city", nargs="?", default="paris", help="--list 로 전체 목록 확인")
     parser.add_argument("segment", nargs="?", default="chatelet_montmartre")
     parser.add_argument("--departure", help="RFC3339 UTC (예: 2026-09-08T01:00:00Z)")
     parser.add_argument("--raw", action="store_true", help="원본 JSON 출력 (파일로 저장 금지)")
     parser.add_argument("--list", action="store_true", help="구간 목록만 출력")
-    parser.add_argument("--diagnose", action="store_true",
-                        help="빈 응답 원인을 단계적으로 좁힌다")
-    parser.add_argument("--score", action="store_true",
-                        help="파리·타이베이 품질 채점표를 마크다운 표로 출력")
+    parser.add_argument("--diagnose", action="store_true", help="빈 응답 원인을 단계적으로 좁힌다")
+    parser.add_argument(
+        "--score", action="store_true", help="파리·타이베이 품질 채점표를 마크다운 표로 출력"
+    )
     args = parser.parse_args()
 
     if args.list:

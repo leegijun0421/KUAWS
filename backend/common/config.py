@@ -10,7 +10,7 @@ try:
     from dotenv import load_dotenv
 
     # encoding="utf-8-sig": PowerShell 의 Set-Content 가 붙이는 BOM 이 첫 키 이름에
-    # 섞여 python-dotenv 가 키를 못 읽는 문제를 막는다(test_claude.py 와 동일).
+    # 섞여 python-dotenv 가 키를 못 읽는 문제를 막는다(scripts/check_claude.py 와 동일).
     load_dotenv(encoding="utf-8-sig")
 except ImportError:  # python-dotenv 가 없으면 OS 환경변수만 쓴다
     pass
@@ -27,10 +27,10 @@ class Settings(BaseModel):
 
     anthropic_api_key: str = ""
     anthropic_model: str = DEFAULT_ANTHROPIC_MODEL
-    odsay_api_key: str = ""              # 국내 대중교통 경로 (ODsay)
+    odsay_api_key: str = ""  # 국내 대중교통 경로 (ODsay)
     #: 키 A — Places + Routes 겸용. IP 제한, 절대 노출 금지.
     #: 프론트용 Maps JS 키(B)는 백엔드가 쓰지 않으므로 여기에 두지 않는다.
-    google_backend_api_key: str = ""     # 해외 대중교통 경로 + POI (Google)
+    google_backend_api_key: str = ""  # 해외 대중교통 경로 + POI (Google)
     cache_dir: str = "data/processed/cache"
     #: 공유 링크의 앞부분. 배포 시 실제 프론트 주소로 바꾼다.
     public_base_url: str = "http://localhost:5173"

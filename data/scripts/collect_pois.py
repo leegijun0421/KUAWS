@@ -77,7 +77,7 @@ try:
     from dotenv import load_dotenv
 
     # encoding="utf-8-sig": Windows PowerShell 이 붙이는 BOM 이 첫 키 이름에 섞이는
-    # 문제를 막는다 (test_claude.py 에 같은 주석이 있다).
+    # 문제를 막는다 (scripts/check_claude.py 에 같은 주석이 있다).
     load_dotenv(REPO_ROOT / ".env", encoding="utf-8-sig")
 except ImportError:  # python-dotenv 없이 환경변수만으로도 동작하게 둔다
     pass

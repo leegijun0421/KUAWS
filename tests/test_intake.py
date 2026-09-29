@@ -91,7 +91,9 @@ def test_extract_retries_once_on_broken_json():
 
 def test_extract_falls_back_to_rules_after_two_failures():
     provider = FakeProvider("x", "y")
-    result = extract_profiles({"민지": ["갑각류 알레르기 있어요. 공원 산책 좋아"]}, "파리", provider)
+    result = extract_profiles(
+        {"민지": ["갑각류 알레르기 있어요. 공원 산책 좋아"]}, "파리", provider
+    )
     assert result.method == "rules"
     member = result.members[0]
     assert "seafood" in member.constraints.avoid_keywords
@@ -190,10 +192,16 @@ def test_llm_unknown_axis_name_falls_back_to_rules():
 def test_llm_evidence_and_trip_facts_are_kept():
     data = json.loads(_llm_json())
     data["members"][0]["axes"]["pace"]["evidence"] = "하루에 너무 많이 돌면 기억도 안 남더라"
-    data["trip"] = {"city": "파리", "days": 3, "start_date": "2026-10-15",
-                    "earliest_start": "11:00", "latest_end": "25:00"}
-    result = extract_profiles({"민지": ["..."]}, "파리",
-                              provider=FakeProvider(json.dumps(data, ensure_ascii=False)))
+    data["trip"] = {
+        "city": "파리",
+        "days": 3,
+        "start_date": "2026-10-15",
+        "earliest_start": "11:00",
+        "latest_end": "25:00",
+    }
+    result = extract_profiles(
+        {"민지": ["..."]}, "파리", provider=FakeProvider(json.dumps(data, ensure_ascii=False))
+    )
     pace = next(a for a in result.members[0].axes if a.axis == "pace")
     assert pace.evidence.startswith("하루에")
     assert result.trip.city == "paris" and result.trip.city_supported and result.trip.days == 3

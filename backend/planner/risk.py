@@ -155,8 +155,11 @@ def _local(rfc3339: str | None, tz: tzinfo | None) -> str:
 def _closing_factor(poi: POIVector, depart_hhmm: str, weekday: int) -> list[RiskFactor]:
     """떠나는 시각과 그날 영업 종료 사이 여유."""
     depart = to_minutes(depart_hhmm)
-    closes = [to_minutes(close) for open_, close in poi.opening.ranges_for(weekday)
-              if to_minutes(open_) <= depart <= to_minutes(close)]
+    closes = [
+        to_minutes(close)
+        for open_, close in poi.opening.ranges_for(weekday)
+        if to_minutes(open_) <= depart <= to_minutes(close)
+    ]
     if not closes:
         return []
     margin = min(closes) - depart

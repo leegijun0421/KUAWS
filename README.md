@@ -5,6 +5,9 @@
 > 고려대학교 x AWS AI Innovators Challenge (AI Tech Day 2026) 출품작 — KUAWS 팀
 > 예선 8/18 ~ 9/29 · 본선 10/3 ~ 10/18 · 최종 발표 10/19
 
+[![CI](https://github.com/leegijun0421/KUAWS/actions/workflows/ci.yml/badge.svg)](https://github.com/leegijun0421/KUAWS/actions/workflows/ci.yml)
+&nbsp;**체험하기 → https://kuaws-np3ccjktdq-du.a.run.app** (예시 대화 버튼 → 취향 읽기 → 일정 만들기)
+
 <p align="center">
   <img src="docs/images/result_satisfaction.png" width="560" alt="결과 화면 — 코스 브리핑과 그룹 최저 만족도"><br>
   <img src="docs/images/result_route.png" width="560" alt="경로 카드 — 실제 편성 출발·도착 시각과 운영기관 표기">
@@ -29,6 +32,16 @@ LLM 에게 맡기면 그럴듯하지만 **존재하지 않는 버스 노선과 �
 | 4 | **실패 위험 미리 보기** | 환승 연결 여유(실제 시간표), 영업 종료 여유, 식사 피크 도착 같은 **객관 지표만으로** 장소별 실패 확률을 보여준다. 유명하다고 감점하지 않는다. |
 | 5 | **경치 좋은 길** | 같은 호출로 받은 대안 경로 중 공원·명소를 지나는 길을 “+6분, 경치”로 함께 보여준다. |
 | 6 | **링크 하나로 공유** | 특정 메신저에 종속되지 않는 링크. 경로는 저장하지 않고 열 때 최신 시간표로 다시 계산한다(약관 준수). |
+
+## 평가 기준별 한눈에 보기
+
+| 평가 항목 (배점) | 이 리포에서의 근거 | 자세히 |
+|---|---|---|
+| 목적 부합성 (10) | 문제를 셋으로 분해(흩어진 취향 · 평균의 함정 · 지어낸 시간표)하고 각각 LLM 취향 추출 · maximin · 실제 편성 시각으로 대응. LLM 은 사람의 말 이해에만, 사실 데이터는 API 로 역할 분리 | [POC 2~3절](docs/POC.md) · [DECISIONS](docs/DECISIONS.md) |
+| 데이터 활용성 (10) | Google Places 수집(도시당 135곳) → 필터 → LLM 5축 태깅 270건 → 수동 검수 30건(치명 0). 지원 도시는 7개 도시 실호출 진단으로 선정. 경로 응답은 저장하지 않음(약관) | [POC 5절](docs/POC.md) · [TAGGING_REVIEW](docs/TAGGING_REVIEW.md) · [`data/scripts/`](data/scripts) |
+| 기술적 우월성 (30) | 정규화 maximin 그룹 매칭, 실제 편성 시각 기반 제약 스케줄러와 실패 위험도, 어댑터 2계층(LLMProvider · RouteProvider), 일정 생성 런타임 LLM 0회 | [ARCHITECTURE](docs/ARCHITECTURE.md) · 아래 핵심 설계 |
+| 서비스 활용성·완성도 (30) | 공개 배포(Cloud Run), 대화 붙여넣기 한 번으로 끝나는 흐름, 링크 공유, LLM 장애 시 규칙 폴백. 실측 E2E 15/15, 탑승 구간 48/48 실제 편성 시각, 일정 생성 3~6초 | [POC 6절](docs/POC.md) · [DEPLOY](docs/DEPLOY.md) |
+| 제출 코드 (10) | 리포 전체 `ruff check` · `ruff format` · `prettier` 통과, pytest 103개 + vitest 6개, PR 마다 CI, 기능별 spec(`.kiro/specs`) · ADR · 문서 색인 | [테스트](#테스트) · [docs/README](docs/README.md) · [CONTRIBUTING](CONTRIBUTING.md) |
 
 ## 핵심 설계 3가지 (코드 위치)
 
@@ -63,16 +76,17 @@ LLM 에게 맡기면 그럴듯하지만 **존재하지 않는 버스 노선과 �
 - **사전 배치 vs 런타임 분리** — POI 태깅은 오프라인 1회. 일정 생성 요청의 런타임 LLM 호출은 0회다.
 - **RouteProvider 어댑터** — 좌표로 제공자 자동 선택(해외 Google Routes v2 / 국내 ODsay). 도시 확장 = 어댑터 추가.
 - **LLMProvider 어댑터** — 현재 Anthropic API 직접 호출, Bedrock 은 구현체 교체만으로 전환 가능.
-- **키 격리** — Routes·Places 키는 백엔드에만(IP 제한), 브라우저에는 Maps JS 전용 키(리퍼러 제한).
+- **키 격리** — Routes·Places 키는 서버 환경변수에만(API 제한), 브라우저에는 Maps JS 전용 키(리퍼러 제한).
 
 자세한 설명·수식: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ---
 
-## 체험하기
+## 체험하기 · 배포
 
 - **배포 주소:** https://kuaws-np3ccjktdq-du.a.run.app — 예시 대화 불러오기 → 일정 만들기 (파리·타이베이)
-- 배포 방법: [docs/DEPLOY.md](docs/DEPLOY.md) (Google Cloud Run, 컨테이너 1개 = 화면 + API)
+- 구성: Google Cloud Run(서울 리전), 컨테이너 1개가 빌드된 화면과 API 를 같은 출처로 제공 — [`Dockerfile`](Dockerfile)
+- 배포 방법: [docs/DEPLOY.md](docs/DEPLOY.md) · `scripts/deploy_cloudrun.ps1`
 
 ---
 
@@ -187,36 +201,49 @@ frontend/         React 18 + TypeScript + Vite + Tailwind
 shared/types/     API 계약 (models.py ↔ api.ts, PM 소유)
 data/scripts/     POI 수집 · 태깅 · 검수 스크립트 (산출물은 커밋하지 않음)
 mocks/            가짜 카톡 대화 5종(chats/) · 예시 POI(poi_seed/)
-scripts/          외부 API 프로브 · 수직 관통 스파이크
-docs/             아키텍처 · 의사결정(ADR) · PoC · 데모 · 테스트 기록
-tests/            pytest (외부 API 는 전부 목/모의)
+scripts/          E2E 실측 · 추출 평가 · maximin 비교 · 외부 API 프로브 · 배포 스크립트
+docs/             아키텍처 · 의사결정(ADR) · PoC · 데모 · 테스트 기록 (색인: docs/README.md)
+tests/            pytest (외부 API 는 전부 목/모의, 로컬 수집본과도 격리)
+Dockerfile        Cloud Run 이미지 (Vite 빌드 → FastAPI 가 화면 + API 서빙)
 ```
 
 ## 테스트
 
 ```powershell
-pytest -q                        # 백엔드 — 외부 API 호출 없음
-ruff check backend shared data/scripts
-cd frontend; npm test; npm run build
+# C:\project\KUAWS 에서
+pytest -q                        # 백엔드 103개 — 외부 API 호출 없음, 항상 예시 데이터로 실행
+ruff check .                     # 린트 (리포 전체)
+ruff format --check .            # 포맷
+
+# C:\project\KUAWS\frontend 에서
+npm test                         # vitest
+npm run format:check             # prettier
+npm run build                    # 타입 체크 + 빌드
 ```
 
-CI(GitHub Actions)가 PR 마다 위 명령과 `.env` 커밋 여부를 검사한다.
+CI(GitHub Actions)가 PR·main push 마다 위 명령과 `.env` 커밋 여부를 검사한다.
 
-## 본선(10/3~) 계획 — 예선 범위 밖
+실제 API 로 끝까지 돌리는 실측 스크립트(키 필요):
 
-- 일본 도시: 일본 전용 라우팅 어댑터(`RouteProvider` 구현체 추가)
-- LLM 코스 브리핑 복원(현재 규칙 기반 템플릿, `LLMProvider` 뒤에 붙이면 됨), 택시 대안 재투입
-- UI 고도화, 공유 링크 저장소를 관리형 DB 로 이전
+| 스크립트 | 내용 | 결과 |
+|---|---|---|
+| `python scripts/e2e_check.py --repeat 3` | 대화 5종 × 3회, 붙여넣기 → 일정 → 공유 열람 | [POC 6-4](docs/POC.md) |
+| `python scripts/eval_extraction.py` | 대화 → 취향 추출 정답지 대조 | [EXTRACTION_EVAL](docs/EXTRACTION_EVAL.md) |
+| `python scripts/compare_maximin.py` | maximin vs 평균 상위 후보 비교 | [POC 6-1](docs/POC.md) |
 
-## 알려진 한계 (예선)
+## 현재 범위와 향후 계획
 
-- 알레르기 필터는 **음식점 이름** 기준이다. 메뉴 단위로는 거르지 못한다.
-- 지원 도시는 2곳. 좌표는 Google 약관상 30일마다 재수집해야 한다.
-- 경치 점수는 경로 주변 POI 태그 기반의 근사다(실제 풍경 이미지를 보지 않는다).
-- 일정은 최적해가 아니라 "항상 그럴듯한" 탐욕 해다(의도된 선택 — ARCHITECTURE 5.4).
-- 체력이 약한 멤버가 있어 하루 이동 상한이 120분으로 낮아지면, 실제 대중교통 시간이 길 때
-  끼니 하나가 빠질 수 있다(실측 15회 중 01번 대화). 빠진 끼니는 경고로 알리고 "근처에서 자유롭게"를 권한다.
-- 꼭 가고 싶은 곳이 지역 이름(예: 몽마르트르)이면 장소 목록에서 찾지 못하고, 그 사실을 화면에 알린다.
+| 현재 (예선) | 향후 |
+|---|---|
+| 지원 도시 파리 · 타이베이 (호출로 검증한 곳만) | 일본 전용 `RouteProvider` 구현체, 런던 · 싱가포르 · 방콕 POI 추가 |
+| 알레르기 제외는 음식점 이름 기준 | 메뉴 · 유형 태그 기반 필터 |
+| 이동 상한이 낮은 그룹은 끼니를 경고로 안내 | 식당을 먼저 고정하고 관광지를 채우는 2단계 배치 |
+| 코스 브리핑은 규칙 기반 템플릿 | `LLMProvider`(Amazon Bedrock 포함) 뒤에 LLM 브리핑 |
+| 공유 링크 저장소는 컨테이너 로컬 SQLite | 관리형 DB 로 이전 |
+| 지역 이름(예: 몽마르트르)은 꼭 갈 곳으로 매칭 불가, 화면에 안내 | 지역 단위 매칭 |
+
+설계상 선택: 일정은 최적해가 아니라 항상 그럴듯한 탐욕 해(ARCHITECTURE 5.4), 경치 점수는 경로 주변 POI 태그 기반의 근사,
+수집 좌표는 Google 약관상 30일마다 재수집.
 
 ## 기술 스택
 

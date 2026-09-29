@@ -54,7 +54,7 @@ def _parse_day(body: str) -> list[tuple[str, str]] | None:
 
 
 def _parse_range(start: str, end: str) -> tuple[str, str] | None:
-    """"12:00" – "1:30 PM" 처럼 앞쪽 오전/오후가 생략된 구간까지 처리한다."""
+    """ "12:00" – "1:30 PM" 처럼 앞쪽 오전/오후가 생략된 구간까지 처리한다."""
     end_match, start_match = _TIME.fullmatch(end.strip()), _TIME.fullmatch(start.strip())
     if not end_match or not start_match:
         return None

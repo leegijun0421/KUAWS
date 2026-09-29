@@ -1,4 +1,8 @@
-    ## 1. 응답 키 구조
+# ODsay 응답 필드 점검 (국내 참조 구현용)
+
+> `python scripts/inspect_odsay.py <응답 JSON>` 출력. 원본 응답은 약관상 커밋하지 않고 필드 구조만 남긴다.
+
+## 1. 응답 키 구조
 
 ```
 searchType

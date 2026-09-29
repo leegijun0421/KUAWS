@@ -109,9 +109,11 @@ def plan_segment(
     transfer_count = count_transfers(legs)
     alternatives = [
         alt.model_copy(
-            update={"segment": alt.segment.model_copy(
-                update={"legs": merge_walk_legs(alt.segment.legs)}
-            )}
+            update={
+                "segment": alt.segment.model_copy(
+                    update={"legs": merge_walk_legs(alt.segment.legs)}
+                )
+            }
         )
         for alt in detail.alternatives
     ]
@@ -181,10 +183,7 @@ def haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     """두 좌표 사이 직선거리(km)."""
     earth_radius_km = 6371
     dlat, dlng = radians(lat2 - lat1), radians(lng2 - lng1)
-    a = (
-        sin(dlat / 2) ** 2
-        + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlng / 2) ** 2
-    )
+    a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlng / 2) ** 2
     return 2 * earth_radius_km * asin(sqrt(a))
 
 

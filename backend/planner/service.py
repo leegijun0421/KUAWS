@@ -63,7 +63,11 @@ def create_plan(
         schedule = build_schedule(candidates, vectors, provider, request.days, constraints)
     logger.info(
         "일정 생성: %s %d일 · 멤버 %d명 · 후보 %d개 · 스톱 %d개",
-        city.key, request.days, len(request.members), len(candidates), len(schedule.stops),
+        city.key,
+        request.days,
+        len(request.members),
+        len(candidates),
+        len(schedule.stops),
     )
     return assemble_itinerary(
         request=request,
@@ -100,7 +104,7 @@ def build_constraints(request: PlanRequest, city: CityProfile) -> ScheduleConstr
 
 
 def local_start(start_date: str, timezone_name: str, day_start: str = DAY_START) -> str:
-    """"YYYY-MM-DD" + 도시 시간대 → 첫날 시작 시각 RFC3339(현지 오프셋 포함)."""
+    """ "YYYY-MM-DD" + 도시 시간대 → 첫날 시작 시각 RFC3339(현지 오프셋 포함)."""
     day = date.fromisoformat(start_date)
     hour, minute = (int(part) for part in day_start.split(":"))
     moment = datetime(day.year, day.month, day.day, hour, minute, tzinfo=ZoneInfo(timezone_name))

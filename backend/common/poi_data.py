@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import BaseModel, Field
 
@@ -68,6 +69,14 @@ class CityData(BaseModel):
         return {poi.poi_id: poi for poi in self.pois}
 
 
+def collected_path(city: str) -> Path:
+    """수집·태깅된 POI 파일 경로.
+
+    테스트는 이 함수를 바꿔 로컬 수집본과 격리한다(tests/conftest.py).
+    """
+    return data_path(f"data/processed/pois/{city}/tagged.json")
+
+
 def load_city(city: str) -> CityData:
     """도시 POI 를 읽는다. 수집본이 없으면 예시 데이터로 대체하고 경고를 남긴다."""
     return _load_city_cached(city, _collected_mtime(city))
@@ -76,7 +85,7 @@ def load_city(city: str) -> CityData:
 @lru_cache(maxsize=8)
 def _load_city_cached(city: str, _mtime: float) -> CityData:
     """파일이 바뀌지 않았으면 다시 읽지 않는다(수정 시각을 캐시 키에 넣는다)."""
-    collected = data_path(f"data/processed/pois/{city}/tagged.json")
+    collected = collected_path(city)
     if collected.exists():
         items = json.loads(collected.read_text(encoding="utf-8"))
         if items:
@@ -94,5 +103,5 @@ def _load_city_cached(city: str, _mtime: float) -> CityData:
 
 def _collected_mtime(city: str) -> float:
     """수집본의 수정 시각. 없으면 0."""
-    path = data_path(f"data/processed/pois/{city}/tagged.json")
+    path = collected_path(city)
     return path.stat().st_mtime if path.exists() else 0.0
