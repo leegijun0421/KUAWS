@@ -6,7 +6,7 @@
 > 예선 8/18 ~ 9/29 · 본선 10/3 ~ 10/18 · 최종 발표 10/19
 
 [![CI](https://github.com/leegijun0421/KUAWS/actions/workflows/ci.yml/badge.svg)](https://github.com/leegijun0421/KUAWS/actions/workflows/ci.yml)
-&nbsp;**체험하기 → https://kuaws-np3ccjktdq-du.a.run.app** (예시 대화 버튼 → 취향 읽기 → 일정 만들기)
+&nbsp;**데모 서비스는 대회 종료로 운영을 종료했습니다.**
 
 <p align="center">
   <img src="docs/images/result_satisfaction.png" width="560" alt="결과 화면 — 코스 브리핑과 그룹 최저 만족도"><br>
@@ -84,7 +84,7 @@ LLM 에게 맡기면 그럴듯하지만 **존재하지 않는 버스 노선과 �
 
 ## 체험하기 · 배포
 
-- **배포 주소:** https://kuaws-np3ccjktdq-du.a.run.app — 예시 대화 불러오기 → 일정 만들기 (파리·타이베이)
+- **배포:** Cloud Run(asia-northeast3)에 배포해 운영했으며, 대회 종료 후 서비스를 종료했습니다.
 - 구성: Google Cloud Run(서울 리전), 컨테이너 1개가 빌드된 화면과 API 를 같은 출처로 제공 — [`Dockerfile`](Dockerfile)
 - 배포 방법: [docs/DEPLOY.md](docs/DEPLOY.md) · `scripts/deploy_cloudrun.ps1`
 

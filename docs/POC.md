@@ -132,7 +132,7 @@
 | 목적 부합성 (10) | LLM 을 "사람 말 이해"에만, 사실 데이터는 API 로 — 역할 분리 |
 | 데이터 활용성 (10) | 5절 — 수집 → 필터 → 태깅 → 검수, 도시 선정 자체를 호출로 검증 |
 | 제출 코드 (10) | README·ARCHITECTURE·ADR·spec, 테스트 103개(pytest)+6개(vitest), 리포 전체 ruff·prettier, CI, 파일 300줄 규칙 |
-| (공통) 실사용 가능성 | Cloud Run 공개 배포 — https://kuaws-np3ccjktdq-du.a.run.app ([DEPLOY.md](DEPLOY.md)) |
+| (공통) 실사용 가능성 | Cloud Run 공개 배포 — (운영 종료) ([DEPLOY.md](DEPLOY.md)) |
 
 ## 8. 현재 범위와 향후 계획
 
@@ -151,7 +151,7 @@
 - [x] PoC 문서 — 이 파일
 - [x] README — 실행법·API 명세·아키텍처·화이트리스트 이유
 - [x] 저장소 링크 — https://github.com/leegijun0421/KUAWS
-- [x] 배포 주소 — https://kuaws-np3ccjktdq-du.a.run.app (Cloud Run, [DEPLOY.md](DEPLOY.md))
+- [x] 배포 주소 — (운영 종료) (Cloud Run, [DEPLOY.md](DEPLOY.md))
 - [x] 서비스 소개서 · 발표자료 (10장, PDF·PPTX) — 제출 사이트 업로드
 - [x] 대중평가용 서비스 소개 문구 — [SERVICE_INTRO.md](SERVICE_INTRO.md)
 - [x] 데모 영상 — 2:16, 실호출 녹화 편집([DEMO.md](DEMO.md)) · 영상 파일은 리포 밖에서 관리
